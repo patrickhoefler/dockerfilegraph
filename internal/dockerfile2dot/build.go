@@ -13,9 +13,9 @@ func BuildDotFile(simplifiedDockerfile SimplifiedDockerfile) string {
 	graph.AddAttr("G", "rankdir", "LR")
 	graph.AddAttr("G", "nodesep", "1")
 
-	for index, step := range simplifiedDockerfile.Stages {
+	for index, stage := range simplifiedDockerfile.Stages {
 		attrs := map[string]string{
-			"label": "\"" + getStepLabel(step) + "\"",
+			"label": "\"" + getStageLabel(stage) + "\"",
 			"shape": "Mrecord",
 			"width": "2",
 		}
@@ -26,16 +26,16 @@ func BuildDotFile(simplifiedDockerfile SimplifiedDockerfile) string {
 			attrs["fillcolor"] = "grey90"
 		}
 
-		graph.AddNode("G", step.ID, attrs)
+		graph.AddNode("G", stage.ID, attrs)
 
-		for _, waitForStepID := range step.WaitFor {
-			if waitForStepID == "" {
+		for _, waitForStageID := range stage.WaitFor {
+			if waitForStageID == "" {
 				continue
 			}
 
 			graph.AddEdge(
-				getRealStepID(simplifiedDockerfile, waitForStepID),
-				step.ID,
+				getRealStageID(simplifiedDockerfile, waitForStageID),
+				stage.ID,
 				true,
 				nil,
 			)
@@ -45,18 +45,17 @@ func BuildDotFile(simplifiedDockerfile SimplifiedDockerfile) string {
 	return graph.String()
 }
 
-func getStepLabel(stage Stage) string {
+func getStageLabel(stage Stage) string {
 	if stage.Name != "" {
 		return stage.Name
 	}
-
 	return stage.ID
 }
 
-func getRealStepID(simplifiedDockerfile SimplifiedDockerfile, stepID string) string {
-	for _, step := range simplifiedDockerfile.Stages {
-		if stepID == step.ID || stepID == step.Name {
-			return step.ID
+func getRealStageID(simplifiedDockerfile SimplifiedDockerfile, stageID string) string {
+	for _, stage := range simplifiedDockerfile.Stages {
+		if stageID == stage.ID || stageID == stage.Name {
+			return stage.ID
 		}
 	}
 	// This should never happen
