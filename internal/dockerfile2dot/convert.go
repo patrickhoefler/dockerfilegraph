@@ -52,8 +52,6 @@ func dockerfileToSimplifiedDockerfile(content []byte) SimplifiedDockerfile {
 		}
 	}
 
-	fmt.Println(simplifiedDockerfile)
-
 	// Remove WaitFors that are actually external images
 	for index, stage := range simplifiedDockerfile.Stages {
 		for waitForIndex, waitFor := range stage.WaitFor {
@@ -63,6 +61,5 @@ func dockerfileToSimplifiedDockerfile(content []byte) SimplifiedDockerfile {
 		}
 	}
 
-	fmt.Println(simplifiedDockerfile.Stages)
 	return simplifiedDockerfile
 }

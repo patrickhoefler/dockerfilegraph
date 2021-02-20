@@ -1,8 +1,6 @@
 package dockerfile2dot
 
 import (
-	"fmt"
-
 	"github.com/awalterschulze/gographviz"
 )
 
@@ -44,7 +42,6 @@ func BuildDotFile(simplifiedDockerfile SimplifiedDockerfile) string {
 		}
 	}
 
-	fmt.Println(graph.String())
 	return graph.String()
 }
 
