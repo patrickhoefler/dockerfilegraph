@@ -12,9 +12,7 @@ changelog:
       - '^test:'
 
 dockers:
-  - binaries:
-      - dockerfilegraph
-    image_templates:
+  - image_templates:
       - 'ghcr.io/patrickhoefler/dockerfilegraph:latest'
       - 'ghcr.io/patrickhoefler/dockerfilegraph:{{ .Major }}'
       - 'ghcr.io/patrickhoefler/dockerfilegraph:{{ .Major }}.{{ .Minor }}'
