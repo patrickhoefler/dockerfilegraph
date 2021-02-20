@@ -1,0 +1,32 @@
+builds:
+  - env:
+      - CGO_ENABLED=0
+    goarch:
+      - amd64
+
+changelog:
+  sort: asc
+  filters:
+    exclude:
+      - '^docs:'
+      - '^test:'
+
+dockers:
+  - binaries:
+      - dockerfilegraph
+    image_templates:
+      - 'ghcr.io/patrickhoefler/dockerfilegraph:latest'
+      - 'ghcr.io/patrickhoefler/dockerfilegraph:{{ .Major }}'
+      - 'ghcr.io/patrickhoefler/dockerfilegraph:{{ .Major }}.{{ .Minor }}'
+      - 'ghcr.io/patrickhoefler/dockerfilegraph:{{ .Major }}.{{ .Minor }}.{{ .Patch }}'
+
+brews:
+  - tap:
+      owner: patrickhoefler
+      name: homebrew-dockerfilegraph
+
+    homepage: https://github.com/patrickhoefler/dockerfilegraph
+    description: 'Visualize your multi-stage Dockerfile'
+
+    dependencies:
+      - graphviz
