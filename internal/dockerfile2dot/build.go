@@ -15,7 +15,7 @@ func BuildDotFile(simplifiedDockerfile SimplifiedDockerfile) string {
 
 	for index, step := range simplifiedDockerfile.Stages {
 		attrs := map[string]string{
-			"label": getStepLabel(step),
+			"label": "\"" + getStepLabel(step) + "\"",
 			"shape": "Mrecord",
 			"width": "2",
 		}
