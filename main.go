@@ -24,7 +24,9 @@ func main() {
 	}
 	defer os.Remove(dotFile.Name())
 
-	_, err = dotFile.Write([]byte(dockerfile2dot.BuildDotFile(dockerfile)))
+	dotFileContent := dockerfile2dot.BuildDotFile(dockerfile)
+
+	_, err = dotFile.Write([]byte(dotFileContent))
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -34,10 +36,16 @@ func main() {
 		log.Fatal(err)
 	}
 
-	cmd := exec.Command("dot", "-Tpdf", "-odockerfile.pdf", dotFile.Name())
-	err = cmd.Run()
+	out, err := exec.Command("dot", "-Tpdf", "-odockerfile.pdf", dotFile.Name()).CombinedOutput()
 	if err != nil {
-		log.Fatal(err)
+		log.Println("Oh no, something went wrong!")
+		log.Println()
+		log.Println("This is the Graphviz file that was generated:")
+		log.Println()
+		log.Println(dotFileContent)
+		log.Println("The following error was reported by Graphviz:")
+		log.Println()
+		log.Fatal(string(out))
 	}
 
 	fmt.Println("Successfully created dockerfile.pdf")
