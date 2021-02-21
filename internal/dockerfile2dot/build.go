@@ -13,6 +13,16 @@ func BuildDotFile(simplifiedDockerfile SimplifiedDockerfile) string {
 	graph.AddAttr("G", "rankdir", "LR")
 	graph.AddAttr("G", "nodesep", "1")
 
+	for _, baseImage := range simplifiedDockerfile.BaseImages {
+		graph.AddNode("G", baseImage.ID, map[string]string{
+			"shape":     "Mrecord",
+			"width":     "2",
+			"style":     "dashed",
+			"color":     "grey20",
+			"fontcolor": "grey20",
+		})
+	}
+
 	for index, stage := range simplifiedDockerfile.Stages {
 		attrs := map[string]string{
 			"label": "\"" + getStageLabel(stage) + "\"",
@@ -53,11 +63,13 @@ func getStageLabel(stage Stage) string {
 }
 
 func getRealStageID(simplifiedDockerfile SimplifiedDockerfile, stageID string) string {
+	// Look up the real stage id, could be either numeric or the "AS" alias
 	for _, stage := range simplifiedDockerfile.Stages {
 		if stageID == stage.ID || stageID == stage.Name {
 			return stage.ID
 		}
 	}
-	// This should never happen
-	return ""
+
+	// It is actually an external base image, keep the ID as is
+	return stageID
 }

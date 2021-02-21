@@ -16,6 +16,8 @@ func dockerfileToSimplifiedDockerfile(content []byte) SimplifiedDockerfile {
 	}
 
 	simplifiedDockerfile := SimplifiedDockerfile{}
+
+	// Set that holds all stage IDs
 	stages := make(map[string]struct{})
 
 	// Add all stages
@@ -52,11 +54,19 @@ func dockerfileToSimplifiedDockerfile(content []byte) SimplifiedDockerfile {
 		}
 	}
 
-	// Remove WaitFors that are actually external images
-	for index, stage := range simplifiedDockerfile.Stages {
-		for waitForIndex, waitFor := range stage.WaitFor {
+	// Set that holds all external base images
+	baseImages := make(map[string]struct{})
+
+	// Add external base images
+	for _, stage := range simplifiedDockerfile.Stages {
+		for _, waitFor := range stage.WaitFor {
 			if _, ok := stages[waitFor]; !ok {
-				simplifiedDockerfile.Stages[index].WaitFor[waitForIndex] = ""
+				// simplifiedDockerfile.Stages[index].WaitFor[waitForIndex] = ""
+				baseImages[waitFor] = struct{}{}
+				simplifiedDockerfile.BaseImages = append(
+					simplifiedDockerfile.BaseImages,
+					BaseImage{ID: waitFor},
+				)
 			}
 		}
 	}
