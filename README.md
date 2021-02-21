@@ -17,7 +17,7 @@
 
 ### Installation and Usage
 
-Running `dockerfilegraph` will create a `dockerfile.pdf` file in your current working directory that contains a visual graph representation of your multi-stage Dockerfile.
+Running `dockerfilegraph` will create a `Dockerfile.pdf` in your current working directory that contains a visual graph representation of your multi-stage Dockerfile.
 
 #### Docker
 

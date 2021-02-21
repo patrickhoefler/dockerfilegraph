@@ -36,7 +36,7 @@ func main() {
 		log.Fatal(err)
 	}
 
-	out, err := exec.Command("dot", "-Tpdf", "-odockerfile.pdf", dotFile.Name()).CombinedOutput()
+	out, err := exec.Command("dot", "-Tpdf", "-oDockerfile.pdf", dotFile.Name()).CombinedOutput()
 	if err != nil {
 		log.Println("Oh no, something went wrong!")
 		log.Println()
@@ -48,5 +48,5 @@ func main() {
 		log.Fatal(string(out))
 	}
 
-	fmt.Println("Successfully created dockerfile.pdf")
+	fmt.Println("Successfully created Dockerfile.pdf")
 }
