@@ -22,7 +22,7 @@ Running `dockerfilegraph` will create a `Dockerfile.pdf` in your current working
 #### Docker
 
 ```shell
-docker run --rm --mount type=bind,source="$(pwd)",target=/dockerfile ghcr.io/patrickhoefler/dockerfilegraph
+docker run --rm --workdir /workspace --mount type=bind,source="$(pwd)",target=/workspace ghcr.io/patrickhoefler/dockerfilegraph
 ```
 
 #### Homebrew
