@@ -31,11 +31,10 @@ func dockerfileToSimplifiedDockerfile(content []byte) SimplifiedDockerfile {
 			stage.ID = fmt.Sprint(stageIndex)
 			stage.WaitFor = []string{child.Next.Value}
 
+			// If there is an "AS" alias, set is at the name
 			if child.Next.Next != nil {
 				stages[child.Next.Next.Next.Value] = struct{}{}
 				stage.Name = child.Next.Next.Next.Value
-			} else {
-				stage.Name = child.Next.Value
 			}
 
 			simplifiedDockerfile.Stages = append(simplifiedDockerfile.Stages, stage)
