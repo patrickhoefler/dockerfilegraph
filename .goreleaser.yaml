@@ -21,7 +21,7 @@ dockers:
 brews:
   - tap:
       owner: patrickhoefler
-      name: homebrew-dockerfilegraph
+      name: homebrew-tap
 
     homepage: https://github.com/patrickhoefler/dockerfilegraph
     description: 'Visualize your multi-stage Dockerfile'

@@ -28,8 +28,7 @@ docker run --rm --mount type=bind,source="$(pwd)",target=/dockerfile ghcr.io/pat
 #### Homebrew
 
 ```shell
-brew tap patrickhoefler/dockerfilegraph
-brew install dockerfilegraph
+brew install patrickhoefler/tap/dockerfilegraph
 dockerfilegraph
 ```
 
