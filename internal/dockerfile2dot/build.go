@@ -14,7 +14,7 @@ func BuildDotFile(simplifiedDockerfile SimplifiedDockerfile) string {
 	graph.AddAttr("G", "nodesep", "1")
 
 	for _, baseImage := range simplifiedDockerfile.BaseImages {
-		graph.AddNode("G", baseImage.ID, map[string]string{
+		graph.AddNode("G", "\""+baseImage.ID+"\"", map[string]string{
 			"shape":     "Mrecord",
 			"width":     "2",
 			"style":     "dashed",
@@ -36,7 +36,7 @@ func BuildDotFile(simplifiedDockerfile SimplifiedDockerfile) string {
 			attrs["fillcolor"] = "grey90"
 		}
 
-		graph.AddNode("G", stage.ID, attrs)
+		graph.AddNode("G", "\""+stage.ID+"\"", attrs)
 
 		for _, waitForStageID := range stage.WaitFor {
 			if waitForStageID == "" {
@@ -44,8 +44,8 @@ func BuildDotFile(simplifiedDockerfile SimplifiedDockerfile) string {
 			}
 
 			graph.AddEdge(
-				getRealStageID(simplifiedDockerfile, waitForStageID),
-				stage.ID,
+				"\""+getRealStageID(simplifiedDockerfile, waitForStageID)+"\"",
+				"\""+stage.ID+"\"",
 				true,
 				nil,
 			)
