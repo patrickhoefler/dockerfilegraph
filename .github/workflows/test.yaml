@@ -34,7 +34,7 @@ jobs:
       run: chmod o+w example
 
     - name: Run the built Docker image
-      run: cd example && docker run --mount type=bind,source="$(pwd)",target=/dockerfile ghcr.io/patrickhoefler/dockerfilegraph:0.0.0
+      run: cd example && docker run --workdir /workspace --mount type=bind,source="$(pwd)",target=/workspace ghcr.io/patrickhoefler/dockerfilegraph:0.0.0
 
     - name: Upload code coverage
       uses: codecov/codecov-action@v1
