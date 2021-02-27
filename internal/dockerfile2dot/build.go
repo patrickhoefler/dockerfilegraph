@@ -43,11 +43,16 @@ func BuildDotFile(simplifiedDockerfile SimplifiedDockerfile) string {
 				continue
 			}
 
+			edgeAttrs := map[string]string{}
+			if waitFor.Type == waitForType(copy) {
+				edgeAttrs["arrowhead"] = "empty"
+			}
+
 			graph.AddEdge(
 				"\""+getRealStageID(simplifiedDockerfile, waitFor.ID)+"\"",
 				"\""+stage.ID+"\"",
 				true,
-				nil,
+				edgeAttrs,
 			)
 		}
 	}
