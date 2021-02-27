@@ -3,7 +3,18 @@
 [![Go Report Card](https://goreportcard.com/badge/github.com/patrickhoefler/dockerfilegraph)](https://goreportcard.com/report/github.com/patrickhoefler/dockerfilegraph)
 [![Maintainability](https://api.codeclimate.com/v1/badges/472d7a3637297d07773d/maintainability)](https://codeclimate.com/github/patrickhoefler/dockerfilegraph/maintainability)
 
-`dockerfilegraph` visualizes your multi-stage Dockerfiles. It outputs a PDF that contains the build stages, the default build target (highlighted in grey) as well as the external base images (with dashed borders).
+`dockerfilegraph` visualizes your multi-stage Dockerfiles.
+
+It outputs a PDF with a graph representation of the build process. The graph contains the following nodes:
+
+- All _build stages_
+- The _default build target_ highlighted in grey
+- _External base images_ with dashed borders
+
+The edges of the graph represent:
+
+- _FROM dependencies_ with a full arrow head
+- _COPY dependencies_ with an empty arrow head
 
 ## Example Output
 
