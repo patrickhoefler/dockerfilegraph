@@ -29,7 +29,12 @@ func dockerfileToSimplifiedDockerfile(content []byte) SimplifiedDockerfile {
 
 			stage := Stage{}
 			stage.ID = fmt.Sprint(stageIndex)
-			stage.WaitFor = []string{child.Next.Value}
+			stage.WaitFor = []WaitFor{
+				{
+					ID:   child.Next.Value,
+					Type: waitForType(from),
+				},
+			}
 
 			// If there is an "AS" alias, set is at the name
 			if child.Next.Next != nil {
@@ -46,7 +51,10 @@ func dockerfileToSimplifiedDockerfile(content []byte) SimplifiedDockerfile {
 				if len(result) > 1 {
 					simplifiedDockerfile.Stages[stageIndex].WaitFor = append(
 						simplifiedDockerfile.Stages[stageIndex].WaitFor,
-						string(result[1]),
+						WaitFor{
+							ID:   string(result[1]),
+							Type: waitForType(copy),
+						},
 					)
 				}
 			}
@@ -59,12 +67,12 @@ func dockerfileToSimplifiedDockerfile(content []byte) SimplifiedDockerfile {
 	// Add external base images
 	for _, stage := range simplifiedDockerfile.Stages {
 		for _, waitFor := range stage.WaitFor {
-			if _, ok := stages[waitFor]; !ok {
+			if _, ok := stages[waitFor.ID]; !ok {
 				// simplifiedDockerfile.Stages[index].WaitFor[waitForIndex] = ""
-				baseImages[waitFor] = struct{}{}
+				baseImages[waitFor.ID] = struct{}{}
 				simplifiedDockerfile.BaseImages = append(
 					simplifiedDockerfile.BaseImages,
-					BaseImage{ID: waitFor},
+					BaseImage{ID: waitFor.ID},
 				)
 			}
 		}
