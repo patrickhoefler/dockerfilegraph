@@ -38,16 +38,21 @@ func BuildDotFile(simplifiedDockerfile SimplifiedDockerfile) string {
 
 		graph.AddNode("G", "\""+stage.ID+"\"", attrs)
 
-		for _, waitForStageID := range stage.WaitFor {
-			if waitForStageID == "" {
+		for _, waitFor := range stage.WaitFor {
+			if waitFor.ID == "" {
 				continue
 			}
 
+			edgeAttrs := map[string]string{}
+			if waitFor.Type == waitForType(copy) {
+				edgeAttrs["arrowhead"] = "empty"
+			}
+
 			graph.AddEdge(
-				"\""+getRealStageID(simplifiedDockerfile, waitForStageID)+"\"",
+				"\""+getRealStageID(simplifiedDockerfile, waitFor.ID)+"\"",
 				"\""+stage.ID+"\"",
 				true,
-				nil,
+				edgeAttrs,
 			)
 		}
 	}
