@@ -33,7 +33,11 @@ Running `dockerfilegraph` without any arguments will create a `Dockerfile.pdf` i
 #### Docker
 
 ```shell
-docker run --rm --workdir /workspace --mount type=bind,source="$(pwd)",target=/workspace ghcr.io/patrickhoefler/dockerfilegraph
+docker run \
+  --rm \
+  --workdir /workspace \
+  --mount type=bind,source="$(pwd)",target=/workspace \
+  ghcr.io/patrickhoefler/dockerfilegraph
 ```
 
 #### Homebrew
