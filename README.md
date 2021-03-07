@@ -32,7 +32,7 @@ Running `dockerfilegraph` without any arguments will create a `Dockerfile.pdf` i
 
 #### Docker
 
-```shell
+```text
 docker run \
   --rm \
   --workdir /workspace \
@@ -42,14 +42,14 @@ docker run \
 
 #### Homebrew
 
-```shell
+```text
 brew install patrickhoefler/tap/dockerfilegraph
 dockerfilegraph
 ```
 
 ### More Options
 
-```shell
+```text
 $ dockerfilegraph --help
 dockerfilegraph visualizes your multi-stage Dockerfile.
 It outputs a graph representation of the build process.
@@ -64,7 +64,7 @@ Flags:
 
 ## Build
 
-```shell
+```text
 go build
 ./dockerfilegraph
 ```
