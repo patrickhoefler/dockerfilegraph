@@ -50,18 +50,16 @@ It outputs a graph representation of the build process.`,
 
 			filename := "Dockerfile." + output.String()
 
-			resolutionFlag := ""
-			if output.String() == "png" {
-				resolutionFlag = "-Gdpi=300"
+			dotArgs := []string{
+				"-T" + output.String(),
+				"-o" + filename,
 			}
+			if output.String() == "png" {
+				dotArgs = append(dotArgs, "-Gdpi=300")
+			}
+			dotArgs = append(dotArgs, dotFile.Name())
 
-			out, err := exec.Command(
-				"dot",
-				"-T"+output.String(),
-				resolutionFlag,
-				"-o"+filename,
-				dotFile.Name(),
-			).CombinedOutput()
+			out, err := exec.Command("dot", dotArgs...).CombinedOutput()
 			if err != nil {
 				log.Println("Oh no, something went wrong!")
 				log.Println()
