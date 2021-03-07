@@ -28,7 +28,7 @@ The edges of the graph represent:
 
 ### Installation and Usage
 
-Running `dockerfilegraph` will create a `Dockerfile.pdf` in your current working directory that contains a visual graph representation of your multi-stage Dockerfile.
+Running `dockerfilegraph` without any arguments will create a `Dockerfile.pdf` in your current working directory. This PDF contains a visual graph representation of your multi-stage Dockerfile.
 
 #### Docker
 
@@ -43,7 +43,22 @@ brew install patrickhoefler/tap/dockerfilegraph
 dockerfilegraph
 ```
 
-#### Build
+### More Options
+
+```shell
+$ dockerfilegraph --help
+dockerfilegraph visualizes your multi-stage Dockerfile.
+It outputs a graph representation of the build process.
+
+Usage:
+  dockerfilegraph [flags]
+
+Flags:
+  -h, --help     help for dockerfilegraph
+  -o, --output   Output file format. One of: pdf, png (default pdf)
+```
+
+## Build
 
 ```shell
 go build
