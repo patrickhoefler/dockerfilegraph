@@ -18,4 +18,5 @@ dist
 dockerfilegraph
 
 # dockerfilegraph
-Dockerfile.pdf
+Dockerfile.*
+!example/Dockerfile.png
