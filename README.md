@@ -18,7 +18,7 @@ The edges of the graph represent:
 
 ## Example Output
 
-![Example graph](example/dockerfile.png)
+![Example graph](example/Dockerfile.png)
 
 ## Getting Started
 
