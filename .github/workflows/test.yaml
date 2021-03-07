@@ -27,7 +27,7 @@ jobs:
         args: release --snapshot --skip-publish
 
     - name: Make example directory writable for all users
-      run: chmod o+w example
+      run: chmod -R o+w example
 
     - name: Run the Docker image without flags
       run: cd example && docker run --workdir /workspace --mount type=bind,source="$(pwd)",target=/workspace ghcr.io/patrickhoefler/dockerfilegraph:0.0.0
