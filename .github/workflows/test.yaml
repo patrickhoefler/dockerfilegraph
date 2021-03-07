@@ -29,8 +29,17 @@ jobs:
     - name: Make example directory writable for all users
       run: chmod o+w example
 
-    - name: Run the built Docker image
+    - name: Run the Docker image without flags
       run: cd example && docker run --workdir /workspace --mount type=bind,source="$(pwd)",target=/workspace ghcr.io/patrickhoefler/dockerfilegraph:0.0.0
+
+    - name: Run the Docker image with --help
+      run: cd example && docker run --workdir /workspace --mount type=bind,source="$(pwd)",target=/workspace ghcr.io/patrickhoefler/dockerfilegraph:0.0.0 --help
+
+    - name: Run the Docker image with -o pdf
+      run: cd example && docker run --workdir /workspace --mount type=bind,source="$(pwd)",target=/workspace ghcr.io/patrickhoefler/dockerfilegraph:0.0.0 -o pdf
+
+    - name: Run the Docker image with -o png
+      run: cd example && docker run --workdir /workspace --mount type=bind,source="$(pwd)",target=/workspace ghcr.io/patrickhoefler/dockerfilegraph:0.0.0 -o png
 
     - name: Upload code coverage
       uses: codecov/codecov-action@v1
@@ -69,5 +78,14 @@ jobs:
       if: runner.os == 'Windows'
       run: choco install graphviz --no-progress
 
-    - name: Run the binary
+    - name: Run the binary without flags
       run: cd example && ../dockerfilegraph
+
+    - name: Run the binary with --help
+      run: cd example && ../dockerfilegraph --help
+
+    - name: Run the binary with -o pdf
+      run: cd example && ../dockerfilegraph -o pdf
+
+    - name: Run the binary with -o png
+      run: cd example && ../dockerfilegraph -o png

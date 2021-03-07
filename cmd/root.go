@@ -6,17 +6,22 @@ import (
 	"log"
 	"os"
 	"os/exec"
+	"strings"
 
 	"github.com/patrickhoefler/dockerfilegraph/internal/dockerfile2dot"
 	"github.com/spf13/cobra"
 )
 
 var (
+	// Used for flags.
+	output *enum
+
 	rootCmd = &cobra.Command{
 		Use:   "dockerfilegraph",
-		Short: "Visualize your multi-stage Dockerfiles",
-		Long: `dockerfilegraph visualizes your multi-stage Dockerfiles.
+		Short: "Visualize your multi-stage Dockerfile",
+		Long: `dockerfilegraph visualizes your multi-stage Dockerfile.
 It outputs a graph representation of the build process.`,
+		Args: cobra.NoArgs,
 		Run: func(cmd *cobra.Command, args []string) {
 			log.SetFlags(0)
 
@@ -43,7 +48,20 @@ It outputs a graph representation of the build process.`,
 				log.Fatal(err)
 			}
 
-			out, err := exec.Command("dot", "-Tpdf", "-oDockerfile.pdf", dotFile.Name()).CombinedOutput()
+			filename := "Dockerfile." + output.String()
+
+			resolutionFlag := ""
+			if output.String() == "png" {
+				resolutionFlag = "-Gdpi=300"
+			}
+
+			out, err := exec.Command(
+				"dot",
+				"-T"+output.String(),
+				resolutionFlag,
+				"-o"+filename,
+				dotFile.Name(),
+			).CombinedOutput()
 			if err != nil {
 				log.Println("Oh no, something went wrong!")
 				log.Println()
@@ -55,7 +73,7 @@ It outputs a graph representation of the build process.`,
 				log.Fatal(string(out))
 			}
 
-			fmt.Println("Successfully created Dockerfile.pdf")
+			fmt.Println("Successfully created " + filename)
 		},
 	}
 )
@@ -63,4 +81,14 @@ It outputs a graph representation of the build process.`,
 // Execute executes the root command.
 func Execute() error {
 	return rootCmd.Execute()
+}
+
+func init() {
+	output = newEnum("pdf", "png")
+	rootCmd.Flags().VarP(
+		output,
+		"output",
+		"o",
+		"Output file format. One of: "+strings.Join(output.AllowedValues(), ", "),
+	)
 }
