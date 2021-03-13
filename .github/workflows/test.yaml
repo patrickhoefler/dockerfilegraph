@@ -41,6 +41,9 @@ jobs:
     - name: Run the Docker image with -o png
       run: cd example && docker run --workdir /workspace --mount type=bind,source="$(pwd)",target=/workspace ghcr.io/patrickhoefler/dockerfilegraph:0.0.0 -o png
 
+    - name: Run the Docker image with --output png --dpi 200
+      run: cd example && docker run --workdir /workspace --mount type=bind,source="$(pwd)",target=/workspace ghcr.io/patrickhoefler/dockerfilegraph:0.0.0 --output png --dpi 200
+
     - name: Upload code coverage
       uses: codecov/codecov-action@v1
 
@@ -89,3 +92,6 @@ jobs:
 
     - name: Run the binary with -o png
       run: cd example && ../dockerfilegraph -o png
+
+    - name: Run the binary with --output png --dpi 200
+      run: cd example && ../dockerfilegraph --output png --dpi 200
