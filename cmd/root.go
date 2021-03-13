@@ -14,7 +14,8 @@ import (
 
 var (
 	// Used for flags.
-	output *enum
+	dpi    int
+	output enum
 
 	rootCmd = &cobra.Command{
 		Use:   "dockerfilegraph",
@@ -55,7 +56,7 @@ It outputs a graph representation of the build process.`,
 				"-o" + filename,
 			}
 			if output.String() == "png" {
-				dotArgs = append(dotArgs, "-Gdpi=300")
+				dotArgs = append(dotArgs, "-Gdpi="+fmt.Sprint(dpi))
 			}
 			dotArgs = append(dotArgs, dotFile.Name())
 
@@ -82,9 +83,17 @@ func Execute() error {
 }
 
 func init() {
+	rootCmd.Flags().IntVarP(
+		&dpi,
+		"dpi",
+		"d",
+		96, // the default dpi setting of Graphviz
+		"Dots per inch of the PNG export",
+	)
+
 	output = newEnum("pdf", "png")
 	rootCmd.Flags().VarP(
-		output,
+		&output,
 		"output",
 		"o",
 		"Output file format. One of: "+strings.Join(output.AllowedValues(), ", "),

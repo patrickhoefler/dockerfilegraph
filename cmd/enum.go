@@ -13,11 +13,11 @@ type enum struct {
 }
 
 // newEnum returns a new enum flag.
-func newEnum(defaultValue string, allowedValues ...string) *enum {
+func newEnum(defaultValue string, allowedValues ...string) enum {
 	allowedValues = append(allowedValues, defaultValue)
 	sort.Strings(allowedValues)
 
-	return &enum{
+	return enum{
 		allowedValues: allowedValues,
 		value:         defaultValue,
 	}
