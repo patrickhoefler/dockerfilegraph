@@ -2,6 +2,7 @@
 
 [![Go Report Card](https://goreportcard.com/badge/github.com/patrickhoefler/dockerfilegraph)](https://goreportcard.com/report/github.com/patrickhoefler/dockerfilegraph)
 [![Maintainability](https://api.codeclimate.com/v1/badges/472d7a3637297d07773d/maintainability)](https://codeclimate.com/github/patrickhoefler/dockerfilegraph/maintainability)
+[![codecov](https://codecov.io/gh/patrickhoefler/dockerfilegraph/branch/main/graph/badge.svg?token=LClH2hEmPv)](https://codecov.io/gh/patrickhoefler/dockerfilegraph)
 
 `dockerfilegraph` visualizes your multi-stage Dockerfiles.
 

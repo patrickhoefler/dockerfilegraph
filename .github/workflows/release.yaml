@@ -22,10 +22,10 @@ jobs:
         with:
           registry: ghcr.io
           username: ${{ github.repository_owner }}
-          password: ${{ secrets.CR_TOKEN }}
+          password: ${{ secrets.GH_PAT }}
       - name: Run GoReleaser
         uses: goreleaser/goreleaser-action@v2
         with:
           args: release --rm-dist
         env:
-          GITHUB_TOKEN: ${{ secrets.GO_RELEASER_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GH_PAT }}
