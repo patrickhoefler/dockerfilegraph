@@ -14,8 +14,9 @@ It outputs a PDF with a graph representation of the build process. The graph con
 
 The edges of the graph represent:
 
-- _FROM dependencies_ with a full arrow head
-- _COPY dependencies_ with an empty arrow head
+- _FROM_ dependencies with a full arrow head
+- _COPY_ dependencies with an empty arrow head
+- _RUN --mount=type=cache_ dependencies with an empty diamond arrow head
 
 ## Example Output
 
