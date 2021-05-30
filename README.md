@@ -6,7 +6,7 @@
 
 `dockerfilegraph` visualizes your multi-stage Dockerfiles.
 
-It outputs a PDF with a graph representation of the build process. The graph contains the following nodes:
+It creates a visual graph representation of the build process. The graph contains the following nodes:
 
 - All _build stages_
 - The _default build target_ highlighted in grey
