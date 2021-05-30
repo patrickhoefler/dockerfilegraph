@@ -20,7 +20,7 @@ The edges of the graph represent:
 
 ## Example Output
 
-![Example graph](example/Dockerfile.png)
+![Example graph](https://user-images.githubusercontent.com/547220/120117354-2037a800-c18d-11eb-8750-ce954c5529df.png)
 
 ## Getting Started
 
