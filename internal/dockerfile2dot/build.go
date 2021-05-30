@@ -46,6 +46,8 @@ func BuildDotFile(simplifiedDockerfile SimplifiedDockerfile) string {
 			edgeAttrs := map[string]string{}
 			if waitFor.Type == waitForType(copy) {
 				edgeAttrs["arrowhead"] = "empty"
+			} else if waitFor.Type == waitForType(runMountTypeCache) {
+				edgeAttrs["arrowhead"] = "ediamond"
 			}
 
 			graph.AddEdge(

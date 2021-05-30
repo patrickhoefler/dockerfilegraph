@@ -25,6 +25,7 @@ type waitForType int
 const (
 	copy waitForType = iota
 	from
+	runMountTypeCache
 )
 
 // WaitFor provides the ID of a stage or base image that the builder

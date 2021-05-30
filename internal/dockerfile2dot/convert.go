@@ -58,6 +58,21 @@ func dockerfileToSimplifiedDockerfile(content []byte) SimplifiedDockerfile {
 					)
 				}
 			}
+
+		case "run":
+			for _, flag := range child.Flags {
+				regex := regexp.MustCompile("--mount=type=cache,.*from=(.+?)[, ]")
+				result := regex.FindSubmatch([]byte(flag))
+				if len(result) > 1 {
+					simplifiedDockerfile.Stages[stageIndex].WaitFor = append(
+						simplifiedDockerfile.Stages[stageIndex].WaitFor,
+						WaitFor{
+							ID:   string(result[1]),
+							Type: waitForType(runMountTypeCache),
+						},
+					)
+				}
+			}
 		}
 	}
 
