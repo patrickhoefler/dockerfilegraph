@@ -38,11 +38,13 @@ func Test_dockerfileToSimplifiedDockerfile(t *testing.T) {
 			FROM ubuntu as base
 			FROM scratch
 			COPY --from=base . .
+			RUN --mount=type=cache,from=buildcache,source=/go/pkg/mod/cache/,target=/go/pkg/mod/cache/ go build
 			`)},
 			want: SimplifiedDockerfile{
 				BaseImages: []BaseImage{
 					{ID: "ubuntu"},
 					{ID: "scratch"},
+					{ID: "buildcache"},
 				},
 				Stages: []Stage{
 					{
@@ -54,6 +56,7 @@ func Test_dockerfileToSimplifiedDockerfile(t *testing.T) {
 						ID: "1", WaitFor: []WaitFor{
 							{ID: "scratch", Type: waitForType(from)},
 							{ID: "base", Type: waitForType(copy)},
+							{ID: "buildcache", Type: waitForType(runMountTypeCache)},
 						},
 					},
 				},

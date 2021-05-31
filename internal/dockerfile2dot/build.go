@@ -9,7 +9,6 @@ func BuildDotFile(simplifiedDockerfile SimplifiedDockerfile) string {
 	graph := gographviz.NewEscape()
 	graph.SetName("G")
 	graph.SetDir(true)
-	graph.AddAttr("G", "splines", "ortho")
 	graph.AddAttr("G", "rankdir", "LR")
 	graph.AddAttr("G", "nodesep", "1")
 
@@ -46,6 +45,8 @@ func BuildDotFile(simplifiedDockerfile SimplifiedDockerfile) string {
 			edgeAttrs := map[string]string{}
 			if waitFor.Type == waitForType(copy) {
 				edgeAttrs["arrowhead"] = "empty"
+			} else if waitFor.Type == waitForType(runMountTypeCache) {
+				edgeAttrs["arrowhead"] = "ediamond"
 			}
 
 			graph.AddEdge(

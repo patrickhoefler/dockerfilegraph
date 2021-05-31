@@ -14,12 +14,13 @@ It creates a visual graph representation of the build process. The graph contain
 
 The edges of the graph represent:
 
-- _FROM dependencies_ with a full arrow head
-- _COPY dependencies_ with an empty arrow head
+- _FROM_ dependencies with a full arrow head
+- _COPY_ dependencies with an empty arrow head
+- _RUN --mount=type=cache_ dependencies with an empty diamond arrow head
 
 ## Example Output
 
-![Example graph](example/Dockerfile.png)
+![Example graph](https://user-images.githubusercontent.com/547220/120117354-2037a800-c18d-11eb-8750-ce954c5529df.png)
 
 ## Getting Started
 
