@@ -15,8 +15,8 @@ It creates a visual graph representation of the build process. The graph contain
 The edges of the graph represent:
 
 - _FROM_ dependencies with a full arrow head
-- _COPY_ dependencies with an empty arrow head
-- _RUN --mount=type=cache_ dependencies with an empty diamond arrow head
+- _COPY --from=..._ dependencies with an empty arrow head
+- _RUN --mount=type=cache,from=..._ dependencies with an empty diamond arrow head
 
 ## Example Output
 
