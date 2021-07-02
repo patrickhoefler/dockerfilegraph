@@ -49,6 +49,13 @@ brew install patrickhoefler/tap/dockerfilegraph
 dockerfilegraph
 ```
 
+#### Build from Source
+
+```text
+go build
+./dockerfilegraph
+```
+
 ### More Options
 
 ```text
@@ -63,13 +70,6 @@ Flags:
   -d, --dpi int   Dots per inch of the PNG export (default 96)
   -h, --help      help for dockerfilegraph
   -o, --output    Output file format. One of: pdf, png (default pdf)
-```
-
-## Build
-
-```text
-go build
-./dockerfilegraph
 ```
 
 ## License
