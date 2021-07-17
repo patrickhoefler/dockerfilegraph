@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 	"regexp"
+	"strings"
 
 	"github.com/moby/buildkit/frontend/dockerfile/parser"
 )
@@ -22,9 +23,10 @@ func dockerfileToSimplifiedDockerfile(content []byte) SimplifiedDockerfile {
 
 	// Add all stages
 	stageIndex := -1
+
 	for _, child := range result.AST.Children {
-		switch child.Value {
-		case "from":
+		switch strings.ToUpper(child.Value) {
+		case "FROM":
 			stageIndex++
 
 			stage := Stage{}
@@ -44,7 +46,7 @@ func dockerfileToSimplifiedDockerfile(content []byte) SimplifiedDockerfile {
 
 			simplifiedDockerfile.Stages = append(simplifiedDockerfile.Stages, stage)
 
-		case "copy":
+		case "COPY":
 			for _, flag := range child.Flags {
 				regex := regexp.MustCompile("--from=(.+)")
 				result := regex.FindSubmatch([]byte(flag))
@@ -59,7 +61,7 @@ func dockerfileToSimplifiedDockerfile(content []byte) SimplifiedDockerfile {
 				}
 			}
 
-		case "run":
+		case "RUN":
 			for _, flag := range child.Flags {
 				regex := regexp.MustCompile("--mount=type=cache,.*from=(.+?)[, ]")
 				result := regex.FindSubmatch([]byte(flag))
