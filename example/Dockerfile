@@ -12,7 +12,7 @@ RUN \
 
 # ---
 
-FROM golang:1.16 AS build
+FROM golang:1.17 AS build
 RUN --mount=type=cache,from=buildcache,source=/go/pkg/mod/cache/,target=/go/pkg/mod/cache/ go build
 
 # ---
