@@ -32,17 +32,17 @@ The edges of the graph represent:
 
 Running `dockerfilegraph` without any arguments will create a `Dockerfile.pdf` in your current working directory. This PDF contains a visual graph representation of your multi-stage Dockerfile.
 
-#### Docker
+#### Docker / [nerdctl](https://github.com/containerd/nerdctl)
 
 ```text
 docker run \
   --rm \
   --workdir /workspace \
-  --mount type=bind,source="$(pwd)",target=/workspace \
+  --volume "$(pwd)":/workspace \
   ghcr.io/patrickhoefler/dockerfilegraph
 ```
 
-#### Homebrew
+#### [Homebrew](https://brew.sh/)
 
 ```text
 brew install patrickhoefler/tap/dockerfilegraph
