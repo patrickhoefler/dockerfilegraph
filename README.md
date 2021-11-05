@@ -34,7 +34,7 @@ Running `dockerfilegraph` without any arguments will create a `Dockerfile.pdf` i
 
 #### Docker / [nerdctl](https://github.com/containerd/nerdctl)
 
-```text
+```shell
 docker run \
   --rm \
   --workdir /workspace \
