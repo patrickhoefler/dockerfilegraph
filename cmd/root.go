@@ -15,6 +15,7 @@ import (
 var (
 	// Used for flags.
 	dpi    int
+	legend bool
 	output enum
 
 	rootCmd = &cobra.Command{
@@ -37,7 +38,7 @@ It outputs a graph representation of the build process.`,
 			}
 			defer os.Remove(dotFile.Name())
 
-			dotFileContent := dockerfile2dot.BuildDotFile(dockerfile)
+			dotFileContent := dockerfile2dot.BuildDotFile(dockerfile, legend)
 
 			_, err = dotFile.Write([]byte(dotFileContent))
 			if err != nil {
@@ -89,6 +90,14 @@ func init() {
 		"d",
 		96, // the default dpi setting of Graphviz
 		"Dots per inch of the PNG export",
+	)
+
+	rootCmd.Flags().BoolVarP(
+		&legend,
+		"legend",
+		"l",
+		false,
+		"Add a legend (default false)",
 	)
 
 	output = newEnum("pdf", "png")
