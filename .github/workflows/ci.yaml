@@ -83,9 +83,6 @@ jobs:
             ghcr.io/patrickhoefler/dockerfilegraph:0.0.0 \
             --legend
 
-      - name: Upload code coverage
-        uses: codecov/codecov-action@v2
-
   native:
     strategy:
       matrix:
