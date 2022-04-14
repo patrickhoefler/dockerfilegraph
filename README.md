@@ -25,6 +25,8 @@ You can add an optional legend to the graph and change the output format and res
 
 ![Example output](https://user-images.githubusercontent.com/547220/120117354-2037a800-c18d-11eb-8750-ce954c5529df.png)
 
+---
+
 ### Including a Legend
 
 ![Example output including a legend](https://user-images.githubusercontent.com/547220/143328161-dd80b5ef-5960-4023-b74e-e7b28cd31dcb.png)
