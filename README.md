@@ -43,12 +43,24 @@ Running `dockerfilegraph` without any arguments will create a `Dockerfile.pdf` i
 
 #### Docker / [nerdctl](https://github.com/containerd/nerdctl)
 
+##### Image based on Ubuntu 20.04
+
 ```shell
 docker run \
   --rm \
   --workdir /workspace \
   --volume "$(pwd)":/workspace \
   ghcr.io/patrickhoefler/dockerfilegraph
+```
+
+##### Image based on Alpine Linux
+
+```shell
+docker run \
+  --rm \
+  --workdir /workspace \
+  --volume "$(pwd)":/workspace \
+  ghcr.io/patrickhoefler/dockerfilegraph:alpine
 ```
 
 #### [Homebrew](https://brew.sh/)
