@@ -12,11 +12,20 @@ changelog:
       - '^test:'
 
 dockers:
-  - image_templates:
+  - dockerfile: Dockerfile
+    image_templates:
       - 'ghcr.io/patrickhoefler/dockerfilegraph:latest'
       - 'ghcr.io/patrickhoefler/dockerfilegraph:{{ .Major }}'
       - 'ghcr.io/patrickhoefler/dockerfilegraph:{{ .Major }}.{{ .Minor }}'
       - 'ghcr.io/patrickhoefler/dockerfilegraph:{{ .Major }}.{{ .Minor }}.{{ .Patch }}'
+
+  - dockerfile: Dockerfile.alpine
+    image_templates:
+      - 'ghcr.io/patrickhoefler/dockerfilegraph:alpine'
+      - 'ghcr.io/patrickhoefler/dockerfilegraph:alpine-latest'
+      - 'ghcr.io/patrickhoefler/dockerfilegraph:alpine-{{ .Major }}'
+      - 'ghcr.io/patrickhoefler/dockerfilegraph:alpine-{{ .Major }}.{{ .Minor }}'
+      - 'ghcr.io/patrickhoefler/dockerfilegraph:alpine-{{ .Major }}.{{ .Minor }}.{{ .Patch }}'
 
 brews:
   - tap:
