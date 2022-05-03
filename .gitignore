@@ -19,3 +19,4 @@ dockerfilegraph
 
 # dockerfilegraph
 Dockerfile.*
+!Dockerfile.alpine

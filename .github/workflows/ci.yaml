@@ -18,8 +18,8 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v3
 
-      - name: Test with code coverage
-        run: go test ./... -race -covermode=atomic -coverprofile=coverage.txt
+      - name: Test
+        run: go test ./...
 
       - name: Build binaries and Docker image with GoReleaser
         uses: goreleaser/goreleaser-action@v2
@@ -36,6 +36,14 @@ jobs:
             --workdir /workspace \
             --volume "$(pwd)":/workspace \
             ghcr.io/patrickhoefler/dockerfilegraph:0.0.0
+
+      - name: Run the Alpine-based Docker image without flags
+        run: |
+          cd example
+          docker run \
+            --workdir /workspace \
+            --volume "$(pwd)":/workspace \
+            ghcr.io/patrickhoefler/dockerfilegraph:alpine-0.0.0
 
       - name: Run the Docker image with --help
         run: |
