@@ -43,7 +43,7 @@ jobs:
           docker run \
             --workdir /workspace \
             --volume "$(pwd)":/workspace \
-            ghcr.io/patrickhoefler/dockerfilegraph:alpine-0.0.0
+            ghcr.io/patrickhoefler/dockerfilegraph:0.0.0-alpine
 
       - name: Run the Docker image with --help
         run: |

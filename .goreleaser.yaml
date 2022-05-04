@@ -22,10 +22,10 @@ dockers:
   - dockerfile: Dockerfile.alpine
     image_templates:
       - 'ghcr.io/patrickhoefler/dockerfilegraph:alpine'
-      - 'ghcr.io/patrickhoefler/dockerfilegraph:alpine-latest'
-      - 'ghcr.io/patrickhoefler/dockerfilegraph:alpine-{{ .Major }}'
-      - 'ghcr.io/patrickhoefler/dockerfilegraph:alpine-{{ .Major }}.{{ .Minor }}'
-      - 'ghcr.io/patrickhoefler/dockerfilegraph:alpine-{{ .Major }}.{{ .Minor }}.{{ .Patch }}'
+      - 'ghcr.io/patrickhoefler/dockerfilegraph:latest-alpine'
+      - 'ghcr.io/patrickhoefler/dockerfilegraph:{{ .Major }}-alpine'
+      - 'ghcr.io/patrickhoefler/dockerfilegraph:{{ .Major }}.{{ .Minor }}-alpine'
+      - 'ghcr.io/patrickhoefler/dockerfilegraph:{{ .Major }}.{{ .Minor }}.{{ .Patch }}-alpine'
 
 brews:
   - tap:
