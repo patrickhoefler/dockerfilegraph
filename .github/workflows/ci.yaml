@@ -54,6 +54,24 @@ jobs:
             ghcr.io/patrickhoefler/dockerfilegraph:0.0.0 \
             --help
 
+      - name: Run the Docker image with -o canon
+        run: |
+          cd example
+          docker run \
+            --workdir /workspace \
+            --volume "$(pwd)":/workspace \
+            ghcr.io/patrickhoefler/dockerfilegraph:0.0.0 \
+            -o canon
+
+      - name: Run the Docker image with -o dot
+        run: |
+          cd example
+          docker run \
+            --workdir /workspace \
+            --volume "$(pwd)":/workspace \
+            ghcr.io/patrickhoefler/dockerfilegraph:0.0.0 \
+            -o dot
+
       - name: Run the Docker image with -o pdf
         run: |
           cd example
@@ -128,6 +146,12 @@ jobs:
 
       - name: Run the binary with --help
         run: cd example && ../dockerfilegraph --help
+
+      - name: Run the binary with -o canon
+        run: cd example && ../dockerfilegraph -o canon
+
+      - name: Run the binary with -o dot
+        run: cd example && ../dockerfilegraph -o dot
 
       - name: Run the binary with -o pdf
         run: cd example && ../dockerfilegraph -o pdf
