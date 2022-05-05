@@ -100,7 +100,7 @@ func init() {
 		"Add a legend (default false)",
 	)
 
-	output = newEnum("pdf", "png")
+	output = newEnum("pdf", "canon", "dot", "png")
 	rootCmd.Flags().VarP(
 		&output,
 		"output",
