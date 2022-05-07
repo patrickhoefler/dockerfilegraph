@@ -1,0 +1,37 @@
+name: Lint & Test
+
+on:
+  workflow_call:
+
+jobs:
+  # lint:
+  #   runs-on: ubuntu-latest
+  #   steps:
+  #     - uses: actions/checkout@v3
+
+  #     - name: Set up Go
+  #       uses: actions/setup-go@v3
+  #       with:
+  #         go-version: '1.17'
+
+  #     - name: Run the linters
+  #       uses: golangci/golangci-lint-action@v3.1.0
+
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Set up Go
+        uses: actions/setup-go@v3
+        with:
+          go-version: '1.17'
+
+      - name: Run the tests and generate the coverage profile
+        run: go test ./... --coverprofile=cover.out
+
+      - name: Install gocovergate
+        run: go install github.com/patrickhoefler/gocovergate@latest
+
+      - name: Check the code coverage
+        run: gocovergate
