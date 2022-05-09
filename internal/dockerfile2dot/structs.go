@@ -13,6 +13,13 @@ type Stage struct {
 	ID      string    // numeric index based on the order of appearance in the Dockerfile
 	Name    string    // the part after the AS in the FROM line
 	WaitFor []WaitFor // dependencies of the stage
+	Layers	[]Layer	  // layers per stage
+}
+
+// Layer stores the changes compared to the image it’s based on within a multi-stage Dockerfile
+type Layer struct {
+	ID      string    // numeric index based on the order of appearance in the stage
+	Name    string    // display the command store in the layer
 }
 
 // BaseImage contains the ID of an external base images that a build stage depends on
