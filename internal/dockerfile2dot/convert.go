@@ -10,6 +10,13 @@ import (
 	"github.com/moby/buildkit/frontend/dockerfile/parser"
 )
 
+func storeDataInLayer(layerIndex int, child *parser.Node) Layer {
+	layer := Layer{}
+	layer.ID = fmt.Sprintf("%02d", layerIndex)
+	layer.Name = child.Value + "..."
+	return layer
+}
+
 func dockerfileToSimplifiedDockerfile(content []byte) SimplifiedDockerfile {
 	result, err := parser.Parse(bytes.NewReader(content))
 	if err != nil {
@@ -23,6 +30,9 @@ func dockerfileToSimplifiedDockerfile(content []byte) SimplifiedDockerfile {
 
 	// Add all stages
 	stageIndex := -1
+
+	// Add all layers
+	layerIndex := -1
 
 	for _, child := range result.AST.Children {
 		switch strings.ToUpper(child.Value) {
@@ -46,6 +56,11 @@ func dockerfileToSimplifiedDockerfile(content []byte) SimplifiedDockerfile {
 
 			simplifiedDockerfile.Stages = append(simplifiedDockerfile.Stages, stage)
 
+			// set layer index as stage index
+			layerIndex++
+			layer := storeDataInLayer(layerIndex, child)
+			simplifiedDockerfile.Stages[stageIndex].Layers = append(simplifiedDockerfile.Stages[stageIndex].Layers, layer)
+
 		case "COPY":
 			for _, flag := range child.Flags {
 				regex := regexp.MustCompile("--from=(.+)")
@@ -61,6 +76,11 @@ func dockerfileToSimplifiedDockerfile(content []byte) SimplifiedDockerfile {
 				}
 			}
 
+			// creates a layer struct with the child data
+			layerIndex++
+			layer := storeDataInLayer(layerIndex, child)
+			simplifiedDockerfile.Stages[stageIndex].Layers = append(simplifiedDockerfile.Stages[stageIndex].Layers, layer)
+
 		case "RUN":
 			for _, flag := range child.Flags {
 				regex := regexp.MustCompile("--mount=type=cache,.*from=(.+?)[, ]")
@@ -75,6 +95,24 @@ func dockerfileToSimplifiedDockerfile(content []byte) SimplifiedDockerfile {
 					)
 				}
 			}
+
+			// creates a layer struct with the child data
+			layerIndex++
+			layer := storeDataInLayer(layerIndex, child)
+			simplifiedDockerfile.Stages[stageIndex].Layers = append(simplifiedDockerfile.Stages[stageIndex].Layers, layer)
+
+		default:
+			// creates a layer struct with the child data
+			layerIndex++
+			layer := storeDataInLayer(layerIndex, child)
+
+			// check if the current stages array is empty
+			// this usually happens when ARGs are provided before a FROM statement
+			if len(simplifiedDockerfile.Stages) == 0 {
+				simplifiedDockerfile.LayersNotStage = append(simplifiedDockerfile.LayersNotStage, layer)
+				break
+			}
+			simplifiedDockerfile.Stages[stageIndex].Layers = append(simplifiedDockerfile.Stages[stageIndex].Layers, layer)
 		}
 	}
 

@@ -113,6 +113,6 @@ func init() {
 		"layers",
 		"s",
 		false,
-		"Add layers per stage (default false)",
+		"display all layers (default false)",
 	)
 }
