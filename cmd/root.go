@@ -16,6 +16,7 @@ var (
 	// Used for flags.
 	dpi    int
 	legend bool
+	layers bool
 	output enum
 
 	rootCmd = &cobra.Command{
@@ -38,7 +39,7 @@ It outputs a graph representation of the build process.`,
 			}
 			defer os.Remove(dotFile.Name())
 
-			dotFileContent := dockerfile2dot.BuildDotFile(dockerfile, legend)
+			dotFileContent := dockerfile2dot.BuildDotFile(dockerfile, legend, layers)
 
 			_, err = dotFile.Write([]byte(dotFileContent))
 			if err != nil {
@@ -105,5 +106,13 @@ func init() {
 		"output",
 		"o",
 		"output file format, one of: "+strings.Join(output.AllowedValues(), ", "),
+	)
+
+	rootCmd.Flags().BoolVarP(
+		&layers,
+		"layers",
+		"s",
+		false,
+		"Add layers per stage (default false)",
 	)
 }

@@ -5,7 +5,7 @@ import (
 )
 
 // BuildDotFile builds a GraphViz .dot file from a Google Cloud Build configuration
-func BuildDotFile(simplifiedDockerfile SimplifiedDockerfile, legend bool) string {
+func BuildDotFile(simplifiedDockerfile SimplifiedDockerfile, legend bool, layers bool) string {
 	graph := gographviz.NewEscape()
 	graph.SetName("G")
 	graph.SetDir(true)
