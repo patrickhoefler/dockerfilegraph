@@ -1,0 +1,23 @@
+linters:
+  enable:
+    - gocyclo
+    - gofmt
+    - govet
+    - ineffassign
+    - misspell
+    - revive
+    - staticcheck
+
+  disable:
+    - errcheck # temporarly disabled, reenable asap
+
+linters-settings:
+  gocyclo:
+    min-complexity: 15
+
+issues:
+  include:
+    - EXC0012
+    - EXC0013
+    - EXC0014
+    - EXC0015
