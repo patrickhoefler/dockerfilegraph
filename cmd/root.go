@@ -89,7 +89,7 @@ func init() {
 		"dpi",
 		"d",
 		96, // the default dpi setting of Graphviz
-		"Dots per inch of the PNG export",
+		"dots per inch of the PNG export",
 	)
 
 	rootCmd.Flags().BoolVarP(
@@ -97,7 +97,7 @@ func init() {
 		"legend",
 		"l",
 		false,
-		"Add a legend (default false)",
+		"add a legend (default false)",
 	)
 
 	output = newEnum("pdf", "canon", "dot", "png")
@@ -105,6 +105,6 @@ func init() {
 		&output,
 		"output",
 		"o",
-		"Output file format. One of: "+strings.Join(output.AllowedValues(), ", "),
+		"output file format, one of: "+strings.Join(output.AllowedValues(), ", "),
 	)
 }
