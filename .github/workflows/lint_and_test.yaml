@@ -15,7 +15,7 @@ jobs:
           go-version: '1.17'
 
       - name: Run the linters
-        uses: golangci/golangci-lint-action@v3.1.0
+        uses: golangci/golangci-lint-action@v3.2.0
 
   test:
     runs-on: ubuntu-latest
