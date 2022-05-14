@@ -94,10 +94,10 @@ Usage:
   dockerfilegraph [flags]
 
 Flags:
-  -d, --dpi int   Dots per inch of the PNG export (default 96)
+  -d, --dpi int   dots per inch of the PNG export (default 96)
   -h, --help      help for dockerfilegraph
-  -l, --legend    Add a legend (default false)
-  -o, --output    Output file format. One of: canon, dot, pdf, png (default pdf)
+  -l, --legend    add a legend (default false)
+  -o, --output    output file format, one of: canon, dot, pdf, png (default pdf)
 ```
 
 ## License
