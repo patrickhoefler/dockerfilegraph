@@ -92,10 +92,9 @@ func init() {
 		"dots per inch of the PNG export",
 	)
 
-	rootCmd.Flags().BoolVarP(
+	rootCmd.Flags().BoolVar(
 		&legend,
 		"legend",
-		"l",
 		false,
 		"add a legend (default false)",
 	)
