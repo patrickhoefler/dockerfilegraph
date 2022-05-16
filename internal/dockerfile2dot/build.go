@@ -7,46 +7,46 @@ import (
 // BuildDotFile builds a GraphViz .dot file from a Google Cloud Build configuration
 func BuildDotFile(simplifiedDockerfile SimplifiedDockerfile, legend bool, layers bool) string {
 	graph := gographviz.NewEscape()
-	graph.SetName("G")
-	graph.SetDir(true)
-	graph.AddAttr("G", "rankdir", "LR")
-	graph.AddAttr("G", "nodesep", "1")
+	_ = graph.SetName("G")
+	_ = graph.SetDir(true)
+	_ = graph.AddAttr("G", "rankdir", "LR")
+	_ = graph.AddAttr("G", "nodesep", "1")
 
 	if legend {
-		graph.AddSubGraph("G", "cluster_legend", nil)
+		_ = graph.AddSubGraph("G", "cluster_legend", nil)
 
-		graph.AddNode("cluster_legend", "key",
+		_ = graph.AddNode("cluster_legend", "key",
 			map[string]string{
 				"shape":    "plaintext",
 				"fontname": "monospace",
 				"fontsize": "10",
 				"label": `<<table border="0" cellpadding="2" cellspacing="0" cellborder="0">
-      <tr><td align="right" port="i0">FROM&nbsp;...&nbsp;</td></tr>
-      <tr><td align="right" port="i1">COPY --from=...&nbsp;</td></tr>
-      <tr><td align="right" port="i2">RUN --mount=type=cache,from=...&nbsp;</td></tr>
-      </table>>`,
+	<tr><td align="right" port="i0">FROM&nbsp;...&nbsp;</td></tr>
+	<tr><td align="right" port="i1">COPY --from=...&nbsp;</td></tr>
+	<tr><td align="right" port="i2">RUN --mount=type=cache,from=...&nbsp;</td></tr>
+</table>>`,
 			},
 		)
-		graph.AddNode("cluster_legend", "key2",
+		_ = graph.AddNode("cluster_legend", "key2",
 			map[string]string{
 				"shape":    "plaintext",
 				"fontname": "monospace",
 				"fontsize": "10",
 				"label": `<<table border="0" cellpadding="2" cellspacing="0" cellborder="0">
-					<tr><td port="i0">&nbsp;</td></tr>
-					<tr><td port="i1">&nbsp;</td></tr>
-					<tr><td port="i2">&nbsp;</td></tr>
-					</table>>`,
+	<tr><td port="i0">&nbsp;</td></tr>
+	<tr><td port="i1">&nbsp;</td></tr>
+	<tr><td port="i2">&nbsp;</td></tr>
+</table>>`,
 			},
 		)
 
-		graph.AddPortEdge("key", "i0:e", "key2", "i0:w", true, nil)
-		graph.AddPortEdge("key", "i1:e", "key2", "i1:w", true, map[string]string{"arrowhead": "empty"})
-		graph.AddPortEdge("key", "i2:e", "key2", "i2:w", true, map[string]string{"arrowhead": "ediamond"})
+		_ = graph.AddPortEdge("key", "i0:e", "key2", "i0:w", true, nil)
+		_ = graph.AddPortEdge("key", "i1:e", "key2", "i1:w", true, map[string]string{"arrowhead": "empty"})
+		_ = graph.AddPortEdge("key", "i2:e", "key2", "i2:w", true, map[string]string{"arrowhead": "ediamond"})
 	}
 
 	for _, baseImage := range simplifiedDockerfile.BaseImages {
-		graph.AddNode("G", "\""+baseImage.ID+"\"", map[string]string{
+		_ = graph.AddNode("G", "\""+baseImage.ID+"\"", map[string]string{
 			"shape":     "Mrecord",
 			"width":     "2",
 			"style":     "dashed",
@@ -68,22 +68,22 @@ func BuildDotFile(simplifiedDockerfile SimplifiedDockerfile, legend bool, layers
 			attrs["fillcolor"] = "grey90"
 		}
 
-		graph.AddNode("G", "\""+stage.ID+"\"", attrs)
+		_ = graph.AddNode("G", "\""+stage.ID+"\"", attrs)
 
 		// draw layers per stage
 		if layers {
-			graph.AddSubGraph("G", "cluster_"+stage.ID, map[string]string{
+			_ = graph.AddSubGraph("G", "cluster_"+stage.ID, map[string]string{
 				"label": getStageLabel(stage),
 				"style": "rounded",
 			})
 			attrs["style"] = "invis"
-			graph.AddNode("cluster_"+stage.ID, "\""+stage.ID+"\"", attrs)
-			graph.AddAttr("G", "nodesep", "0.03")
+			_ = graph.AddNode("cluster_"+stage.ID, "\""+stage.ID+"\"", attrs)
+			_ = graph.AddAttr("G", "nodesep", "0.03")
 
 			for _, layer := range stage.Layers {
 				attrs["label"] = "\"" + layer.Name + "\""
 				attrs["style"] = "dashed"
-				graph.AddNode("cluster_"+stage.ID, "stage_"+stage.ID+"_layer_"+layer.ID, attrs)
+				_ = graph.AddNode("cluster_"+stage.ID, "stage_"+stage.ID+"_layer_"+layer.ID, attrs)
 			}
 		}
 
@@ -99,7 +99,7 @@ func BuildDotFile(simplifiedDockerfile SimplifiedDockerfile, legend bool, layers
 				edgeAttrs["arrowhead"] = "ediamond"
 			}
 
-			graph.AddEdge(
+			_ = graph.AddEdge(
 				"\""+getRealStageID(simplifiedDockerfile, waitFor.ID)+"\"",
 				"\""+stage.ID+"\"",
 				true,
@@ -109,9 +109,9 @@ func BuildDotFile(simplifiedDockerfile SimplifiedDockerfile, legend bool, layers
 	}
 	if layers {
 		if len(simplifiedDockerfile.LayersNotStage) > 0 {
-			graph.AddSubGraph("G", "cluster_layers_not_stage", map[string]string{"label": "Before First Stage"})
+			_ = graph.AddSubGraph("G", "cluster_layers_not_stage", map[string]string{"label": "Before First Stage"})
 			for _, layerNotStage := range simplifiedDockerfile.LayersNotStage {
-				graph.AddNode("cluster_layers_not_stage", "layer_not_stage_"+layerNotStage.ID, map[string]string{
+				_ = graph.AddNode("cluster_layers_not_stage", "layer_not_stage_"+layerNotStage.ID, map[string]string{
 					"label": layerNotStage.Name,
 					"shape": "Mrecord",
 					"width": "2",

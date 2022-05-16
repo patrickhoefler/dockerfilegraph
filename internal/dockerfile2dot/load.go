@@ -2,28 +2,22 @@ package dockerfile2dot
 
 import (
 	"errors"
-	"log"
-	"os"
+	"io/fs"
 
 	"github.com/spf13/afero"
 )
 
 // LoadAndParseDockerfile looks for the Dockerfile and returns a SimplifiedDockerfile
-func LoadAndParseDockerfile() (simplifiedDockerfile SimplifiedDockerfile, err error) {
-	return loadAndParseDockerfile(afero.NewOsFs())
-}
-
-func loadAndParseDockerfile(AppFs afero.Fs) (SimplifiedDockerfile, error) {
+func LoadAndParseDockerfile(inputFS afero.Fs) (SimplifiedDockerfile, error) {
 	for _, filename := range []string{"Dockerfile"} {
-		content, err := afero.ReadFile(AppFs, filename)
+		content, err := afero.ReadFile(inputFS, filename)
 		if err != nil {
-			if os.IsNotExist(err) {
+			if errors.Is(err, fs.ErrNotExist) {
 				continue
 			} else {
-				log.Fatal(err)
+				panic(err)
 			}
 		}
-
 		return dockerfileToSimplifiedDockerfile(content), nil
 	}
 
