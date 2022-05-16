@@ -29,6 +29,9 @@ func Test_dockerfileToSimplifiedDockerfile(t *testing.T) {
 						ID: "0", WaitFor: []WaitFor{
 							{ID: "scratch", Type: waitForType(from)},
 						},
+						Layers: []Layer{
+							{ID: "00", Name: "FROM..."},
+						},
 					},
 				},
 			},
@@ -53,6 +56,9 @@ func Test_dockerfileToSimplifiedDockerfile(t *testing.T) {
 						ID: "0", Name: "base", WaitFor: []WaitFor{
 							{ID: "ubuntu", Type: waitForType(from)},
 						},
+						Layers: []Layer{
+							{ID: "00", Name: "FROM..."},
+						},
 					},
 					{
 						ID: "1", WaitFor: []WaitFor{
@@ -61,7 +67,7 @@ func Test_dockerfileToSimplifiedDockerfile(t *testing.T) {
 							{ID: "buildcache", Type: waitForType(runMountTypeCache)},
 						},
 						Layers: []Layer{
-							{ID: "01", Name: "COPY..."}, {ID: "02", Name: "RUN..."},
+							{ID: "01", Name: "FROM..."}, {ID: "02", Name: "COPY..."}, {ID: "03", Name: "RUN..."},
 						},
 					},
 				},
@@ -88,6 +94,9 @@ func Test_dockerfileToSimplifiedDockerfile(t *testing.T) {
 						ID: "0", Name: "base", WaitFor: []WaitFor{
 							{ID: "ubuntu:${UBUNTU_VERSION}", Type: waitForType(from)},
 						},
+						Layers: []Layer{
+							{ID: "01", Name: "FROM..."},
+						},
 					},
 					{
 						ID: "1", WaitFor: []WaitFor{
@@ -96,7 +105,7 @@ func Test_dockerfileToSimplifiedDockerfile(t *testing.T) {
 							{ID: "buildcache", Type: waitForType(runMountTypeCache)},
 						},
 						Layers: []Layer{
-							{ID: "01", Name: "COPY..."}, {ID: "02", Name: "RUN..."},
+							{ID: "02", Name: "FROM..."}, {ID: "03", Name: "COPY..."}, {ID: "04", Name: "RUN..."},
 						},
 					},
 				},
