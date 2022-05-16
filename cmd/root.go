@@ -108,10 +108,9 @@ func init() {
 		"output file format, one of: "+strings.Join(output.AllowedValues(), ", "),
 	)
 
-	rootCmd.Flags().BoolVarP(
+	rootCmd.Flags().BoolVar(
 		&layers,
 		"layers",
-		"s",
 		false,
 		"display all layers (default false)",
 	)
