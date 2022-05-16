@@ -33,6 +33,12 @@ You can add an optional legend to the graph and change the output format and res
 
 ![Example output including a legend](https://user-images.githubusercontent.com/547220/143328161-dd80b5ef-5960-4023-b74e-e7b28cd31dcb.png)
 
+---
+
+### Including layers per stage
+
+![Example output including layer per stage](https://user-images.githubusercontent.com/35694200/168588978-d0386eaf-e79b-45d8-a6e1-b99a4771ca05.png)
+
 ## Getting Started
 
 ### Prerequisites
@@ -96,7 +102,8 @@ Usage:
 Flags:
   -d, --dpi int   dots per inch of the PNG export (default 96)
   -h, --help      help for dockerfilegraph
-  -l, --legend    add a legend (default false)
+      --layers    display all layers (default false)
+      --legend    add a legend (default false)
   -o, --output    output file format, one of: canon, dot, pdf, png (default pdf)
 ```
 
