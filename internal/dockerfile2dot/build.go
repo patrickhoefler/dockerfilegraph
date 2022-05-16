@@ -5,7 +5,7 @@ import (
 )
 
 // BuildDotFile builds a GraphViz .dot file from a Google Cloud Build configuration
-func BuildDotFile(simplifiedDockerfile SimplifiedDockerfile, legend bool) string {
+func BuildDotFile(simplifiedDockerfile SimplifiedDockerfile, legend bool, layers bool) string {
 	graph := gographviz.NewEscape()
 	graph.SetName("G")
 	graph.SetDir(true)
@@ -70,6 +70,23 @@ func BuildDotFile(simplifiedDockerfile SimplifiedDockerfile, legend bool) string
 
 		graph.AddNode("G", "\""+stage.ID+"\"", attrs)
 
+		// draw layers per stage
+		if layers {
+			graph.AddSubGraph("G", "cluster_"+stage.ID, map[string]string{
+				"label": getStageLabel(stage),
+				"style": "rounded",
+			})
+			attrs["style"] = "invis"
+			graph.AddNode("cluster_"+stage.ID, "\""+stage.ID+"\"", attrs)
+			graph.AddAttr("G", "nodesep", "0.03")
+
+			for _, layer := range stage.Layers {
+				attrs["label"] = "\"" + layer.Name + "\""
+				attrs["style"] = "dashed"
+				graph.AddNode("cluster_"+stage.ID, "stage_"+stage.ID+"_layer_"+layer.ID, attrs)
+			}
+		}
+
 		for _, waitFor := range stage.WaitFor {
 			if waitFor.ID == "" {
 				continue
@@ -88,6 +105,18 @@ func BuildDotFile(simplifiedDockerfile SimplifiedDockerfile, legend bool) string
 				true,
 				edgeAttrs,
 			)
+		}
+	}
+	if layers {
+		if len(simplifiedDockerfile.LayersNotStage) > 0 {
+			graph.AddSubGraph("G", "cluster_layers_not_stage", map[string]string{"label": "Before First Stage"})
+			for _, layerNotStage := range simplifiedDockerfile.LayersNotStage {
+				graph.AddNode("cluster_layers_not_stage", "layer_not_stage_"+layerNotStage.ID, map[string]string{
+					"label": layerNotStage.Name,
+					"shape": "Mrecord",
+					"width": "2",
+				})
+			}
 		}
 	}
 
