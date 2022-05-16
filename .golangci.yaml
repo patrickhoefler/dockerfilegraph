@@ -8,9 +8,6 @@ linters:
     - revive
     - staticcheck
 
-  disable:
-    - errcheck # temporarly disabled, reenable asap
-
 linters-settings:
   gocyclo:
     min-complexity: 15

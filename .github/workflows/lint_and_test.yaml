@@ -27,6 +27,9 @@ jobs:
         with:
           go-version: '1.17'
 
+      - name: Install graphviz
+        run: sudo apt install --no-install-recommends -y graphviz
+
       - name: Run the tests and generate the coverage profile
         run: go test ./... --coverprofile=cover.out
 
@@ -35,3 +38,99 @@ jobs:
 
       - name: Check the code coverage
         run: gocovergate
+
+  build-native:
+    strategy:
+      matrix:
+        os: [macos-latest, ubuntu-latest, windows-latest]
+    runs-on: ${{ matrix.os }}
+    needs: [lint, test]
+    steps:
+      - name: Install Go
+        uses: actions/setup-go@v3
+        with:
+          go-version: '1.17'
+
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Build
+        run: go build
+
+      - name: '[macOS] Install graphviz'
+        if: runner.os == 'macOS'
+        run: brew install graphviz
+
+      - name: '[Ubuntu] Install graphviz'
+        if: runner.os == 'Linux'
+        run: sudo apt install --no-install-recommends -y graphviz
+
+      - name: '[Windows] Install graphviz'
+        if: runner.os == 'Windows'
+        run: choco install graphviz --no-progress
+
+      # Smoke tests
+      - name: Run the binary without flags
+        run: cd example && ../dockerfilegraph
+
+      - name: Run the binary with flags
+        run: cd example && ../dockerfilegraph --legend --output png --dpi 200
+
+  build-images:
+    runs-on: ubuntu-latest
+    needs: [lint, test]
+    steps:
+      - name: Install Go
+        uses: actions/setup-go@v3
+        with:
+          go-version: '1.17'
+
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Build binaries and Docker image with GoReleaser
+        uses: goreleaser/goreleaser-action@v2
+        with:
+          args: release --snapshot --skip-publish
+
+      - name: Make example directory writable for all users
+        run: chmod -R o+w example
+
+      # Smoke tests
+      - name: Run the Docker image without flags
+        run: |
+          cd example
+          docker run \
+            --workdir /workspace \
+            --volume "$(pwd)":/workspace \
+            ghcr.io/patrickhoefler/dockerfilegraph:0.0.0
+
+      - name: Run the Alpine-based Docker image without flags
+        run: |
+          cd example
+          docker run \
+            --workdir /workspace \
+            --volume "$(pwd)":/workspace \
+            ghcr.io/patrickhoefler/dockerfilegraph:0.0.0-alpine
+
+      - name: Run the Docker image with flags
+        run: |
+          cd example
+          docker run \
+            --workdir /workspace \
+            --volume "$(pwd)":/workspace \
+            ghcr.io/patrickhoefler/dockerfilegraph:0.0.0 \
+            --legend \
+            --output png \
+            --dpi 200
+
+      - name: Run the Alpine-based Docker image with flags
+        run: |
+          cd example
+          docker run \
+            --workdir /workspace \
+            --volume "$(pwd)":/workspace \
+            ghcr.io/patrickhoefler/dockerfilegraph:0.0.0-alpine \
+            --legend \
+            --output png \
+            --dpi 200

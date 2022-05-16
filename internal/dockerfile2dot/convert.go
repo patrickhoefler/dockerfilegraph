@@ -3,7 +3,6 @@ package dockerfile2dot
 import (
 	"bytes"
 	"fmt"
-	"log"
 	"regexp"
 	"strings"
 
@@ -20,7 +19,7 @@ func storeDataInLayer(layerIndex int, child *parser.Node) Layer {
 func dockerfileToSimplifiedDockerfile(content []byte) SimplifiedDockerfile {
 	result, err := parser.Parse(bytes.NewReader(content))
 	if err != nil {
-		log.Fatal(err)
+		panic(err)
 	}
 
 	simplifiedDockerfile := SimplifiedDockerfile{}

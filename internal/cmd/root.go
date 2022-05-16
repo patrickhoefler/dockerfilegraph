@@ -2,13 +2,14 @@ package cmd
 
 import (
 	"fmt"
+	"io"
 	"io/ioutil"
-	"log"
 	"os"
 	"os/exec"
 	"strings"
 
 	"github.com/patrickhoefler/dockerfilegraph/internal/dockerfile2dot"
+	"github.com/spf13/afero"
 	"github.com/spf13/cobra"
 )
 
@@ -18,24 +19,34 @@ var (
 	legend bool
 	layers bool
 	output enum
+)
 
-	rootCmd = &cobra.Command{
+// dfgWriter is a writer that prints to stdout. When testing, we
+// replace this with a writer that prints to a buffer.
+type dfgWriter struct{}
+
+func (d dfgWriter) Write(p []byte) (n int, err error) {
+	fmt.Print(string(p))
+	return len(p), nil
+}
+
+// NewRootCmd creates a new root command.
+func NewRootCmd(dfgWriter io.Writer, inputFS afero.Fs) *cobra.Command {
+	rootCmd := &cobra.Command{
 		Use:   "dockerfilegraph",
 		Short: "Visualize your multi-stage Dockerfile",
 		Long: `dockerfilegraph visualizes your multi-stage Dockerfile.
 It outputs a graph representation of the build process.`,
 		Args: cobra.NoArgs,
-		Run: func(cmd *cobra.Command, args []string) {
-			log.SetFlags(0)
-
-			dockerfile, err := dockerfile2dot.LoadAndParseDockerfile()
+		RunE: func(cmd *cobra.Command, args []string) (err error) {
+			dockerfile, err := dockerfile2dot.LoadAndParseDockerfile(inputFS)
 			if err != nil {
-				log.Fatal(err)
+				return
 			}
 
 			dotFile, err := ioutil.TempFile("", "dockerfile.*.dot")
 			if err != nil {
-				log.Fatal(err)
+				return
 			}
 			defer os.Remove(dotFile.Name())
 
@@ -43,12 +54,12 @@ It outputs a graph representation of the build process.`,
 
 			_, err = dotFile.Write([]byte(dotFileContent))
 			if err != nil {
-				log.Fatal(err)
+				return
 			}
 
 			err = dotFile.Close()
 			if err != nil {
-				log.Fatal(err)
+				return
 			}
 
 			filename := "Dockerfile." + output.String()
@@ -64,27 +75,26 @@ It outputs a graph representation of the build process.`,
 
 			out, err := exec.Command("dot", dotArgs...).CombinedOutput()
 			if err != nil {
-				log.Println("Oh no, something went wrong!")
-				log.Println()
-				log.Println("This is the Graphviz file that was generated:")
-				log.Println()
-				log.Println(dotFileContent)
-				log.Println("The following error was reported by Graphviz:")
-				log.Println()
-				log.Fatal(string(out))
+				fmt.Fprintf(dfgWriter,
+					`Oh no, something went wrong while generating the graph!
+
+					This is the Graphviz file that was generated:
+
+					%s
+					The following error was reported by Graphviz:
+
+					%s`,
+					dotFileContent, string(out),
+				)
+				os.Exit(1)
 			}
 
-			fmt.Println("Successfully created " + filename)
+			fmt.Fprintf(dfgWriter, "Successfully created %s", filename)
+
+			return
 		},
 	}
-)
 
-// Execute executes the root command.
-func Execute() error {
-	return rootCmd.Execute()
-}
-
-func init() {
 	rootCmd.Flags().IntVarP(
 		&dpi,
 		"dpi",
@@ -114,4 +124,15 @@ func init() {
 		false,
 		"display all layers (default false)",
 	)
+
+	return rootCmd
+}
+
+// Execute executes the root command.
+func Execute() {
+	err := NewRootCmd(dfgWriter{}, afero.NewOsFs()).Execute()
+	if err != nil {
+		// Cobra prints the error message
+		os.Exit(1)
+	}
 }
