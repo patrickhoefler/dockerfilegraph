@@ -1,9 +1,11 @@
 package dockerfile2dot
 
 import (
-	"github.com/moby/buildkit/frontend/dockerfile/parser"
 	"reflect"
 	"testing"
+
+	"github.com/google/go-cmp/cmp"
+	"github.com/moby/buildkit/frontend/dockerfile/parser"
 )
 
 func Test_dockerfileToSimplifiedDockerfile(t *testing.T) {
@@ -117,8 +119,13 @@ func Test_dockerfileToSimplifiedDockerfile(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := dockerfileToSimplifiedDockerfile(tt.args.content); !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("dockerfileToSimplifiedDockerfile()\ngot  %+v\nwant %+v", got, tt.want)
+			got, err := dockerfileToSimplifiedDockerfile(tt.args.content)
+			if err != nil {
+				t.Errorf("dockerfileToSimplifiedDockerfile() error = %v", err)
+				return
+			}
+			if diff := cmp.Diff(tt.want, got); diff != "" {
+				t.Errorf("Output mismatch (-want +got):\n%s", diff)
 			}
 		})
 	}

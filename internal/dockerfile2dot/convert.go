@@ -16,13 +16,13 @@ func storeDataInLayer(layerIndex int, child *parser.Node) Layer {
 	return layer
 }
 
-func dockerfileToSimplifiedDockerfile(content []byte) SimplifiedDockerfile {
+func dockerfileToSimplifiedDockerfile(content []byte) (
+	simplifiedDockerfile SimplifiedDockerfile, err error,
+) {
 	result, err := parser.Parse(bytes.NewReader(content))
 	if err != nil {
-		panic(err)
+		return
 	}
-
-	simplifiedDockerfile := SimplifiedDockerfile{}
 
 	// Set that holds all stage IDs
 	stages := make(map[string]struct{})
@@ -132,5 +132,5 @@ func dockerfileToSimplifiedDockerfile(content []byte) SimplifiedDockerfile {
 		}
 	}
 
-	return simplifiedDockerfile
+	return
 }
