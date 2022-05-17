@@ -18,7 +18,7 @@ func LoadAndParseDockerfile(inputFS afero.Fs) (SimplifiedDockerfile, error) {
 				panic(err)
 			}
 		}
-		return dockerfileToSimplifiedDockerfile(content), nil
+		return dockerfileToSimplifiedDockerfile(content)
 	}
 
 	return SimplifiedDockerfile{}, errors.New("could not find any Dockerfile in the current working directory")

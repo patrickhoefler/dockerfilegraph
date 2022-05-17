@@ -22,10 +22,7 @@ type test struct {
 	wantOutFileContent string
 }
 
-var usage = `dockerfilegraph visualizes your multi-stage Dockerfile.
-It outputs a graph representation of the build process.
-
-Usage:
+var usage = `Usage:
   dockerfilegraph [flags]
 
 Flags:
@@ -36,12 +33,47 @@ Flags:
   -o, --output    output file format, one of: canon, dot, pdf, png (default pdf)
 `
 
+// Taken from example/Dockerfile.
+var dockerfileContent = `
+### TLS root certs and non-root user
+FROM ubuntu:latest AS ubuntu
+
+RUN \
+  # Note that the lack of a "lock" mechanism for apt dependencies
+  # currently prevents a fully reproducible build
+  apt-get update \
+  && apt-get install -y --no-install-recommends \
+  # Install TLS root certificates
+  ca-certificates \
+  && rm -rf /var/lib/apt/lists/*
+
+# ---
+
+FROM golang:1.18 AS build
+RUN --mount=type=cache,from=buildcache,source=/go/pkg/mod/cache/,target=/go/pkg/mod/cache/ go build
+
+# ---
+
+### Release image
+FROM scratch AS release
+
+# Copy the TLS certificates for encrypted network communication
+COPY --from=ubuntu /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/ca-certificates.crt
+
+COPY --from=build . .
+
+ENTRYPOINT ["/example"]
+`
+
 func TestRootCmd(t *testing.T) {
 	tests := []test{
 		{
 			name:    "help flag",
 			cliArgs: []string{"--help"},
-			wantOut: usage,
+			wantOut: `dockerfilegraph visualizes your multi-stage Dockerfile.
+It outputs a graph representation of the build process.
+
+` + usage,
 		},
 		{
 			name:    "no args",
@@ -49,9 +81,10 @@ func TestRootCmd(t *testing.T) {
 		},
 		{
 			name:              "empty Dockerfile",
-			dockerfileContent: "",
-			wantOut:           "Successfully created Dockerfile.pdf",
-			wantOutFile:       "Dockerfile.pdf",
+			dockerfileContent: " ", // space is needed so that the default Dockerfile is not used
+			wantErr:           true,
+			wantOut: `Error: file with no instructions
+` + usage + "\n",
 		},
 		{
 			name:        "output flag canon",
@@ -63,17 +96,43 @@ func TestRootCmd(t *testing.T) {
 		rankdir=LR
 	];
 	node [label="\N"];
+	"ubuntu:latest"	[color=grey20,
+		fontcolor=grey20,
+		shape=Mrecord,
+		style=dashed,
+		width=2];
+	0	[label=ubuntu,
+		shape=Mrecord,
+		width=2];
+	"ubuntu:latest" -> 0;
+	2	[fillcolor=grey90,
+		label=release,
+		shape=Mrecord,
+		style=filled,
+		width=2];
+	0 -> 2	[arrowhead=empty];
+	"golang:1.18"	[color=grey20,
+		fontcolor=grey20,
+		shape=Mrecord,
+		style=dashed,
+		width=2];
+	1	[label=build,
+		shape=Mrecord,
+		width=2];
+	"golang:1.18" -> 1;
+	1 -> 2	[arrowhead=empty];
+	buildcache	[color=grey20,
+		fontcolor=grey20,
+		shape=Mrecord,
+		style=dashed,
+		width=2];
+	buildcache -> 1	[arrowhead=ediamond];
 	scratch	[color=grey20,
 		fontcolor=grey20,
 		shape=Mrecord,
 		style=dashed,
 		width=2];
-	0	[fillcolor=grey90,
-		label=0,
-		shape=Mrecord,
-		style=filled,
-		width=2];
-	scratch -> 0;
+	scratch -> 2;
 }
 `,
 		},
@@ -132,17 +191,43 @@ func TestRootCmd(t *testing.T) {
 		key:i1:e -> key2:i1:w	[arrowhead=empty];
 		key:i2:e -> key2:i2:w	[arrowhead=ediamond];
 	}
+	"ubuntu:latest"	[color=grey20,
+		fontcolor=grey20,
+		shape=Mrecord,
+		style=dashed,
+		width=2];
+	0	[label=ubuntu,
+		shape=Mrecord,
+		width=2];
+	"ubuntu:latest" -> 0;
+	2	[fillcolor=grey90,
+		label=release,
+		shape=Mrecord,
+		style=filled,
+		width=2];
+	0 -> 2	[arrowhead=empty];
+	"golang:1.18"	[color=grey20,
+		fontcolor=grey20,
+		shape=Mrecord,
+		style=dashed,
+		width=2];
+	1	[label=build,
+		shape=Mrecord,
+		width=2];
+	"golang:1.18" -> 1;
+	1 -> 2	[arrowhead=empty];
+	buildcache	[color=grey20,
+		fontcolor=grey20,
+		shape=Mrecord,
+		style=dashed,
+		width=2];
+	buildcache -> 1	[arrowhead=ediamond];
 	scratch	[color=grey20,
 		fontcolor=grey20,
 		shape=Mrecord,
 		style=dashed,
 		width=2];
-	0	[fillcolor=grey90,
-		label=0,
-		shape=Mrecord,
-		style=filled,
-		width=2];
-	scratch -> 0;
+	scratch -> 2;
 }
 `,
 		},
@@ -152,7 +237,7 @@ func TestRootCmd(t *testing.T) {
 		// Create a fake filesystem for the input Dockerfile
 		inputFS := afero.NewMemMapFs()
 		if tt.dockerfileContent == "" {
-			tt.dockerfileContent = "FROM scratch"
+			tt.dockerfileContent = dockerfileContent
 		}
 		_ = afero.WriteFile(inputFS, "Dockerfile", []byte(tt.dockerfileContent), 0644)
 
@@ -207,7 +292,7 @@ func TestExecute(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			_ = os.WriteFile("Dockerfile", []byte("FROM scratch"), 0644)
+			_ = os.WriteFile("Dockerfile", []byte(dockerfileContent), 0644)
 
 			cmd.Execute()
 
