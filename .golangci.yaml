@@ -4,13 +4,14 @@ linters:
     - gofmt
     - govet
     - ineffassign
+    - lll
     - misspell
     - revive
     - staticcheck
 
 linters-settings:
   gocyclo:
-    min-complexity: 15
+    min-complexity: 16
 
 issues:
   include:

@@ -4,8 +4,10 @@ import (
 	"github.com/awalterschulze/gographviz"
 )
 
-// BuildDotFile builds a GraphViz .dot file from a Google Cloud Build configuration
-func BuildDotFile(simplifiedDockerfile SimplifiedDockerfile, legend bool, layers bool) string {
+// BuildDotFile builds a GraphViz .dot file from a simplified Dockerfile
+func BuildDotFile(
+	simplifiedDockerfile SimplifiedDockerfile, legend bool, layers bool,
+) string {
 	graph := gographviz.NewEscape()
 	_ = graph.SetName("G")
 	_ = graph.SetDir(true)
@@ -41,8 +43,14 @@ func BuildDotFile(simplifiedDockerfile SimplifiedDockerfile, legend bool, layers
 		)
 
 		_ = graph.AddPortEdge("key", "i0:e", "key2", "i0:w", true, nil)
-		_ = graph.AddPortEdge("key", "i1:e", "key2", "i1:w", true, map[string]string{"arrowhead": "empty"})
-		_ = graph.AddPortEdge("key", "i2:e", "key2", "i2:w", true, map[string]string{"arrowhead": "ediamond"})
+		_ = graph.AddPortEdge(
+			"key", "i1:e", "key2", "i1:w", true,
+			map[string]string{"arrowhead": "empty"},
+		)
+		_ = graph.AddPortEdge(
+			"key", "i2:e", "key2", "i2:w", true,
+			map[string]string{"arrowhead": "ediamond"},
+		)
 	}
 
 	for _, baseImage := range simplifiedDockerfile.BaseImages {
@@ -83,39 +91,52 @@ func BuildDotFile(simplifiedDockerfile SimplifiedDockerfile, legend bool, layers
 			for _, layer := range stage.Layers {
 				attrs["label"] = "\"" + layer.Name + "\""
 				attrs["style"] = "dashed"
-				_ = graph.AddNode("cluster_"+stage.ID, "stage_"+stage.ID+"_layer_"+layer.ID, attrs)
+				_ = graph.AddNode(
+					"cluster_"+stage.ID,
+					"stage_"+stage.ID+"_layer_"+layer.ID,
+					attrs,
+				)
 			}
 		}
 
-		for _, waitFor := range stage.WaitFor {
-			if waitFor.ID == "" {
+		for _, layer := range stage.Layers {
+			if layer.WaitFor.ID == "" {
 				continue
 			}
 
 			edgeAttrs := map[string]string{}
-			if waitFor.Type == waitForType(copy) {
+			if layer.WaitFor.Type == waitForType(copy) {
 				edgeAttrs["arrowhead"] = "empty"
-			} else if waitFor.Type == waitForType(runMountTypeCache) {
+			} else if layer.WaitFor.Type == waitForType(runMountTypeCache) {
 				edgeAttrs["arrowhead"] = "ediamond"
 			}
 
 			_ = graph.AddEdge(
-				"\""+getRealStageID(simplifiedDockerfile, waitFor.ID)+"\"",
+				"\""+getRealStageID(simplifiedDockerfile, layer.WaitFor.ID)+"\"",
 				"\""+stage.ID+"\"",
 				true,
 				edgeAttrs,
 			)
 		}
 	}
+
 	if layers {
-		if len(simplifiedDockerfile.LayersNotStage) > 0 {
-			_ = graph.AddSubGraph("G", "cluster_layers_not_stage", map[string]string{"label": "Before First Stage"})
-			for _, layerNotStage := range simplifiedDockerfile.LayersNotStage {
-				_ = graph.AddNode("cluster_layers_not_stage", "layer_not_stage_"+layerNotStage.ID, map[string]string{
-					"label": layerNotStage.Name,
-					"shape": "Mrecord",
-					"width": "2",
-				})
+		if len(simplifiedDockerfile.BeforeFirstStage) > 0 {
+			_ = graph.AddSubGraph(
+				"G",
+				"cluster_before_first_stage",
+				map[string]string{"label": "Before First Stage"},
+			)
+			for _, beforeFirstStage := range simplifiedDockerfile.BeforeFirstStage {
+				_ = graph.AddNode(
+					"cluster_before_first_stage",
+					"before_first_stage_"+beforeFirstStage.ID,
+					map[string]string{
+						"label": beforeFirstStage.Name,
+						"shape": "Mrecord",
+						"width": "2",
+					},
+				)
 			}
 		}
 	}
@@ -130,7 +151,9 @@ func getStageLabel(stage Stage) string {
 	return stage.ID
 }
 
-func getRealStageID(simplifiedDockerfile SimplifiedDockerfile, stageID string) string {
+func getRealStageID(
+	simplifiedDockerfile SimplifiedDockerfile, stageID string,
+) string {
 	// Look up the real stage id, could be either numeric or the "AS" alias
 	for _, stage := range simplifiedDockerfile.Stages {
 		if stageID == stage.ID || stageID == stage.Name {

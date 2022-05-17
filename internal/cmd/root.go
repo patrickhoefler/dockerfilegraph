@@ -89,7 +89,7 @@ It outputs a graph representation of the build process.`,
 				os.Exit(1)
 			}
 
-			fmt.Fprintf(dfgWriter, "Successfully created %s", filename)
+			fmt.Fprintf(dfgWriter, "Successfully created %s\n", filename)
 
 			return
 		},
