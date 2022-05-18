@@ -11,7 +11,7 @@ It creates a visual graph representation of the build process. The graph contain
 
 - All _build stages_
 - The _default build target_ highlighted in grey
-- _External base images_ with dashed borders
+- _External images_ with dashed borders
 
 The edges of the graph represent:
 

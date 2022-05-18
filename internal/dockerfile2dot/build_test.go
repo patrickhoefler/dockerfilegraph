@@ -17,22 +17,25 @@ func TestBuildDotFile(t *testing.T) {
 		wantContains string
 	}{
 		{
-			name: "simple test",
+			name: "legend",
 			args: args{
 				simplifiedDockerfile: SimplifiedDockerfile{
-					BaseImages: []BaseImage{
-						{ID: "build"},
-						{ID: "release"},
+					BeforeFirstStage: []Layer{
+						{
+							Label: "ARG...",
+						},
+					},
+					ExternalImages: []ExternalImage{
+						{Name: "build"},
+						{Name: "release"},
 					},
 					Stages: []Stage{
 						{
-							ID: "0",
 							Layers: []Layer{
 								{
-									ID:   "0",
-									Name: "FROM...",
+									Label: "FROM...",
 									WaitFor: WaitFor{
-										ID:   "build",
+										Name: "build",
 										Type: waitForType(from),
 									},
 								},
@@ -41,6 +44,36 @@ func TestBuildDotFile(t *testing.T) {
 					},
 				},
 				legend: true,
+			},
+			wantContains: "release",
+		},
+		{
+			name: "layers",
+			args: args{
+				simplifiedDockerfile: SimplifiedDockerfile{
+					BeforeFirstStage: []Layer{
+						{
+							Label: "ARG...",
+						},
+					},
+					ExternalImages: []ExternalImage{
+						{Name: "build"},
+						{Name: "release"},
+					},
+					Stages: []Stage{
+						{
+							Layers: []Layer{
+								{
+									Label: "FROM...",
+									WaitFor: WaitFor{
+										Name: "build",
+										Type: waitForType(from),
+									},
+								},
+							},
+						},
+					},
+				},
 				layers: true,
 			},
 			wantContains: "release",

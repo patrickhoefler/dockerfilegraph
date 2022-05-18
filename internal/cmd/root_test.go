@@ -92,47 +92,52 @@ It outputs a graph representation of the build process.
 			wantOut:     "Successfully created Dockerfile.canon\n",
 			wantOutFile: "Dockerfile.canon",
 			wantOutFileContent: `digraph G {
-	graph [nodesep=1,
+	graph [compound=true,
+		nodesep=1,
 		rankdir=LR
 	];
 	node [label="\N"];
-	"ubuntu:latest"	[color=grey20,
+	external_image_0	[color=grey20,
 		fontcolor=grey20,
+		label="ubuntu:latest",
 		shape=Mrecord,
 		style=dashed,
 		width=2];
-	0	[label=ubuntu,
+	stage_0	[label=ubuntu,
 		shape=Mrecord,
 		width=2];
-	"ubuntu:latest" -> 0;
-	2	[fillcolor=grey90,
+	external_image_0 -> stage_0;
+	stage_2	[fillcolor=grey90,
 		label=release,
 		shape=Mrecord,
 		style=filled,
 		width=2];
-	0 -> 2	[arrowhead=empty];
-	"golang:1.18"	[color=grey20,
+	stage_0 -> stage_2	[arrowhead=empty];
+	external_image_1	[color=grey20,
 		fontcolor=grey20,
+		label="golang:1.18",
 		shape=Mrecord,
 		style=dashed,
 		width=2];
-	1	[label=build,
+	stage_1	[label=build,
 		shape=Mrecord,
 		width=2];
-	"golang:1.18" -> 1;
-	1 -> 2	[arrowhead=empty];
-	buildcache	[color=grey20,
+	external_image_1 -> stage_1;
+	stage_1 -> stage_2	[arrowhead=empty];
+	external_image_2	[color=grey20,
 		fontcolor=grey20,
+		label=buildcache,
 		shape=Mrecord,
 		style=dashed,
 		width=2];
-	buildcache -> 1	[arrowhead=ediamond];
-	scratch	[color=grey20,
+	external_image_2 -> stage_1	[arrowhead=ediamond];
+	external_image_3	[color=grey20,
 		fontcolor=grey20,
+		label=scratch,
 		shape=Mrecord,
 		style=dashed,
 		width=2];
-	scratch -> 2;
+	external_image_3 -> stage_2;
 }
 `,
 		},
@@ -166,100 +171,113 @@ It outputs a graph representation of the build process.
 			wantOut:     "Successfully created Dockerfile.canon\n",
 			wantOutFile: "Dockerfile.canon",
 			wantOutFileContent: `digraph G {
-	graph [nodesep=0.03,
+	graph [compound=true,
+		nodesep=1,
 		rankdir=LR
 	];
 	node [label="\N"];
-	subgraph cluster_0 {
+	subgraph cluster_stage_0 {
 		graph [label=ubuntu,
-			style=rounded
+			margin=16
 		];
-		0	[label=ubuntu,
+		stage_0_layer_0	[fillcolor=white,
+			label="FROM ubuntu:lates...",
+			penwidth=0.5,
 			shape=Mrecord,
-			style=invis,
+			style=filled,
 			width=2];
-		stage_0_layer_0	[label="FROM...",
+		stage_0_layer_1	[fillcolor=white,
+			label="RUN   apt-get upd...",
+			penwidth=0.5,
 			shape=Mrecord,
-			style=dashed,
+			style=filled,
 			width=2];
-		stage_0_layer_1	[label="RUN...",
-			shape=Mrecord,
-			style=dashed,
-			width=2];
+		stage_0_layer_0 -> stage_0_layer_1;
 	}
-	subgraph cluster_1 {
+	subgraph cluster_stage_1 {
 		graph [label=build,
-			style=rounded
+			margin=16
 		];
-		1	[label=build,
+		stage_1_layer_0	[fillcolor=white,
+			label="FROM golang:1.18 ...",
+			penwidth=0.5,
 			shape=Mrecord,
-			style=invis,
+			style=filled,
 			width=2];
-		stage_1_layer_0	[label="FROM...",
+		stage_1_layer_1	[fillcolor=white,
+			label="RUN --mount=type=...",
+			penwidth=0.5,
 			shape=Mrecord,
-			style=dashed,
+			style=filled,
 			width=2];
-		stage_1_layer_1	[label="RUN...",
-			shape=Mrecord,
-			style=dashed,
-			width=2];
+		stage_1_layer_0 -> stage_1_layer_1;
 	}
-	subgraph cluster_2 {
-		graph [label=release,
-			style=rounded
-		];
-		2	[fillcolor=grey90,
+	subgraph cluster_stage_2 {
+		graph [fillcolor=grey90,
 			label=release,
+			margin=16,
+			style=filled
+		];
+		stage_2_layer_0	[fillcolor=white,
+			label="FROM scratch AS r...",
+			penwidth=0.5,
 			shape=Mrecord,
-			style=invis,
+			style=filled,
 			width=2];
-		stage_2_layer_0	[fillcolor=grey90,
-			label="FROM...",
+		stage_2_layer_1	[fillcolor=white,
+			label="COPY --from=ubunt...",
+			penwidth=0.5,
 			shape=Mrecord,
-			style=dashed,
+			style=filled,
 			width=2];
-		stage_2_layer_1	[fillcolor=grey90,
-			label="COPY...",
+		stage_2_layer_0 -> stage_2_layer_1;
+		stage_2_layer_2	[fillcolor=white,
+			label="COPY --from=build...",
+			penwidth=0.5,
 			shape=Mrecord,
-			style=dashed,
+			style=filled,
 			width=2];
-		stage_2_layer_2	[fillcolor=grey90,
-			label="COPY...",
+		stage_2_layer_1 -> stage_2_layer_2;
+		stage_2_layer_3	[fillcolor=white,
+			label="ENTRYPOINT ['/exa...",
+			penwidth=0.5,
 			shape=Mrecord,
-			style=dashed,
+			style=filled,
 			width=2];
-		stage_2_layer_3	[fillcolor=grey90,
-			label="ENTRYPOINT...",
-			shape=Mrecord,
-			style=dashed,
-			width=2];
+		stage_2_layer_2 -> stage_2_layer_3;
 	}
-	"ubuntu:latest"	[color=grey20,
+	stage_0_layer_1 -> stage_2_layer_1	[arrowhead=empty,
+		ltail=cluster_stage_0];
+	external_image_0	[color=grey20,
 		fontcolor=grey20,
+		label="ubuntu:latest",
 		shape=Mrecord,
 		style=dashed,
 		width=2];
-	"ubuntu:latest" -> 0;
-	0 -> 2	[arrowhead=empty];
-	"golang:1.18"	[color=grey20,
+	external_image_0 -> stage_0_layer_0;
+	stage_1_layer_1 -> stage_2_layer_2	[arrowhead=empty,
+		ltail=cluster_stage_1];
+	external_image_1	[color=grey20,
 		fontcolor=grey20,
+		label="golang:1.18",
 		shape=Mrecord,
 		style=dashed,
 		width=2];
-	"golang:1.18" -> 1;
-	1 -> 2	[arrowhead=empty];
-	buildcache	[color=grey20,
+	external_image_1 -> stage_1_layer_0;
+	external_image_2	[color=grey20,
 		fontcolor=grey20,
+		label=buildcache,
 		shape=Mrecord,
 		style=dashed,
 		width=2];
-	buildcache -> 1	[arrowhead=ediamond];
-	scratch	[color=grey20,
+	external_image_2 -> stage_1_layer_1	[arrowhead=ediamond];
+	external_image_3	[color=grey20,
 		fontcolor=grey20,
+		label=scratch,
 		shape=Mrecord,
 		style=dashed,
 		width=2];
-	scratch -> 2;
+	external_image_3 -> stage_2_layer_0;
 }
 `,
 		},
@@ -269,7 +287,8 @@ It outputs a graph representation of the build process.
 			wantOut:     "Successfully created Dockerfile.canon\n",
 			wantOutFile: "Dockerfile.canon",
 			wantOutFileContent: `digraph G {
-	graph [nodesep=1,
+	graph [compound=true,
+		nodesep=1,
 		rankdir=LR
 	];
 	node [label="\N"];
@@ -294,43 +313,47 @@ It outputs a graph representation of the build process.
 		key:i1:e -> key2:i1:w	[arrowhead=empty];
 		key:i2:e -> key2:i2:w	[arrowhead=ediamond];
 	}
-	"ubuntu:latest"	[color=grey20,
+	external_image_0	[color=grey20,
 		fontcolor=grey20,
+		label="ubuntu:latest",
 		shape=Mrecord,
 		style=dashed,
 		width=2];
-	0	[label=ubuntu,
+	stage_0	[label=ubuntu,
 		shape=Mrecord,
 		width=2];
-	"ubuntu:latest" -> 0;
-	2	[fillcolor=grey90,
+	external_image_0 -> stage_0;
+	stage_2	[fillcolor=grey90,
 		label=release,
 		shape=Mrecord,
 		style=filled,
 		width=2];
-	0 -> 2	[arrowhead=empty];
-	"golang:1.18"	[color=grey20,
+	stage_0 -> stage_2	[arrowhead=empty];
+	external_image_1	[color=grey20,
 		fontcolor=grey20,
+		label="golang:1.18",
 		shape=Mrecord,
 		style=dashed,
 		width=2];
-	1	[label=build,
+	stage_1	[label=build,
 		shape=Mrecord,
 		width=2];
-	"golang:1.18" -> 1;
-	1 -> 2	[arrowhead=empty];
-	buildcache	[color=grey20,
+	external_image_1 -> stage_1;
+	stage_1 -> stage_2	[arrowhead=empty];
+	external_image_2	[color=grey20,
 		fontcolor=grey20,
+		label=buildcache,
 		shape=Mrecord,
 		style=dashed,
 		width=2];
-	buildcache -> 1	[arrowhead=ediamond];
-	scratch	[color=grey20,
+	external_image_2 -> stage_1	[arrowhead=ediamond];
+	external_image_3	[color=grey20,
 		fontcolor=grey20,
+		label=scratch,
 		shape=Mrecord,
 		style=dashed,
 		width=2];
-	scratch -> 2;
+	external_image_3 -> stage_2;
 }
 `,
 		},

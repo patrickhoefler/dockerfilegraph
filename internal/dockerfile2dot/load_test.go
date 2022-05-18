@@ -34,15 +34,13 @@ func TestLoadAndParseDockerfile(t *testing.T) {
 				inputFS: dockerfileFS,
 			},
 			want: SimplifiedDockerfile{
-				BaseImages: []BaseImage{{ID: "scratch"}},
+				ExternalImages: []ExternalImage{{Name: "scratch"}},
 				Stages: []Stage{
 					{
-						ID: "0",
 						Layers: []Layer{
 							{
-								ID:      "0",
-								Name:    "FROM...",
-								WaitFor: WaitFor{ID: "scratch", Type: waitForType(from)}},
+								Label:   "FROM scratch",
+								WaitFor: WaitFor{Name: "scratch", Type: waitForType(from)}},
 						},
 					},
 				},
