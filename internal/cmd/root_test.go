@@ -77,7 +77,7 @@ It outputs a graph representation of the build process.
 		},
 		{
 			name:    "no args",
-			wantOut: "Successfully created Dockerfile.pdf",
+			wantOut: "Successfully created Dockerfile.pdf\n",
 		},
 		{
 			name:              "empty Dockerfile",
@@ -89,7 +89,7 @@ It outputs a graph representation of the build process.
 		{
 			name:        "output flag canon",
 			cliArgs:     []string{"--output", "canon"},
-			wantOut:     "Successfully created Dockerfile.canon",
+			wantOut:     "Successfully created Dockerfile.canon\n",
 			wantOutFile: "Dockerfile.canon",
 			wantOutFileContent: `digraph G {
 	graph [nodesep=1,
@@ -139,31 +139,134 @@ It outputs a graph representation of the build process.
 		{
 			name:        "output flag dot",
 			cliArgs:     []string{"--output", "dot"},
-			wantOut:     "Successfully created Dockerfile.dot",
+			wantOut:     "Successfully created Dockerfile.dot\n",
 			wantOutFile: "Dockerfile.dot",
 		},
 		{
 			name:        "output flag pdf",
 			cliArgs:     []string{"-o", "pdf"},
-			wantOut:     "Successfully created Dockerfile.pdf",
+			wantOut:     "Successfully created Dockerfile.pdf\n",
 			wantOutFile: "Dockerfile.pdf",
 		},
 		{
 			name:        "output flag png",
 			cliArgs:     []string{"--output", "png"},
-			wantOut:     "Successfully created Dockerfile.png",
+			wantOut:     "Successfully created Dockerfile.png\n",
 			wantOutFile: "Dockerfile.png",
 		},
 		{
 			name:        "output flag png with dpi",
 			cliArgs:     []string{"--output", "png", "--dpi", "200"},
-			wantOut:     "Successfully created Dockerfile.png",
+			wantOut:     "Successfully created Dockerfile.png\n",
 			wantOutFile: "Dockerfile.png",
+		},
+		{
+			name:        "layers flag",
+			cliArgs:     []string{"--layers", "-o", "canon"},
+			wantOut:     "Successfully created Dockerfile.canon\n",
+			wantOutFile: "Dockerfile.canon",
+			wantOutFileContent: `digraph G {
+	graph [nodesep=0.03,
+		rankdir=LR
+	];
+	node [label="\N"];
+	subgraph cluster_0 {
+		graph [label=ubuntu,
+			style=rounded
+		];
+		0	[label=ubuntu,
+			shape=Mrecord,
+			style=invis,
+			width=2];
+		stage_0_layer_0	[label="FROM...",
+			shape=Mrecord,
+			style=dashed,
+			width=2];
+		stage_0_layer_1	[label="RUN...",
+			shape=Mrecord,
+			style=dashed,
+			width=2];
+	}
+	subgraph cluster_1 {
+		graph [label=build,
+			style=rounded
+		];
+		1	[label=build,
+			shape=Mrecord,
+			style=invis,
+			width=2];
+		stage_1_layer_0	[label="FROM...",
+			shape=Mrecord,
+			style=dashed,
+			width=2];
+		stage_1_layer_1	[label="RUN...",
+			shape=Mrecord,
+			style=dashed,
+			width=2];
+	}
+	subgraph cluster_2 {
+		graph [label=release,
+			style=rounded
+		];
+		2	[fillcolor=grey90,
+			label=release,
+			shape=Mrecord,
+			style=invis,
+			width=2];
+		stage_2_layer_0	[fillcolor=grey90,
+			label="FROM...",
+			shape=Mrecord,
+			style=dashed,
+			width=2];
+		stage_2_layer_1	[fillcolor=grey90,
+			label="COPY...",
+			shape=Mrecord,
+			style=dashed,
+			width=2];
+		stage_2_layer_2	[fillcolor=grey90,
+			label="COPY...",
+			shape=Mrecord,
+			style=dashed,
+			width=2];
+		stage_2_layer_3	[fillcolor=grey90,
+			label="ENTRYPOINT...",
+			shape=Mrecord,
+			style=dashed,
+			width=2];
+	}
+	"ubuntu:latest"	[color=grey20,
+		fontcolor=grey20,
+		shape=Mrecord,
+		style=dashed,
+		width=2];
+	"ubuntu:latest" -> 0;
+	0 -> 2	[arrowhead=empty];
+	"golang:1.18"	[color=grey20,
+		fontcolor=grey20,
+		shape=Mrecord,
+		style=dashed,
+		width=2];
+	"golang:1.18" -> 1;
+	1 -> 2	[arrowhead=empty];
+	buildcache	[color=grey20,
+		fontcolor=grey20,
+		shape=Mrecord,
+		style=dashed,
+		width=2];
+	buildcache -> 1	[arrowhead=ediamond];
+	scratch	[color=grey20,
+		fontcolor=grey20,
+		shape=Mrecord,
+		style=dashed,
+		width=2];
+	scratch -> 2;
+}
+`,
 		},
 		{
 			name:        "legend flag",
 			cliArgs:     []string{"--legend", "-o", "canon"},
-			wantOut:     "Successfully created Dockerfile.canon",
+			wantOut:     "Successfully created Dockerfile.canon\n",
 			wantOutFile: "Dockerfile.canon",
 			wantOutFileContent: `digraph G {
 	graph [nodesep=1,

@@ -26,11 +26,15 @@ func TestBuildDotFile(t *testing.T) {
 					},
 					Stages: []Stage{
 						{
-							ID: "release",
-							WaitFor: []WaitFor{
+							ID: "0",
+							Layers: []Layer{
 								{
-									ID:   "build",
-									Type: waitForType(from),
+									ID:   "0",
+									Name: "FROM...",
+									WaitFor: WaitFor{
+										ID:   "build",
+										Type: waitForType(from),
+									},
 								},
 							},
 						},
@@ -44,7 +48,9 @@ func TestBuildDotFile(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := BuildDotFile(tt.args.simplifiedDockerfile, tt.args.legend, tt.args.layers); !strings.Contains(got, tt.wantContains) {
+			if got := BuildDotFile(
+				tt.args.simplifiedDockerfile, tt.args.legend, tt.args.layers,
+			); !strings.Contains(got, tt.wantContains) {
 				t.Errorf("BuildDotFile() = %v, did not contain %v", got, tt.wantContains)
 			}
 		})

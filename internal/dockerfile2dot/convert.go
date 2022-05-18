@@ -9,11 +9,10 @@ import (
 	"github.com/moby/buildkit/frontend/dockerfile/parser"
 )
 
-func storeDataInLayer(layerIndex int, child *parser.Node) Layer {
-	layer := Layer{}
-	layer.ID = fmt.Sprintf("%02d", layerIndex)
+func newLayer(layerIndex int, child *parser.Node) (layer Layer) {
+	layer.ID = fmt.Sprint(layerIndex)
 	layer.Name = child.Value + "..."
-	return layer
+	return
 }
 
 func dockerfileToSimplifiedDockerfile(content []byte) (
@@ -27,24 +26,16 @@ func dockerfileToSimplifiedDockerfile(content []byte) (
 	// Set that holds all stage IDs
 	stages := make(map[string]struct{})
 
-	// Add all stages
 	stageIndex := -1
-
-	// Add all layers
 	layerIndex := -1
 
 	for _, child := range result.AST.Children {
 		switch strings.ToUpper(child.Value) {
 		case "FROM":
+			// Create a new stage
 			stageIndex++
-
-			stage := Stage{}
-			stage.ID = fmt.Sprint(stageIndex)
-			stage.WaitFor = []WaitFor{
-				{
-					ID:   child.Next.Value,
-					Type: waitForType(from),
-				},
+			stage := Stage{
+				ID: fmt.Sprint(stageIndex),
 			}
 
 			// If there is an "AS" alias, set is at the name
@@ -55,63 +46,82 @@ func dockerfileToSimplifiedDockerfile(content []byte) (
 
 			simplifiedDockerfile.Stages = append(simplifiedDockerfile.Stages, stage)
 
-			// set layer index as stage index
-			layerIndex++
-			layer := storeDataInLayer(layerIndex, child)
-			simplifiedDockerfile.Stages[stageIndex].Layers = append(simplifiedDockerfile.Stages[stageIndex].Layers, layer)
+			// Add a new layer
+			layerIndex = 0
+			layer := newLayer(layerIndex, child)
+
+			// Set the waitFor ID
+			layer.WaitFor = WaitFor{
+				ID:   child.Next.Value,
+				Type: waitForType(from),
+			}
+
+			simplifiedDockerfile.Stages[stageIndex].Layers = append(
+				simplifiedDockerfile.Stages[stageIndex].Layers,
+				layer,
+			)
 
 		case "COPY":
+			// Add a new layer
+			layerIndex++
+			layer := newLayer(layerIndex, child)
+
+			// If there is a "--from" option, set the waitFor ID
 			for _, flag := range child.Flags {
 				regex := regexp.MustCompile("--from=(.+)")
 				result := regex.FindSubmatch([]byte(flag))
 				if len(result) > 1 {
-					simplifiedDockerfile.Stages[stageIndex].WaitFor = append(
-						simplifiedDockerfile.Stages[stageIndex].WaitFor,
-						WaitFor{
-							ID:   string(result[1]),
-							Type: waitForType(copy),
-						},
-					)
+					layer.WaitFor = WaitFor{
+						ID:   string(result[1]),
+						Type: waitForType(copy),
+					}
 				}
 			}
 
-			// creates a layer struct with the child data
-			layerIndex++
-			layer := storeDataInLayer(layerIndex, child)
-			simplifiedDockerfile.Stages[stageIndex].Layers = append(simplifiedDockerfile.Stages[stageIndex].Layers, layer)
+			simplifiedDockerfile.Stages[stageIndex].Layers = append(
+				simplifiedDockerfile.Stages[stageIndex].Layers,
+				layer,
+			)
 
 		case "RUN":
+			// Add a new layer
+			layerIndex++
+			layer := newLayer(layerIndex, child)
+
+			// If there is a "--from" option, set the waitFor ID
 			for _, flag := range child.Flags {
 				regex := regexp.MustCompile("--mount=type=cache,.*from=(.+?)[, ]")
 				result := regex.FindSubmatch([]byte(flag))
 				if len(result) > 1 {
-					simplifiedDockerfile.Stages[stageIndex].WaitFor = append(
-						simplifiedDockerfile.Stages[stageIndex].WaitFor,
-						WaitFor{
-							ID:   string(result[1]),
-							Type: waitForType(runMountTypeCache),
-						},
-					)
+					layer.WaitFor = WaitFor{
+						ID:   string(result[1]),
+						Type: waitForType(runMountTypeCache),
+					}
 				}
 			}
 
-			// creates a layer struct with the child data
-			layerIndex++
-			layer := storeDataInLayer(layerIndex, child)
-			simplifiedDockerfile.Stages[stageIndex].Layers = append(simplifiedDockerfile.Stages[stageIndex].Layers, layer)
+			simplifiedDockerfile.Stages[stageIndex].Layers = append(
+				simplifiedDockerfile.Stages[stageIndex].Layers,
+				layer,
+			)
 
 		default:
-			// creates a layer struct with the child data
+			// Add a new layer
 			layerIndex++
-			layer := storeDataInLayer(layerIndex, child)
+			layer := newLayer(layerIndex, child)
 
-			// check if the current stages array is empty
-			// this usually happens when ARGs are provided before a FROM statement
-			if len(simplifiedDockerfile.Stages) == 0 {
-				simplifiedDockerfile.LayersNotStage = append(simplifiedDockerfile.LayersNotStage, layer)
+			if stageIndex == -1 {
+				simplifiedDockerfile.BeforeFirstStage = append(
+					simplifiedDockerfile.BeforeFirstStage,
+					layer,
+				)
 				break
 			}
-			simplifiedDockerfile.Stages[stageIndex].Layers = append(simplifiedDockerfile.Stages[stageIndex].Layers, layer)
+
+			simplifiedDockerfile.Stages[stageIndex].Layers = append(
+				simplifiedDockerfile.Stages[stageIndex].Layers,
+				layer,
+			)
 		}
 	}
 
@@ -120,13 +130,15 @@ func dockerfileToSimplifiedDockerfile(content []byte) (
 
 	// Add external base images
 	for _, stage := range simplifiedDockerfile.Stages {
-		for _, waitFor := range stage.WaitFor {
-			if _, ok := stages[waitFor.ID]; !ok {
-				// simplifiedDockerfile.Stages[index].WaitFor[waitForIndex] = ""
-				baseImages[waitFor.ID] = struct{}{}
+		for _, layer := range stage.Layers {
+			if layer.WaitFor.ID == "" {
+				continue
+			}
+			if _, ok := stages[layer.WaitFor.ID]; !ok {
+				baseImages[layer.WaitFor.ID] = struct{}{}
 				simplifiedDockerfile.BaseImages = append(
 					simplifiedDockerfile.BaseImages,
-					BaseImage{ID: waitFor.ID},
+					BaseImage{ID: layer.WaitFor.ID},
 				)
 			}
 		}

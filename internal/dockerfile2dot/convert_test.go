@@ -1,11 +1,9 @@
 package dockerfile2dot
 
 import (
-	"reflect"
 	"testing"
 
 	"github.com/google/go-cmp/cmp"
-	"github.com/moby/buildkit/frontend/dockerfile/parser"
 )
 
 func Test_dockerfileToSimplifiedDockerfile(t *testing.T) {
@@ -28,11 +26,12 @@ func Test_dockerfileToSimplifiedDockerfile(t *testing.T) {
 				},
 				Stages: []Stage{
 					{
-						ID: "0", WaitFor: []WaitFor{
-							{ID: "scratch", Type: waitForType(from)},
-						},
+						ID: "0",
 						Layers: []Layer{
-							{ID: "00", Name: "FROM..."},
+							{
+								ID:      "0",
+								Name:    "FROM...",
+								WaitFor: WaitFor{ID: "scratch", Type: waitForType(from)}},
 						},
 					},
 				},
@@ -55,21 +54,33 @@ func Test_dockerfileToSimplifiedDockerfile(t *testing.T) {
 				},
 				Stages: []Stage{
 					{
-						ID: "0", Name: "base", WaitFor: []WaitFor{
-							{ID: "ubuntu", Type: waitForType(from)},
-						},
+						ID: "0", Name: "base",
 						Layers: []Layer{
-							{ID: "00", Name: "FROM..."},
+							{
+								ID:      "0",
+								Name:    "FROM...",
+								WaitFor: WaitFor{ID: "ubuntu", Type: waitForType(from)},
+							},
 						},
 					},
 					{
-						ID: "1", WaitFor: []WaitFor{
-							{ID: "scratch", Type: waitForType(from)},
-							{ID: "base", Type: waitForType(copy)},
-							{ID: "buildcache", Type: waitForType(runMountTypeCache)},
-						},
+						ID: "1",
 						Layers: []Layer{
-							{ID: "01", Name: "FROM..."}, {ID: "02", Name: "COPY..."}, {ID: "03", Name: "RUN..."},
+							{
+								ID:      "0",
+								Name:    "FROM...",
+								WaitFor: WaitFor{ID: "scratch", Type: waitForType(from)},
+							},
+							{
+								ID:      "1",
+								Name:    "COPY...",
+								WaitFor: WaitFor{ID: "base", Type: waitForType(copy)},
+							},
+							{
+								ID:      "2",
+								Name:    "RUN...",
+								WaitFor: WaitFor{ID: "buildcache", Type: waitForType(runMountTypeCache)},
+							},
 						},
 					},
 				},
@@ -81,6 +92,7 @@ func Test_dockerfileToSimplifiedDockerfile(t *testing.T) {
 			# syntax=docker/dockerfile:1
 			ARG UBUNTU_VERSION=20.04
 			FROM ubuntu:${UBUNTU_VERSION} as base
+			USER app
 			FROM scratch
 			COPY --from=base . .
 			RUN --mount=type=cache,from=buildcache,source=/go/pkg/mod/cache/,target=/go/pkg/mod/cache/ go build
@@ -93,26 +105,43 @@ func Test_dockerfileToSimplifiedDockerfile(t *testing.T) {
 				},
 				Stages: []Stage{
 					{
-						ID: "0", Name: "base", WaitFor: []WaitFor{
-							{ID: "ubuntu:${UBUNTU_VERSION}", Type: waitForType(from)},
-						},
+						ID:   "0",
+						Name: "base",
 						Layers: []Layer{
-							{ID: "01", Name: "FROM..."},
+							{
+								ID:      "0",
+								Name:    "FROM...",
+								WaitFor: WaitFor{ID: "ubuntu:${UBUNTU_VERSION}", Type: waitForType(from)},
+							},
+							{
+								ID:   "1",
+								Name: "USER...",
+							},
 						},
 					},
 					{
-						ID: "1", WaitFor: []WaitFor{
-							{ID: "scratch", Type: waitForType(from)},
-							{ID: "base", Type: waitForType(copy)},
-							{ID: "buildcache", Type: waitForType(runMountTypeCache)},
-						},
+						ID: "1",
 						Layers: []Layer{
-							{ID: "02", Name: "FROM..."}, {ID: "03", Name: "COPY..."}, {ID: "04", Name: "RUN..."},
+							{
+								ID:      "0",
+								Name:    "FROM...",
+								WaitFor: WaitFor{ID: "scratch", Type: waitForType(from)},
+							},
+							{
+								ID:      "1",
+								Name:    "COPY...",
+								WaitFor: WaitFor{ID: "base", Type: waitForType(copy)},
+							},
+							{
+								ID:      "2",
+								Name:    "RUN...",
+								WaitFor: WaitFor{ID: "buildcache", Type: waitForType(runMountTypeCache)},
+							},
 						},
 					},
 				},
-				LayersNotStage: []Layer{
-					{ID: "00", Name: "ARG..."},
+				BeforeFirstStage: []Layer{
+					{ID: "0", Name: "ARG..."},
 				},
 			},
 		},
@@ -126,47 +155,6 @@ func Test_dockerfileToSimplifiedDockerfile(t *testing.T) {
 			}
 			if diff := cmp.Diff(tt.want, got); diff != "" {
 				t.Errorf("Output mismatch (-want +got):\n%s", diff)
-			}
-		})
-	}
-}
-
-// parser.Node definition at
-// github.com/moby/buildkit@v0.10.3/frontend/dockerfile/parser/parser.go
-func Test_storeDataInLayer(t *testing.T) {
-	type args struct {
-		layerIndex int
-		child      *parser.Node
-	}
-	tests := []struct {
-		name string
-		args args
-		want Layer
-	}{
-		{
-			name: "Creation layer",
-			args: args{
-				layerIndex: 0,
-				child: &parser.Node{
-					Value:       "LABEL",
-					Next:        nil,
-					Children:    nil,
-					Heredocs:    nil,
-					Attributes:  nil,
-					Original:    "LABEL org.opencontainers.image.source='https://github.com/patrickhoefler/dockerfilegraph'",
-					Flags:       nil,
-					StartLine:   4,
-					EndLine:     4,
-					PrevComment: nil,
-				},
-			},
-			want: Layer{ID: "00", Name: "LABEL..."},
-		},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			if got := storeDataInLayer(tt.args.layerIndex, tt.args.child); !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("storeDataInLayer()\ngot  %+v\nwant %+v", got, tt.want)
 			}
 		})
 	}
