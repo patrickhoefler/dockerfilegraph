@@ -103,7 +103,7 @@ jobs:
           docker run \
             --workdir /workspace \
             --volume "$(pwd)":/workspace \
-            ghcr.io/patrickhoefler/dockerfilegraph:0.0.0
+            ghcr.io/patrickhoefler/dockerfilegraph:latest
 
       - name: Run the Alpine-based Docker image without flags
         run: |
@@ -111,7 +111,7 @@ jobs:
           docker run \
             --workdir /workspace \
             --volume "$(pwd)":/workspace \
-            ghcr.io/patrickhoefler/dockerfilegraph:0.0.0-alpine
+            ghcr.io/patrickhoefler/dockerfilegraph:alpine
 
       - name: Run the Docker image with flags
         run: |
@@ -119,7 +119,7 @@ jobs:
           docker run \
             --workdir /workspace \
             --volume "$(pwd)":/workspace \
-            ghcr.io/patrickhoefler/dockerfilegraph:0.0.0 \
+            ghcr.io/patrickhoefler/dockerfilegraph:latest \
             --legend \
             --output png \
             --dpi 200
@@ -130,7 +130,7 @@ jobs:
           docker run \
             --workdir /workspace \
             --volume "$(pwd)":/workspace \
-            ghcr.io/patrickhoefler/dockerfilegraph:0.0.0-alpine \
+            ghcr.io/patrickhoefler/dockerfilegraph:alpine \
             --legend \
             --output png \
             --dpi 200
