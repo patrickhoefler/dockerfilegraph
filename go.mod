@@ -11,6 +11,7 @@ require (
 )
 
 require (
+	github.com/aquilax/truncate v1.0.0
 	github.com/containerd/typeurl v1.0.2 // indirect
 	github.com/gogo/protobuf v1.3.2 // indirect
 	github.com/golang/protobuf v1.5.2 // indirect

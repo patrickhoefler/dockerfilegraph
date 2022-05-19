@@ -21,17 +21,15 @@ func Test_dockerfileToSimplifiedDockerfile(t *testing.T) {
 			FROM scratch
 			`)},
 			want: SimplifiedDockerfile{
-				BaseImages: []BaseImage{
-					{ID: "scratch"},
+				ExternalImages: []ExternalImage{
+					{Name: "scratch"},
 				},
 				Stages: []Stage{
 					{
-						ID: "0",
 						Layers: []Layer{
 							{
-								ID:      "0",
-								Name:    "FROM...",
-								WaitFor: WaitFor{ID: "scratch", Type: waitForType(from)}},
+								Label:   "FROM scratch",
+								WaitFor: WaitFor{Name: "scratch", Type: waitForType(from)}},
 						},
 					},
 				},
@@ -47,39 +45,34 @@ func Test_dockerfileToSimplifiedDockerfile(t *testing.T) {
 			RUN --mount=type=cache,from=buildcache,source=/go/pkg/mod/cache/,target=/go/pkg/mod/cache/ go build
 			`)},
 			want: SimplifiedDockerfile{
-				BaseImages: []BaseImage{
-					{ID: "ubuntu"},
-					{ID: "scratch"},
-					{ID: "buildcache"},
+				ExternalImages: []ExternalImage{
+					{Name: "ubuntu"},
+					{Name: "scratch"},
+					{Name: "buildcache"},
 				},
 				Stages: []Stage{
 					{
-						ID: "0", Name: "base",
+						Name: "base",
 						Layers: []Layer{
 							{
-								ID:      "0",
-								Name:    "FROM...",
-								WaitFor: WaitFor{ID: "ubuntu", Type: waitForType(from)},
+								Label:   "FROM ubuntu as base",
+								WaitFor: WaitFor{Name: "ubuntu", Type: waitForType(from)},
 							},
 						},
 					},
 					{
-						ID: "1",
 						Layers: []Layer{
 							{
-								ID:      "0",
-								Name:    "FROM...",
-								WaitFor: WaitFor{ID: "scratch", Type: waitForType(from)},
+								Label:   "FROM scratch",
+								WaitFor: WaitFor{Name: "scratch", Type: waitForType(from)},
 							},
 							{
-								ID:      "1",
-								Name:    "COPY...",
-								WaitFor: WaitFor{ID: "base", Type: waitForType(copy)},
+								Label:   "COPY --from=base . .",
+								WaitFor: WaitFor{Name: "base", Type: waitForType(copy)},
 							},
 							{
-								ID:      "2",
-								Name:    "RUN...",
-								WaitFor: WaitFor{ID: "buildcache", Type: waitForType(runMountTypeCache)},
+								Label:   "RUN --mount=type=...",
+								WaitFor: WaitFor{Name: "buildcache", Type: waitForType(runMountTypeCache)},
 							},
 						},
 					},
@@ -98,50 +91,43 @@ func Test_dockerfileToSimplifiedDockerfile(t *testing.T) {
 			RUN --mount=type=cache,from=buildcache,source=/go/pkg/mod/cache/,target=/go/pkg/mod/cache/ go build
 			`)},
 			want: SimplifiedDockerfile{
-				BaseImages: []BaseImage{
-					{ID: "ubuntu:${UBUNTU_VERSION}"},
-					{ID: "scratch"},
-					{ID: "buildcache"},
+				ExternalImages: []ExternalImage{
+					{Name: "ubuntu:${UBUNTU_VERSION}"},
+					{Name: "scratch"},
+					{Name: "buildcache"},
 				},
 				Stages: []Stage{
 					{
-						ID:   "0",
 						Name: "base",
 						Layers: []Layer{
 							{
-								ID:      "0",
-								Name:    "FROM...",
-								WaitFor: WaitFor{ID: "ubuntu:${UBUNTU_VERSION}", Type: waitForType(from)},
+								Label:   "FROM ubuntu:${UBU...",
+								WaitFor: WaitFor{Name: "ubuntu:${UBUNTU_VERSION}", Type: waitForType(from)},
 							},
 							{
-								ID:   "1",
-								Name: "USER...",
+								Label: "USER app",
 							},
 						},
 					},
 					{
-						ID: "1",
 						Layers: []Layer{
 							{
-								ID:      "0",
-								Name:    "FROM...",
-								WaitFor: WaitFor{ID: "scratch", Type: waitForType(from)},
+								Label:   "FROM scratch",
+								WaitFor: WaitFor{Name: "scratch", Type: waitForType(from)},
 							},
 							{
-								ID:      "1",
-								Name:    "COPY...",
-								WaitFor: WaitFor{ID: "base", Type: waitForType(copy)},
+								Label:   "COPY --from=base . .",
+								WaitFor: WaitFor{Name: "base", Type: waitForType(copy)},
 							},
 							{
-								ID:      "2",
-								Name:    "RUN...",
-								WaitFor: WaitFor{ID: "buildcache", Type: waitForType(runMountTypeCache)},
+								Label:   "RUN --mount=type=...",
+								WaitFor: WaitFor{Name: "buildcache", Type: waitForType(runMountTypeCache)},
 							},
 						},
 					},
 				},
 				BeforeFirstStage: []Layer{
-					{ID: "0", Name: "ARG..."},
+					{Label: "ARG UBUNTU_VERSIO..."},
 				},
 			},
 		},

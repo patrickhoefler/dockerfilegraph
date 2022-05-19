@@ -2,16 +2,23 @@ package dockerfile2dot
 
 import (
 	"bytes"
-	"fmt"
 	"regexp"
 	"strings"
 
+	"github.com/aquilax/truncate"
 	"github.com/moby/buildkit/frontend/dockerfile/parser"
 )
 
-func newLayer(layerIndex int, child *parser.Node) (layer Layer) {
-	layer.ID = fmt.Sprint(layerIndex)
-	layer.Name = child.Value + "..."
+func newLayer(child *parser.Node) (layer Layer) {
+	maxLength := 20
+
+	label := child.Original
+	label = strings.Replace(label, "\"", "'", -1)
+	if len(label) > maxLength {
+		label = truncate.Truncate(label, maxLength, "...", truncate.PositionEnd)
+	}
+	layer.Label = label
+
 	return
 }
 
@@ -34,9 +41,7 @@ func dockerfileToSimplifiedDockerfile(content []byte) (
 		case "FROM":
 			// Create a new stage
 			stageIndex++
-			stage := Stage{
-				ID: fmt.Sprint(stageIndex),
-			}
+			stage := Stage{}
 
 			// If there is an "AS" alias, set is at the name
 			if child.Next.Next != nil {
@@ -48,11 +53,11 @@ func dockerfileToSimplifiedDockerfile(content []byte) (
 
 			// Add a new layer
 			layerIndex = 0
-			layer := newLayer(layerIndex, child)
+			layer := newLayer(child)
 
 			// Set the waitFor ID
 			layer.WaitFor = WaitFor{
-				ID:   child.Next.Value,
+				Name: child.Next.Value,
 				Type: waitForType(from),
 			}
 
@@ -64,7 +69,7 @@ func dockerfileToSimplifiedDockerfile(content []byte) (
 		case "COPY":
 			// Add a new layer
 			layerIndex++
-			layer := newLayer(layerIndex, child)
+			layer := newLayer(child)
 
 			// If there is a "--from" option, set the waitFor ID
 			for _, flag := range child.Flags {
@@ -72,7 +77,7 @@ func dockerfileToSimplifiedDockerfile(content []byte) (
 				result := regex.FindSubmatch([]byte(flag))
 				if len(result) > 1 {
 					layer.WaitFor = WaitFor{
-						ID:   string(result[1]),
+						Name: string(result[1]),
 						Type: waitForType(copy),
 					}
 				}
@@ -86,7 +91,7 @@ func dockerfileToSimplifiedDockerfile(content []byte) (
 		case "RUN":
 			// Add a new layer
 			layerIndex++
-			layer := newLayer(layerIndex, child)
+			layer := newLayer(child)
 
 			// If there is a "--from" option, set the waitFor ID
 			for _, flag := range child.Flags {
@@ -94,7 +99,7 @@ func dockerfileToSimplifiedDockerfile(content []byte) (
 				result := regex.FindSubmatch([]byte(flag))
 				if len(result) > 1 {
 					layer.WaitFor = WaitFor{
-						ID:   string(result[1]),
+						Name: string(result[1]),
 						Type: waitForType(runMountTypeCache),
 					}
 				}
@@ -108,7 +113,7 @@ func dockerfileToSimplifiedDockerfile(content []byte) (
 		default:
 			// Add a new layer
 			layerIndex++
-			layer := newLayer(layerIndex, child)
+			layer := newLayer(child)
 
 			if stageIndex == -1 {
 				simplifiedDockerfile.BeforeFirstStage = append(
@@ -125,20 +130,20 @@ func dockerfileToSimplifiedDockerfile(content []byte) (
 		}
 	}
 
-	// Set that holds all external base images
-	baseImages := make(map[string]struct{})
+	// Set that holds all external images
+	externalImages := make(map[string]struct{})
 
-	// Add external base images
+	// Add external images
 	for _, stage := range simplifiedDockerfile.Stages {
 		for _, layer := range stage.Layers {
-			if layer.WaitFor.ID == "" {
+			if layer.WaitFor.Name == "" {
 				continue
 			}
-			if _, ok := stages[layer.WaitFor.ID]; !ok {
-				baseImages[layer.WaitFor.ID] = struct{}{}
-				simplifiedDockerfile.BaseImages = append(
-					simplifiedDockerfile.BaseImages,
-					BaseImage{ID: layer.WaitFor.ID},
+			if _, ok := stages[layer.WaitFor.Name]; !ok {
+				externalImages[layer.WaitFor.Name] = struct{}{}
+				simplifiedDockerfile.ExternalImages = append(
+					simplifiedDockerfile.ExternalImages,
+					ExternalImage{Name: layer.WaitFor.Name},
 				)
 			}
 		}

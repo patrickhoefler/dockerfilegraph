@@ -11,7 +11,7 @@ It creates a visual graph representation of the build process. The graph contain
 
 - All _build stages_
 - The _default build target_ highlighted in grey
-- _External base images_ with dashed borders
+- _External images_ with dashed borders
 
 The edges of the graph represent:
 
@@ -23,21 +23,15 @@ You can add an optional legend to the graph and change the output format and res
 
 ## Example Output
 
-### Default
+### Including `--legend`
 
-![Example output](https://user-images.githubusercontent.com/547220/120117354-2037a800-c18d-11eb-8750-ce954c5529df.png)
-
----
-
-### Including a Legend
-
-![Example output including a legend](https://user-images.githubusercontent.com/547220/143328161-dd80b5ef-5960-4023-b74e-e7b28cd31dcb.png)
+![Example output including a legend](https://user-images.githubusercontent.com/547220/169314390-be8b7251-d37e-4da4-97d2-055d82bdb7f2.png)
 
 ---
 
-### Including layers per stage
+### Including `--layers`
 
-![Example output including layer per stage](https://user-images.githubusercontent.com/35694200/168588978-d0386eaf-e79b-45d8-a6e1-b99a4771ca05.png)
+![Example output including layers](https://user-images.githubusercontent.com/547220/169314484-7b32defc-c6a5-4bf3-83ee-1446d3cf48ca.png)
 
 ## Getting Started
 
