@@ -1,7 +1,9 @@
 {
   "extends": [
     ":disableDependencyDashboard",
-    "config:base"
+    "config:base",
+    "docker:pinDigests",
+    "helpers:pinGitHubActionDigests"
   ],
   "automerge": true,
   "major": {
@@ -16,12 +18,6 @@
         "ubuntu"
       ],
       "versioning": "regex:^(?<compatibility>[a-z]+)-?(?<minor>\\d+)?$"
-    },
-    {
-      "matchDepTypes": [
-        "action"
-      ],
-      "pinDigests": true
     }
   ],
   "postUpdateOptions": [
