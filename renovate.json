@@ -1,11 +1,11 @@
 {
   "extends": [
-    ":disableDependencyDashboard",
     "config:base",
     "docker:pinDigests",
     "helpers:pinGitHubActionDigests"
   ],
   "automerge": true,
+  "dependencyDashboard": false,
   "major": {
     "automerge": false
   },
