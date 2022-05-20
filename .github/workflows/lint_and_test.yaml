@@ -7,23 +7,23 @@ jobs:
   lint:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@2541b1294d2704b0964813337f33b291d3f8596b # tag=v3
 
       - name: Set up Go
-        uses: actions/setup-go@v3
+        uses: actions/setup-go@fcdc43634adb5f7ae75a9d7a9b9361790f7293e2 # tag=v3
         with:
           go-version: '1.17'
 
       - name: Run the linters
-        uses: golangci/golangci-lint-action@v3.2.0
+        uses: golangci/golangci-lint-action@537aa1903e5d359d0b27dbc19ddd22c5087f3fbc # tag=v3.2.0
 
   test:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@2541b1294d2704b0964813337f33b291d3f8596b # tag=v3
 
       - name: Set up Go
-        uses: actions/setup-go@v3
+        uses: actions/setup-go@fcdc43634adb5f7ae75a9d7a9b9361790f7293e2 # tag=v3
         with:
           go-version: '1.17'
 
@@ -47,12 +47,12 @@ jobs:
     needs: [lint, test]
     steps:
       - name: Install Go
-        uses: actions/setup-go@v3
+        uses: actions/setup-go@fcdc43634adb5f7ae75a9d7a9b9361790f7293e2 # tag=v3
         with:
           go-version: '1.17'
 
       - name: Checkout code
-        uses: actions/checkout@v3
+        uses: actions/checkout@2541b1294d2704b0964813337f33b291d3f8596b # tag=v3
 
       - name: Build
         run: go build
@@ -81,15 +81,15 @@ jobs:
     needs: [lint, test]
     steps:
       - name: Install Go
-        uses: actions/setup-go@v3
+        uses: actions/setup-go@fcdc43634adb5f7ae75a9d7a9b9361790f7293e2 # tag=v3
         with:
           go-version: '1.17'
 
       - name: Checkout code
-        uses: actions/checkout@v3
+        uses: actions/checkout@2541b1294d2704b0964813337f33b291d3f8596b # tag=v3
 
       - name: Build binaries and Docker image with GoReleaser
-        uses: goreleaser/goreleaser-action@v2
+        uses: goreleaser/goreleaser-action@b953231f81b8dfd023c58e0854a721e35037f28b # tag=v2
         with:
           args: release --snapshot --skip-publish
 

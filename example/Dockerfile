@@ -1,5 +1,5 @@
 ### TLS root certs and non-root user
-FROM ubuntu:latest AS ubuntu
+FROM ubuntu:latest@sha256:26c68657ccce2cb0a31b330cb0be2b5e108d467f641c62e13ab40cbec258c68d AS ubuntu
 
 RUN \
   # Note that the lack of a "lock" mechanism for apt dependencies
@@ -12,7 +12,7 @@ RUN \
 
 # ---
 
-FROM golang:1.18 AS build
+FROM golang:1.18@sha256:02c05351ed076c581854c554fa65cb2eca47b4389fb79a1fc36f21b8df59c24f AS build
 RUN --mount=type=cache,from=buildcache,source=/go/pkg/mod/cache/,target=/go/pkg/mod/cache/ go build
 
 # ---
