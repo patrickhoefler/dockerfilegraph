@@ -1,7 +1,7 @@
 {
   "extends": [
-    "config:base",
-    ":disableDependencyDashboard"
+    ":disableDependencyDashboard",
+    "config:base"
   ],
   "automerge": true,
   "major": {
@@ -16,6 +16,12 @@
         "ubuntu"
       ],
       "versioning": "regex:^(?<compatibility>[a-z]+)-?(?<minor>\\d+)?$"
+    },
+    {
+      "matchDepTypes": [
+        "action"
+      ],
+      "pinDigests": true
     }
   ],
   "postUpdateOptions": [
