@@ -25,13 +25,13 @@ You can add an optional legend to the graph and change the output format and res
 
 ### Including `--legend`
 
-![Example output including a legend](https://user-images.githubusercontent.com/547220/169314390-be8b7251-d37e-4da4-97d2-055d82bdb7f2.png)
+![Example output including a legend](https://user-images.githubusercontent.com/547220/169665156-09cb79a9-8441-48a7-b2af-4e010eec4b13.png)
 
 ---
 
 ### Including `--layers`
 
-![Example output including layers](https://user-images.githubusercontent.com/547220/169314484-7b32defc-c6a5-4bf3-83ee-1446d3cf48ca.png)
+![Example output including layers](https://user-images.githubusercontent.com/547220/169665172-0a083ae4-6b9c-4900-ad91-aa9085e21b52.png)
 
 ## Getting Started
 
