@@ -3,13 +3,15 @@ builds:
       - CGO_ENABLED=0
     goarch:
       - amd64
+    ldflags:
+      - -s
+      - -w
+      - -X github.com/patrickhoefler/dockerfilegraph/internal/cmd.gitVersion={{.Version}}
+      - -X github.com/patrickhoefler/dockerfilegraph/internal/cmd.gitCommit={{.Commit}}
+      - -X github.com/patrickhoefler/dockerfilegraph/internal/cmd.buildDate={{.Date}}
 
 changelog:
-  sort: asc
-  filters:
-    exclude:
-      - '^docs:'
-      - '^test:'
+  skip: true
 
 dockers:
   - dockerfile: Dockerfile
