@@ -31,6 +31,7 @@ Flags:
       --layers    display all layers (default false)
       --legend    add a legend (default false)
   -o, --output    output file format, one of: canon, dot, pdf, png (default pdf)
+      --version   display the version of dockerfilegraph
 `
 
 // Taken from example/Dockerfile.
@@ -74,6 +75,15 @@ func TestRootCmd(t *testing.T) {
 It outputs a graph representation of the build process.
 
 ` + usage,
+		},
+		{
+			name:    "version flag",
+			cliArgs: []string{"--version"},
+			wantOut: `{` +
+				`"GitVersion":"v0.0.0-dev",` +
+				`"GitCommit":"da39a3ee5e6b4b0d3255bfef95601890afd80709",` +
+				`"BuildDate":"0000-00-00T00:00:00Z"}
+`,
 		},
 		{
 			name:    "no args",

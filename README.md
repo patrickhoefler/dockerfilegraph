@@ -79,7 +79,7 @@ Make sure that [Graphviz](https://graphviz.org/) is installed locally.
 Then:
 
 ```text
-go build
+make build
 ./dockerfilegraph
 ```
 

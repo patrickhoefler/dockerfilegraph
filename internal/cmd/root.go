@@ -14,11 +14,11 @@ import (
 )
 
 var (
-	// Used for flags.
-	dpi    int
-	legend bool
-	layers bool
-	output enum
+	dpiFlag     int
+	legendFlag  bool
+	layersFlag  bool
+	outputFlag  enum
+	versionFlag bool
 )
 
 // dfgWriter is a writer that prints to stdout. When testing, we
@@ -39,6 +39,10 @@ func NewRootCmd(dfgWriter io.Writer, inputFS afero.Fs) *cobra.Command {
 It outputs a graph representation of the build process.`,
 		Args: cobra.NoArgs,
 		RunE: func(cmd *cobra.Command, args []string) (err error) {
+			if versionFlag {
+				return printVersion(dfgWriter)
+			}
+
 			dockerfile, err := dockerfile2dot.LoadAndParseDockerfile(inputFS)
 			if err != nil {
 				return
@@ -50,7 +54,7 @@ It outputs a graph representation of the build process.`,
 			}
 			defer os.Remove(dotFile.Name())
 
-			dotFileContent := dockerfile2dot.BuildDotFile(dockerfile, legend, layers)
+			dotFileContent := dockerfile2dot.BuildDotFile(dockerfile, legendFlag, layersFlag)
 
 			_, err = dotFile.Write([]byte(dotFileContent))
 			if err != nil {
@@ -62,14 +66,14 @@ It outputs a graph representation of the build process.`,
 				return
 			}
 
-			filename := "Dockerfile." + output.String()
+			filename := "Dockerfile." + outputFlag.String()
 
 			dotArgs := []string{
-				"-T" + output.String(),
+				"-T" + outputFlag.String(),
 				"-o" + filename,
 			}
-			if output.String() == "png" {
-				dotArgs = append(dotArgs, "-Gdpi="+fmt.Sprint(dpi))
+			if outputFlag.String() == "png" {
+				dotArgs = append(dotArgs, "-Gdpi="+fmt.Sprint(dpiFlag))
 			}
 			dotArgs = append(dotArgs, dotFile.Name())
 
@@ -95,8 +99,9 @@ It outputs a graph representation of the build process.`,
 		},
 	}
 
+	// Flags
 	rootCmd.Flags().IntVarP(
-		&dpi,
+		&dpiFlag,
 		"dpi",
 		"d",
 		96, // the default dpi setting of Graphviz
@@ -104,25 +109,32 @@ It outputs a graph representation of the build process.`,
 	)
 
 	rootCmd.Flags().BoolVar(
-		&legend,
+		&layersFlag,
+		"layers",
+		false,
+		"display all layers (default false)",
+	)
+
+	rootCmd.Flags().BoolVar(
+		&legendFlag,
 		"legend",
 		false,
 		"add a legend (default false)",
 	)
 
-	output = newEnum("pdf", "canon", "dot", "png")
+	outputFlag = newEnum("pdf", "canon", "dot", "png")
 	rootCmd.Flags().VarP(
-		&output,
+		&outputFlag,
 		"output",
 		"o",
-		"output file format, one of: "+strings.Join(output.AllowedValues(), ", "),
+		"output file format, one of: "+strings.Join(outputFlag.AllowedValues(), ", "),
 	)
 
 	rootCmd.Flags().BoolVar(
-		&layers,
-		"layers",
+		&versionFlag,
+		"version",
 		false,
-		"display all layers (default false)",
+		"display the version of dockerfilegraph",
 	)
 
 	return rootCmd
