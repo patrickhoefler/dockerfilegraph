@@ -72,6 +72,12 @@ brew install patrickhoefler/tap/dockerfilegraph
 dockerfilegraph
 ```
 
+#### [toolctl](https://toolctl.io/)
+```text
+toolctl install dockerfilegraph
+dockerfilegraph
+```
+
 #### Build from Source
 
 Make sure that [Graphviz](https://graphviz.org/) is installed locally.
