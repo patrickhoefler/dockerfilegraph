@@ -83,7 +83,7 @@ func Test_dockerfileToSimplifiedDockerfile(t *testing.T) {
 			name: "ARGs before FROM",
 			args: args{content: []byte(`
 			# syntax=docker/dockerfile:1
-			ARG UBUNTU_VERSION=20.04
+			ARG UBUNTU_VERSION=22.04
 			FROM ubuntu:${UBUNTU_VERSION} as base
 			USER app
 			FROM scratch
