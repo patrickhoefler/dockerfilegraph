@@ -12,7 +12,7 @@ jobs:
       - name: Set up Go
         uses: actions/setup-go@b22fbbc2921299758641fab08929b4ac52b32923 # tag=v3
         with:
-          go-version: '1.17'
+          go-version: '1.18'
 
       - name: Run the linters
         uses: golangci/golangci-lint-action@537aa1903e5d359d0b27dbc19ddd22c5087f3fbc # tag=v3.2.0
@@ -25,7 +25,7 @@ jobs:
       - name: Set up Go
         uses: actions/setup-go@b22fbbc2921299758641fab08929b4ac52b32923 # tag=v3
         with:
-          go-version: '1.17'
+          go-version: '1.18'
 
       - name: Install graphviz
         run: sudo apt install --no-install-recommends -y graphviz
@@ -49,7 +49,7 @@ jobs:
       - name: Install Go
         uses: actions/setup-go@b22fbbc2921299758641fab08929b4ac52b32923 # tag=v3
         with:
-          go-version: '1.17'
+          go-version: '1.18'
 
       - name: Checkout code
         uses: actions/checkout@2541b1294d2704b0964813337f33b291d3f8596b # tag=v3
@@ -83,7 +83,7 @@ jobs:
       - name: Install Go
         uses: actions/setup-go@b22fbbc2921299758641fab08929b4ac52b32923 # tag=v3
         with:
-          go-version: '1.17'
+          go-version: '1.18'
 
       - name: Checkout code
         uses: actions/checkout@2541b1294d2704b0964813337f33b291d3f8596b # tag=v3
