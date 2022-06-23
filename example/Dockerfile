@@ -12,7 +12,7 @@ RUN \
 
 # ---
 
-FROM golang:1.18.3@sha256:1c3d22f95ce57821fff1dcd857c54809ea62f33634e2696e0d623e077c97bb8f AS build
+FROM golang:1.18.3@sha256:957001e439d14422e2690652d9ff86f02694996f63e9085767cbca4f8cc45c4b AS build
 RUN --mount=type=cache,from=buildcache,source=/go/pkg/mod/cache/,target=/go/pkg/mod/cache/ go build
 
 # ---
