@@ -50,6 +50,7 @@ Running `dockerfilegraph` without any arguments will create a `Dockerfile.pdf` i
 ```shell
 docker run \
   --rm \
+  --user "$(id -u):$(id -g)" \
   --workdir /workspace \
   --volume "$(pwd)":/workspace \
   ghcr.io/patrickhoefler/dockerfilegraph
@@ -60,6 +61,7 @@ docker run \
 ```shell
 docker run \
   --rm \
+  --user "$(id -u):$(id -g)" \
   --workdir /workspace \
   --volume "$(pwd)":/workspace \
   ghcr.io/patrickhoefler/dockerfilegraph:alpine
