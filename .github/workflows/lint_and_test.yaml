@@ -101,8 +101,6 @@ jobs:
         run: |
           cd example
           docker run \
-            --workdir /workspace \
-            --volume "$(pwd)":/workspace \
             ghcr.io/patrickhoefler/dockerfilegraph:latest \
             --version
 
@@ -110,8 +108,6 @@ jobs:
         run: |
           cd example
           docker run \
-            --workdir /workspace \
-            --volume "$(pwd)":/workspace \
             ghcr.io/patrickhoefler/dockerfilegraph:alpine \
             --version
 
@@ -119,6 +115,7 @@ jobs:
         run: |
           cd example
           docker run \
+            --user "$(id -u):$(id -g)" \
             --workdir /workspace \
             --volume "$(pwd)":/workspace \
             ghcr.io/patrickhoefler/dockerfilegraph:latest \
@@ -130,6 +127,7 @@ jobs:
         run: |
           cd example
           docker run \
+            --user "$(id -u):$(id -g)" \
             --workdir /workspace \
             --volume "$(pwd)":/workspace \
             ghcr.io/patrickhoefler/dockerfilegraph:alpine \
