@@ -7,7 +7,7 @@ require (
 	github.com/awalterschulze/gographviz v2.0.3+incompatible
 	github.com/google/go-cmp v0.5.8
 	github.com/moby/buildkit v0.10.3
-	github.com/spf13/afero v1.8.2
+	github.com/spf13/afero v1.9.2
 	github.com/spf13/cobra v1.5.0
 )
 
