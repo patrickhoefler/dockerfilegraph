@@ -6,7 +6,7 @@
   ],
   "automerge": true,
   "dependencyDashboard": false,
-  "ignorePaths": ["**/example/**"]
+  "ignorePaths": ["**/example/**"],
   "major": {
     "automerge": false
   },
