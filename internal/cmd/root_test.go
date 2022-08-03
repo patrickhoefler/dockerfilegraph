@@ -50,7 +50,7 @@ RUN \
 
 # ---
 
-FROM golang:1.18 AS build
+FROM golang:1.19 AS build
 RUN --mount=type=cache,from=buildcache,source=/go/pkg/mod/cache/,target=/go/pkg/mod/cache/ go build
 
 # ---
@@ -125,7 +125,7 @@ It outputs a graph representation of the build process.
 	stage_0 -> stage_2	[arrowhead=empty];
 	external_image_1	[color=grey20,
 		fontcolor=grey20,
-		label="golang:1.18",
+		label="golang:1.19",
 		shape=Mrecord,
 		style=dashed,
 		width=2];
@@ -209,7 +209,7 @@ It outputs a graph representation of the build process.
 			margin=16
 		];
 		stage_1_layer_0	[fillcolor=white,
-			label="FROM golang:1.18 ...",
+			label="FROM golang:1.19 ...",
 			penwidth=0.5,
 			shape=Mrecord,
 			style=filled,
@@ -269,7 +269,7 @@ It outputs a graph representation of the build process.
 		ltail=cluster_stage_1];
 	external_image_1	[color=grey20,
 		fontcolor=grey20,
-		label="golang:1.18",
+		label="golang:1.19",
 		shape=Mrecord,
 		style=dashed,
 		width=2];
@@ -341,7 +341,7 @@ It outputs a graph representation of the build process.
 	stage_0 -> stage_2	[arrowhead=empty];
 	external_image_1	[color=grey20,
 		fontcolor=grey20,
-		label="golang:1.18",
+		label="golang:1.19",
 		shape=Mrecord,
 		style=dashed,
 		width=2];
