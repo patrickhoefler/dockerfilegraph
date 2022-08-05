@@ -3,7 +3,6 @@ package cmd
 import (
 	"fmt"
 	"io"
-	"io/ioutil"
 	"os"
 	"os/exec"
 	"strings"
@@ -48,7 +47,7 @@ It outputs a graph representation of the build process.`,
 				return
 			}
 
-			dotFile, err := ioutil.TempFile("", "dockerfile.*.dot")
+			dotFile, err := os.CreateTemp("", "dockerfile.*.dot")
 			if err != nil {
 				return
 			}
