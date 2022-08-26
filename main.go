@@ -1,3 +1,4 @@
+// Package main only calls `cmd.Execute()`, which is the entry point for the CLI.
 package main
 
 import (

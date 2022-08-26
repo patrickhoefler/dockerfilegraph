@@ -1,3 +1,5 @@
+// Package dockerfile2dot provides the functionality for loading a Dockerfile
+// and converting it into a GraphViz DOT file.
 package dockerfile2dot
 
 import (
