@@ -1,3 +1,4 @@
+// Package cmd contains the Cobra CLI.
 package cmd
 
 import (
