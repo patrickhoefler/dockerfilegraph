@@ -5,7 +5,7 @@ go 1.19
 require (
 	github.com/aquilax/truncate v1.0.0
 	github.com/awalterschulze/gographviz v2.0.3+incompatible
-	github.com/google/go-cmp v0.5.8
+	github.com/google/go-cmp v0.5.9
 	github.com/moby/buildkit v0.10.4
 	github.com/spf13/afero v1.9.2
 	github.com/spf13/cobra v1.5.0
