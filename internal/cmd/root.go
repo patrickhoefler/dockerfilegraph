@@ -19,6 +19,7 @@ var (
 	layersFlag  bool
 	outputFlag  enum
 	versionFlag bool
+	fileFlag    string
 )
 
 // dfgWriter is a writer that prints to stdout. When testing, we
@@ -43,7 +44,7 @@ It outputs a graph representation of the build process.`,
 				return printVersion(dfgWriter)
 			}
 
-			dockerfile, err := dockerfile2dot.LoadAndParseDockerfile(inputFS)
+			dockerfile, err := dockerfile2dot.LoadAndParseDockerfile(inputFS, fileFlag)
 			if err != nil {
 				return
 			}
@@ -135,6 +136,14 @@ It outputs a graph representation of the build process.`,
 		"version",
 		false,
 		"display the version of dockerfilegraph",
+	)
+
+	rootCmd.Flags().StringVarP(
+		&fileFlag,
+		"file",
+		"f",
+		"Dockerfile",
+		"name of the Dockerfile",
 	)
 
 	return rootCmd
