@@ -14,12 +14,12 @@ import (
 )
 
 var (
-	dpiFlag     int
-	legendFlag  bool
-	layersFlag  bool
-	outputFlag  enum
-	versionFlag bool
-	fileFlag    string
+	dpiFlag      int
+	filenameFlag string
+	layersFlag   bool
+	legendFlag   bool
+	outputFlag   enum
+	versionFlag  bool
 )
 
 // dfgWriter is a writer that prints to stdout. When testing, we
@@ -44,7 +44,7 @@ It outputs a graph representation of the build process.`,
 				return printVersion(dfgWriter)
 			}
 
-			dockerfile, err := dockerfile2dot.LoadAndParseDockerfile(inputFS, fileFlag)
+			dockerfile, err := dockerfile2dot.LoadAndParseDockerfile(inputFS, filenameFlag)
 			if err != nil {
 				return
 			}
@@ -109,6 +109,14 @@ It outputs a graph representation of the build process.`,
 		"dots per inch of the PNG export",
 	)
 
+	rootCmd.Flags().StringVarP(
+		&filenameFlag,
+		"filename",
+		"f",
+		"Dockerfile",
+		"name of the Dockerfile",
+	)
+
 	rootCmd.Flags().BoolVar(
 		&layersFlag,
 		"layers",
@@ -136,14 +144,6 @@ It outputs a graph representation of the build process.`,
 		"version",
 		false,
 		"display the version of dockerfilegraph",
-	)
-
-	rootCmd.Flags().StringVarP(
-		&fileFlag,
-		"file",
-		"f",
-		"Dockerfile",
-		"name of the Dockerfile",
 	)
 
 	return rootCmd
