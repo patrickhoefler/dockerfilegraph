@@ -37,7 +37,7 @@ You can add an optional legend to the graph and change the output format and res
 
 ### Prerequisites
 
-- A multi-stage [Dockerfile](https://docs.docker.com/engine/reference/builder/) file in your current working directory
+- A multi-stage [Dockerfile](https://docs.docker.com/engine/reference/builder/)
 
 ### Installation and Usage
 

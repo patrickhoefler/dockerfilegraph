@@ -5,6 +5,7 @@ package dockerfile2dot
 import (
 	"errors"
 	"io/fs"
+	"path/filepath"
 
 	"github.com/spf13/afero"
 )
@@ -15,7 +16,11 @@ func LoadAndParseDockerfile(inputFS afero.Fs, filename string) (SimplifiedDocker
 	content, err := afero.ReadFile(inputFS, filename)
 	if err != nil {
 		if errors.Is(err, fs.ErrNotExist) {
-			return SimplifiedDockerfile{}, errors.New("could not find a Dockerfile at " + filename)
+			absFilePath, err := filepath.Abs(filename)
+			if err != nil {
+				panic(err)
+			}
+			return SimplifiedDockerfile{}, errors.New("could not find a Dockerfile at " + absFilePath)
 		}
 		panic(err)
 	}
