@@ -111,42 +111,44 @@ It outputs a graph representation of the build process.
 	external_image_0	[color=grey20,
 		fontcolor=grey20,
 		label="ubuntu:latest",
-		shape=Mrecord,
-		style=dashed,
+		shape=box,
+		style="dashed,rounded",
 		width=2];
 	stage_0	[label=ubuntu,
-		shape=Mrecord,
+		shape=box,
+		style=rounded,
 		width=2];
 	external_image_0 -> stage_0;
 	stage_2	[fillcolor=grey90,
 		label=release,
-		shape=Mrecord,
-		style=filled,
+		shape=box,
+		style="filled,rounded",
 		width=2];
 	stage_0 -> stage_2	[arrowhead=empty];
 	external_image_1	[color=grey20,
 		fontcolor=grey20,
 		label="golang:1.19",
-		shape=Mrecord,
-		style=dashed,
+		shape=box,
+		style="dashed,rounded",
 		width=2];
 	stage_1	[label=build,
-		shape=Mrecord,
+		shape=box,
+		style=rounded,
 		width=2];
 	external_image_1 -> stage_1;
 	stage_1 -> stage_2	[arrowhead=empty];
 	external_image_2	[color=grey20,
 		fontcolor=grey20,
 		label=buildcache,
-		shape=Mrecord,
-		style=dashed,
+		shape=box,
+		style="dashed,rounded",
 		width=2];
 	external_image_2 -> stage_1	[arrowhead=ediamond];
 	external_image_3	[color=grey20,
 		fontcolor=grey20,
 		label=scratch,
-		shape=Mrecord,
-		style=dashed,
+		shape=box,
+		style="dashed,rounded",
 		width=2];
 	external_image_3 -> stage_2;
 }
@@ -194,14 +196,14 @@ It outputs a graph representation of the build process.
 		stage_0_layer_0	[fillcolor=white,
 			label="FROM ubuntu:lates...",
 			penwidth=0.5,
-			shape=Mrecord,
-			style=filled,
+			shape=box,
+			style="filled,rounded",
 			width=2];
 		stage_0_layer_1	[fillcolor=white,
 			label="RUN   apt-get upd...",
 			penwidth=0.5,
-			shape=Mrecord,
-			style=filled,
+			shape=box,
+			style="filled,rounded",
 			width=2];
 		stage_0_layer_0 -> stage_0_layer_1;
 	}
@@ -212,14 +214,14 @@ It outputs a graph representation of the build process.
 		stage_1_layer_0	[fillcolor=white,
 			label="FROM golang:1.19 ...",
 			penwidth=0.5,
-			shape=Mrecord,
-			style=filled,
+			shape=box,
+			style="filled,rounded",
 			width=2];
 		stage_1_layer_1	[fillcolor=white,
 			label="RUN --mount=type=...",
 			penwidth=0.5,
-			shape=Mrecord,
-			style=filled,
+			shape=box,
+			style="filled,rounded",
 			width=2];
 		stage_1_layer_0 -> stage_1_layer_1;
 	}
@@ -232,28 +234,28 @@ It outputs a graph representation of the build process.
 		stage_2_layer_0	[fillcolor=white,
 			label="FROM scratch AS r...",
 			penwidth=0.5,
-			shape=Mrecord,
-			style=filled,
+			shape=box,
+			style="filled,rounded",
 			width=2];
 		stage_2_layer_1	[fillcolor=white,
 			label="COPY --from=ubunt...",
 			penwidth=0.5,
-			shape=Mrecord,
-			style=filled,
+			shape=box,
+			style="filled,rounded",
 			width=2];
 		stage_2_layer_0 -> stage_2_layer_1;
 		stage_2_layer_2	[fillcolor=white,
 			label="COPY --from=build...",
 			penwidth=0.5,
-			shape=Mrecord,
-			style=filled,
+			shape=box,
+			style="filled,rounded",
 			width=2];
 		stage_2_layer_1 -> stage_2_layer_2;
 		stage_2_layer_3	[fillcolor=white,
 			label="ENTRYPOINT ['/exa...",
 			penwidth=0.5,
-			shape=Mrecord,
-			style=filled,
+			shape=box,
+			style="filled,rounded",
 			width=2];
 		stage_2_layer_2 -> stage_2_layer_3;
 	}
@@ -262,8 +264,8 @@ It outputs a graph representation of the build process.
 	external_image_0	[color=grey20,
 		fontcolor=grey20,
 		label="ubuntu:latest",
-		shape=Mrecord,
-		style=dashed,
+		shape=box,
+		style="dashed,rounded",
 		width=2];
 	external_image_0 -> stage_0_layer_0;
 	stage_1_layer_1 -> stage_2_layer_2	[arrowhead=empty,
@@ -271,22 +273,22 @@ It outputs a graph representation of the build process.
 	external_image_1	[color=grey20,
 		fontcolor=grey20,
 		label="golang:1.19",
-		shape=Mrecord,
-		style=dashed,
+		shape=box,
+		style="dashed,rounded",
 		width=2];
 	external_image_1 -> stage_1_layer_0;
 	external_image_2	[color=grey20,
 		fontcolor=grey20,
 		label=buildcache,
-		shape=Mrecord,
-		style=dashed,
+		shape=box,
+		style="dashed,rounded",
 		width=2];
 	external_image_2 -> stage_1_layer_1	[arrowhead=ediamond];
 	external_image_3	[color=grey20,
 		fontcolor=grey20,
 		label=scratch,
-		shape=Mrecord,
-		style=dashed,
+		shape=box,
+		style="dashed,rounded",
 		width=2];
 	external_image_3 -> stage_2_layer_0;
 }
@@ -327,42 +329,44 @@ It outputs a graph representation of the build process.
 	external_image_0	[color=grey20,
 		fontcolor=grey20,
 		label="ubuntu:latest",
-		shape=Mrecord,
-		style=dashed,
+		shape=box,
+		style="dashed,rounded",
 		width=2];
 	stage_0	[label=ubuntu,
-		shape=Mrecord,
+		shape=box,
+		style=rounded,
 		width=2];
 	external_image_0 -> stage_0;
 	stage_2	[fillcolor=grey90,
 		label=release,
-		shape=Mrecord,
-		style=filled,
+		shape=box,
+		style="filled,rounded",
 		width=2];
 	stage_0 -> stage_2	[arrowhead=empty];
 	external_image_1	[color=grey20,
 		fontcolor=grey20,
 		label="golang:1.19",
-		shape=Mrecord,
-		style=dashed,
+		shape=box,
+		style="dashed,rounded",
 		width=2];
 	stage_1	[label=build,
-		shape=Mrecord,
+		shape=box,
+		style=rounded,
 		width=2];
 	external_image_1 -> stage_1;
 	stage_1 -> stage_2	[arrowhead=empty];
 	external_image_2	[color=grey20,
 		fontcolor=grey20,
 		label=buildcache,
-		shape=Mrecord,
-		style=dashed,
+		shape=box,
+		style="dashed,rounded",
 		width=2];
 	external_image_2 -> stage_1	[arrowhead=ediamond];
 	external_image_3	[color=grey20,
 		fontcolor=grey20,
 		label=scratch,
-		shape=Mrecord,
-		style=dashed,
+		shape=box,
+		style="dashed,rounded",
 		width=2];
 	external_image_3 -> stage_2;
 }
