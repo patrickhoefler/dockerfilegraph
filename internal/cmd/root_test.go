@@ -94,8 +94,7 @@ It outputs a graph representation of the build process.
 			name:              "empty Dockerfile",
 			dockerfileContent: " ", // space is needed so that the default Dockerfile is not used
 			wantErr:           true,
-			wantOut: `Error: file with no instructions
-` + usage + "\n",
+			wantOut:           "Error: file with no instructions\n" + usage + "\n",
 		},
 		{
 			name:        "output flag canon",
@@ -177,6 +176,18 @@ It outputs a graph representation of the build process.
 			cliArgs:     []string{"--output", "png", "--dpi", "200"},
 			wantOut:     "Successfully created Dockerfile.png\n",
 			wantOutFile: "Dockerfile.png",
+		},
+		{
+			name:        "filename flag",
+			cliArgs:     []string{"--filename", "subdir/../Dockerfile"},
+			wantOut:     "Successfully created Dockerfile.pdf\n",
+			wantOutFile: "Dockerfile.pdf",
+		},
+		{
+			name:         "filename flag with missing Dockerfile",
+			cliArgs:      []string{"--filename", "Dockerfile.missing"},
+			wantErr:      true,
+			wantOutRegex: "^Error: could not find a Dockerfile at .+Dockerfile.missing\n",
 		},
 		{
 			name:        "layers flag",
@@ -470,8 +481,8 @@ func checkWantOut(t *testing.T, tt test, buf *bytes.Buffer) {
 		}
 		if !matched {
 			t.Errorf(
-				"Error matching regex: %v, output: %s",
-				tt.wantOutRegex, buf.String(),
+				"Output mismatch (-want +got):\n%s",
+				cmp.Diff(tt.wantOutRegex, buf.String()),
 			)
 		}
 	}

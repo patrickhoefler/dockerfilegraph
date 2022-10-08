@@ -16,9 +16,6 @@ func TestLoadAndParseDockerfile(t *testing.T) {
 	dockerfileFS := afero.NewMemMapFs()
 	_ = afero.WriteFile(dockerfileFS, "Dockerfile", []byte(`FROM scratch`), 0644)
 
-	dockerfile2FS := afero.NewMemMapFs()
-	_ = afero.WriteFile(dockerfile2FS, "Dockerfile2", []byte(`FROM docker`), 0644)
-
 	tests := []struct {
 		name    string
 		args    args
@@ -26,23 +23,15 @@ func TestLoadAndParseDockerfile(t *testing.T) {
 		wantErr bool
 	}{
 		{
-			name: "no Dockerfile found",
-			args: args{
-				inputFS:  afero.NewMemMapFs(),
-				filename: "Dockerfile",
-			},
-			wantErr: true,
-		},
-		{
-			name: "wrong filename",
+			name: "Dockerfile not found",
 			args: args{
 				inputFS:  dockerfileFS,
-				filename: "Dockerfile2",
+				filename: "missing/Dockerfile",
 			},
 			wantErr: true,
 		},
 		{
-			name: "Dockerfile found",
+			name: "should work in the current working directory",
 			args: args{
 				inputFS:  dockerfileFS,
 				filename: "Dockerfile",
@@ -61,19 +50,19 @@ func TestLoadAndParseDockerfile(t *testing.T) {
 			},
 		},
 		{
-			name: "custom Dockerfile found",
+			name: "should work in any directory",
 			args: args{
-				inputFS:  dockerfile2FS,
-				filename: "Dockerfile2",
+				inputFS:  dockerfileFS,
+				filename: "subdir/../Dockerfile",
 			},
 			want: SimplifiedDockerfile{
-				ExternalImages: []ExternalImage{{Name: "docker"}},
+				ExternalImages: []ExternalImage{{Name: "scratch"}},
 				Stages: []Stage{
 					{
 						Layers: []Layer{
 							{
-								Label:   "FROM docker",
-								WaitFor: WaitFor{Name: "docker", Type: waitForType(from)}},
+								Label:   "FROM scratch",
+								WaitFor: WaitFor{Name: "scratch", Type: waitForType(from)}},
 						},
 					},
 				},
