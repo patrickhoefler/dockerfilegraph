@@ -17,7 +17,7 @@ func TestLoadAndParseDockerfile(t *testing.T) {
 	_ = afero.WriteFile(dockerfileFS, "Dockerfile", []byte(`FROM scratch`), 0644)
 
 	dockerfile2FS := afero.NewMemMapFs()
-	_ = afero.WriteFile(dockerfile2FS, "Dockerfile2", []byte(`FROM scratch`), 0644)
+	_ = afero.WriteFile(dockerfile2FS, "Dockerfile2", []byte(`FROM docker`), 0644)
 
 	tests := []struct {
 		name    string
@@ -55,6 +55,25 @@ func TestLoadAndParseDockerfile(t *testing.T) {
 							{
 								Label:   "FROM scratch",
 								WaitFor: WaitFor{Name: "scratch", Type: waitForType(from)}},
+						},
+					},
+				},
+			},
+		},
+		{
+			name: "custom Dockerfile found",
+			args: args{
+				inputFS:  dockerfile2FS,
+				filename: "Dockerfile2",
+			},
+			want: SimplifiedDockerfile{
+				ExternalImages: []ExternalImage{{Name: "docker"}},
+				Stages: []Stage{
+					{
+						Layers: []Layer{
+							{
+								Label:   "FROM docker",
+								WaitFor: WaitFor{Name: "docker", Type: waitForType(from)}},
 						},
 					},
 				},
