@@ -14,11 +14,12 @@ import (
 )
 
 var (
-	dpiFlag     int
-	legendFlag  bool
-	layersFlag  bool
-	outputFlag  enum
-	versionFlag bool
+	dpiFlag      int
+	filenameFlag string
+	layersFlag   bool
+	legendFlag   bool
+	outputFlag   enum
+	versionFlag  bool
 )
 
 // dfgWriter is a writer that prints to stdout. When testing, we
@@ -43,7 +44,7 @@ It outputs a graph representation of the build process.`,
 				return printVersion(dfgWriter)
 			}
 
-			dockerfile, err := dockerfile2dot.LoadAndParseDockerfile(inputFS)
+			dockerfile, err := dockerfile2dot.LoadAndParseDockerfile(inputFS, filenameFlag)
 			if err != nil {
 				return
 			}
@@ -106,6 +107,14 @@ It outputs a graph representation of the build process.`,
 		"d",
 		96, // the default dpi setting of Graphviz
 		"dots per inch of the PNG export",
+	)
+
+	rootCmd.Flags().StringVarP(
+		&filenameFlag,
+		"filename",
+		"f",
+		"Dockerfile",
+		"name of the Dockerfile",
 	)
 
 	rootCmd.Flags().BoolVar(
