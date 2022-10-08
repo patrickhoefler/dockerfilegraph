@@ -38,9 +38,9 @@ func BuildDotFile(
 			fmt.Sprintf("external_image_%d", externalImageIndex),
 			map[string]string{
 				"label":     "\"" + label + "\"",
-				"shape":     "Mrecord",
+				"shape":     "box",
 				"width":     "2",
-				"style":     "dashed",
+				"style":     "\"dashed,rounded\"",
 				"color":     "grey20",
 				"fontcolor": "grey20",
 			},
@@ -50,7 +50,8 @@ func BuildDotFile(
 	for stageIndex, stage := range simplifiedDockerfile.Stages {
 		attrs := map[string]string{
 			"label": "\"" + getStageLabel(stageIndex, stage) + "\"",
-			"shape": "Mrecord",
+			"shape": "box",
+			"style": "rounded",
 			"width": "2",
 		}
 
@@ -58,7 +59,7 @@ func BuildDotFile(
 		if !layers {
 			// Color the last stage, because it is the default build target
 			if stageIndex == len(simplifiedDockerfile.Stages)-1 {
-				attrs["style"] = "filled"
+				attrs["style"] = "\"filled,rounded\""
 				attrs["fillcolor"] = "grey90"
 			}
 
@@ -84,7 +85,7 @@ func BuildDotFile(
 			for layerIndex, layer := range stage.Layers {
 				attrs["label"] = "\"" + layer.Label + "\""
 				attrs["penwidth"] = "0.5"
-				attrs["style"] = "filled"
+				attrs["style"] = "\"filled,rounded\""
 				attrs["fillcolor"] = "white"
 				_ = graph.AddNode(
 					cluster,
@@ -122,7 +123,8 @@ func BuildDotFile(
 					fmt.Sprintf("before_first_stage_%d", argIndex),
 					map[string]string{
 						"label": arg.Label,
-						"shape": "Mrecord",
+						"shape": "box",
+						"style": "rounded",
 						"width": "2",
 					},
 				)
