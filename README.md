@@ -45,7 +45,7 @@ Running `dockerfilegraph` without any arguments will create a `Dockerfile.pdf` i
 
 #### Docker / [nerdctl](https://github.com/containerd/nerdctl)
 
-##### Image based on Ubuntu 22.04
+##### Image based on Ubuntu 22.10
 
 ```shell
 docker run \
