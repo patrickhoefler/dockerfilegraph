@@ -26,12 +26,13 @@ var usage = `Usage:
   dockerfilegraph [flags]
 
 Flags:
-  -d, --dpi int   dots per inch of the PNG export (default 96)
-  -h, --help      help for dockerfilegraph
-      --layers    display all layers (default false)
-      --legend    add a legend (default false)
-  -o, --output    output file format, one of: canon, dot, pdf, png (default pdf)
-      --version   display the version of dockerfilegraph
+  -d, --dpi int           dots per inch of the PNG export (default 96)
+  -f, --filename string   name of the Dockerfile (default "Dockerfile")
+  -h, --help              help for dockerfilegraph
+      --layers            display all layers (default false)
+      --legend            add a legend (default false)
+  -o, --output            output file format, one of: canon, dot, pdf, png (default pdf)
+      --version           display the version of dockerfilegraph
 `
 
 // Taken from example/Dockerfile.
