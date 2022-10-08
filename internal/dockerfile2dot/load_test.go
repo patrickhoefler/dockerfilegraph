@@ -9,8 +9,8 @@ import (
 
 func TestLoadAndParseDockerfile(t *testing.T) {
 	type args struct {
-		inputFS afero.Fs
-		fn      string
+		inputFS  afero.Fs
+		filename string
 	}
 
 	dockerfileFS := afero.NewMemMapFs()
@@ -28,24 +28,24 @@ func TestLoadAndParseDockerfile(t *testing.T) {
 		{
 			name: "no Dockerfile found",
 			args: args{
-				inputFS: afero.NewMemMapFs(),
-				fn:      "Dockerfile",
+				inputFS:  afero.NewMemMapFs(),
+				filename: "Dockerfile",
 			},
 			wantErr: true,
 		},
 		{
 			name: "wrong filename",
 			args: args{
-				inputFS: dockerfileFS,
-				fn:      "Dockerfile2",
+				inputFS:  dockerfileFS,
+				filename: "Dockerfile2",
 			},
 			wantErr: true,
 		},
 		{
 			name: "Dockerfile found",
 			args: args{
-				inputFS: dockerfileFS,
-				fn:      "Dockerfile",
+				inputFS:  dockerfileFS,
+				filename: "Dockerfile",
 			},
 			want: SimplifiedDockerfile{
 				ExternalImages: []ExternalImage{{Name: "scratch"}},
@@ -64,7 +64,7 @@ func TestLoadAndParseDockerfile(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := LoadAndParseDockerfile(tt.args.inputFS, tt.args.fn)
+			got, err := LoadAndParseDockerfile(tt.args.inputFS, tt.args.filename)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("LoadAndParseDockerfile() error = %v, wantErr %v", err, tt.wantErr)
 				return

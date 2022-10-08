@@ -11,8 +11,8 @@ import (
 
 // LoadAndParseDockerfile looks for the Dockerfile and returns a
 // SimplifiedDockerfile.
-func LoadAndParseDockerfile(inputFS afero.Fs, fn string) (SimplifiedDockerfile, error) {
-	content, err := afero.ReadFile(inputFS, fn)
+func LoadAndParseDockerfile(inputFS afero.Fs, filename string) (SimplifiedDockerfile, error) {
+	content, err := afero.ReadFile(inputFS, filename)
 	if err != nil {
 		if errors.Is(err, fs.ErrNotExist) {
 			return SimplifiedDockerfile{}, errors.New("could not find any Dockerfile in the current working directory")
