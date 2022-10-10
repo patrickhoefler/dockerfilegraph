@@ -131,6 +131,81 @@ func Test_dockerfileToSimplifiedDockerfile(t *testing.T) {
 				},
 			},
 		},
+		{
+			name: "External image used in multiple stages",
+			args: args{content: []byte(`
+			# syntax=docker/dockerfile:1.4
+
+			FROM scratch AS download-node-setup
+			ADD https://deb.nodesource.com/setup_16.x ./
+
+			FROM scratch AS download-get-pip
+			ADD https://bootstrap.pypa.io/get-pip.py ./
+
+			FROM alpine AS final
+			COPY --from=download-node-setup setup_16.x ./
+			COPY --from=download-get-pip get-pip.py ./
+			`)},
+			want: SimplifiedDockerfile{
+				ExternalImages: []ExternalImage{
+					{Name: "scratch"},
+					{Name: "alpine"},
+				},
+				Stages: []Stage{
+					{
+						Name: "download-node-setup",
+						Layers: []Layer{
+							{
+								Label: "FROM scratch AS d...",
+								WaitFor: WaitFor{
+									Name: "scratch",
+									Type: waitForType(from),
+								},
+							},
+							{Label: "ADD https://deb.n..."},
+						},
+					},
+					{
+						Name: "download-get-pip",
+						Layers: []Layer{
+							{
+								Label: "FROM scratch AS d...",
+								WaitFor: WaitFor{
+									Name: "scratch",
+									Type: waitForType(from),
+								}},
+							{Label: "ADD https://boots..."},
+						},
+					},
+					{
+						Name: "final",
+						Layers: []Layer{
+							{
+								Label: "FROM alpine AS final",
+								WaitFor: WaitFor{
+									Name: "alpine",
+									Type: waitForType(from),
+								},
+							},
+							{
+								Label: "COPY --from=downl...",
+								WaitFor: WaitFor{
+									Name: "download-node-setup",
+									Type: waitForType(copy),
+								},
+							},
+							{
+								Label: "COPY --from=downl...",
+								WaitFor: WaitFor{
+									Name: "download-get-pip",
+									Type: waitForType(copy),
+								},
+							},
+						},
+					},
+				},
+			},
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
