@@ -130,24 +130,43 @@ func dockerfileToSimplifiedDockerfile(content []byte) (
 		}
 	}
 
-	// Set that holds all external images
-	externalImages := make(map[string]struct{})
+	addExternalImages(&simplifiedDockerfile, stages)
 
-	// Add external images
+	return
+}
+
+func addExternalImages(
+	simplifiedDockerfile *SimplifiedDockerfile, stages map[string]struct{},
+) {
 	for _, stage := range simplifiedDockerfile.Stages {
 		for _, layer := range stage.Layers {
+			// Check if the layer waits for anything
 			if layer.WaitFor.Name == "" {
 				continue
 			}
-			if _, ok := stages[layer.WaitFor.Name]; !ok {
-				externalImages[layer.WaitFor.Name] = struct{}{}
-				simplifiedDockerfile.ExternalImages = append(
-					simplifiedDockerfile.ExternalImages,
-					ExternalImage{Name: layer.WaitFor.Name},
-				)
+
+			// Check if the layer waits for a stage
+			if _, ok := stages[layer.WaitFor.Name]; ok {
+				continue
 			}
+
+			// Check if we already added the external image
+			externalImageAlreadyAdded := false
+			for _, externalImage := range simplifiedDockerfile.ExternalImages {
+				if externalImage.Name == layer.WaitFor.Name {
+					externalImageAlreadyAdded = true
+					break
+				}
+			}
+			if externalImageAlreadyAdded {
+				continue
+			}
+
+			// Add the external image
+			simplifiedDockerfile.ExternalImages = append(
+				simplifiedDockerfile.ExternalImages,
+				ExternalImage{Name: layer.WaitFor.Name},
+			)
 		}
 	}
-
-	return
 }
