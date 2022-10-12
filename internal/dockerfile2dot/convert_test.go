@@ -88,7 +88,7 @@ func Test_dockerfileToSimplifiedDockerfile(t *testing.T) {
 			USER app
 			FROM scratch
 			COPY --from=base . .
-			RUN --mount=type=cache,from=buildcache,source=/go/pkg/mod/cache/,target=/go/pkg/mod/cache/ go build
+			RUN --mount=type=cache,source=/go/pkg/mod/cache/,target=/go/pkg/mod/cache/,from=buildcache go build
 			`)},
 			want: SimplifiedDockerfile{
 				ExternalImages: []ExternalImage{
