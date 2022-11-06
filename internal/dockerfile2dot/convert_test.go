@@ -84,15 +84,22 @@ func Test_dockerfileToSimplifiedDockerfile(t *testing.T) {
 			args: args{content: []byte(`
 			# syntax=docker/dockerfile:1
 			ARG UBUNTU_VERSION=22.04
-			FROM ubuntu:${UBUNTU_VERSION} as base
+			ARG PHP_VERSION=8.0
+			ARG ALPINE_VERSION=3.15
+
+			FROM ubuntu:$UBUNTU_VERSION as base
 			USER app
+
+			FROM php:${PHP_VERSION}-fpm-alpine${ALPINE_VERSION} as php
+
 			FROM scratch
 			COPY --from=base . .
 			RUN --mount=type=cache,source=/go/pkg/mod/cache/,target=/go/pkg/mod/cache/,from=buildcache go build
 			`)},
 			want: SimplifiedDockerfile{
 				ExternalImages: []ExternalImage{
-					{Name: "ubuntu:${UBUNTU_VERSION}"},
+					{Name: "ubuntu:22.04"},
+					{Name: "php:8.0-fpm-alpine3.15"},
 					{Name: "scratch"},
 					{Name: "buildcache"},
 				},
@@ -101,11 +108,23 @@ func Test_dockerfileToSimplifiedDockerfile(t *testing.T) {
 						Name: "base",
 						Layers: []Layer{
 							{
-								Label:   "FROM ubuntu:${UBU...",
-								WaitFor: WaitFor{Name: "ubuntu:${UBUNTU_VERSION}", Type: waitForType(from)},
+								Label:   "FROM ubuntu:22.04...",
+								WaitFor: WaitFor{Name: "ubuntu:22.04", Type: waitForType(from)},
 							},
 							{
 								Label: "USER app",
+							},
+						},
+					},
+					{
+						Name: "php",
+						Layers: []Layer{
+							{
+								Label: "FROM php:8.0-fpm-...",
+								WaitFor: WaitFor{
+									Name: "php:8.0-fpm-alpine3.15",
+									Type: waitForType(from),
+								},
 							},
 						},
 					},
@@ -128,6 +147,8 @@ func Test_dockerfileToSimplifiedDockerfile(t *testing.T) {
 				},
 				BeforeFirstStage: []Layer{
 					{Label: "ARG UBUNTU_VERSIO..."},
+					{Label: "ARG PHP_VERSION=8.0"},
+					{Label: "ARG ALPINE_VERSIO..."},
 				},
 			},
 		},
