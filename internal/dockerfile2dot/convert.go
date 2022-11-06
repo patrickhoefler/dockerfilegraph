@@ -9,10 +9,12 @@ import (
 	"github.com/moby/buildkit/frontend/dockerfile/parser"
 )
 
-func newLayer(child *parser.Node) (layer Layer) {
+func newLayer(
+	child *parser.Node, replacements map[string]string,
+) (layer Layer) {
 	maxLength := 20
 
-	label := child.Original
+	label := replaceArgVars(child.Original, replacements)
 	label = strings.Replace(label, "\"", "'", -1)
 	if len(label) > maxLength {
 		label = truncate.Truncate(label, maxLength, "...", truncate.PositionEnd)
@@ -36,6 +38,8 @@ func dockerfileToSimplifiedDockerfile(content []byte) (
 	stageIndex := -1
 	layerIndex := -1
 
+	argReplacements := make(map[string]string)
+
 	for _, child := range result.AST.Children {
 		switch strings.ToUpper(child.Value) {
 		case "FROM":
@@ -45,19 +49,19 @@ func dockerfileToSimplifiedDockerfile(content []byte) (
 
 			// If there is an "AS" alias, set is at the name
 			if child.Next.Next != nil {
-				stages[child.Next.Next.Next.Value] = struct{}{}
 				stage.Name = child.Next.Next.Next.Value
+				stages[stage.Name] = struct{}{}
 			}
 
 			simplifiedDockerfile.Stages = append(simplifiedDockerfile.Stages, stage)
 
 			// Add a new layer
 			layerIndex = 0
-			layer := newLayer(child)
+			layer := newLayer(child, argReplacements)
 
 			// Set the waitFor ID
 			layer.WaitFor = WaitFor{
-				Name: child.Next.Value,
+				Name: replaceArgVars(child.Next.Value, argReplacements),
 				Type: waitForType(from),
 			}
 
@@ -69,7 +73,7 @@ func dockerfileToSimplifiedDockerfile(content []byte) (
 		case "COPY":
 			// Add a new layer
 			layerIndex++
-			layer := newLayer(child)
+			layer := newLayer(child, argReplacements)
 
 			// If there is a "--from" option, set the waitFor ID
 			for _, flag := range child.Flags {
@@ -91,7 +95,7 @@ func dockerfileToSimplifiedDockerfile(content []byte) (
 		case "RUN":
 			// Add a new layer
 			layerIndex++
-			layer := newLayer(child)
+			layer := newLayer(child, argReplacements)
 
 			// If there is a "--from" option, set the waitFor ID
 			for _, flag := range child.Flags {
@@ -113,13 +117,21 @@ func dockerfileToSimplifiedDockerfile(content []byte) (
 		default:
 			// Add a new layer
 			layerIndex++
-			layer := newLayer(child)
+			layer := newLayer(child, argReplacements)
 
 			if stageIndex == -1 {
 				simplifiedDockerfile.BeforeFirstStage = append(
 					simplifiedDockerfile.BeforeFirstStage,
 					layer,
 				)
+
+				if child.Value == "ARG" {
+					key, value, valueProvided := strings.Cut(child.Next.Value, "=")
+					if valueProvided {
+						argReplacements[key] = value
+					}
+				}
+
 				break
 			}
 
@@ -169,4 +181,13 @@ func addExternalImages(
 			)
 		}
 	}
+}
+
+func replaceArgVars(baseImage string, replacements map[string]string) string {
+	for k, v := range replacements {
+		baseImage = strings.ReplaceAll(baseImage, "$"+k, v)
+		baseImage = strings.ReplaceAll(baseImage, "${"+k+"}", v)
+	}
+
+	return baseImage
 }
