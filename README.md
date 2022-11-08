@@ -43,7 +43,7 @@ You can add an optional legend to the graph and change the output format and res
 
 Running `dockerfilegraph` without any arguments will create a `Dockerfile.pdf` in your current working directory. This PDF contains a visual graph representation of your multi-stage Dockerfile.
 
-#### Docker / [nerdctl](https://github.com/containerd/nerdctl)
+#### docker / [nerdctl](https://github.com/containerd/nerdctl)
 
 ##### Image based on Ubuntu 22.10
 
