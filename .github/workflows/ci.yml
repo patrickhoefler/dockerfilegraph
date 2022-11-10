@@ -8,4 +8,4 @@ on:
 
 jobs:
   lint-and-test:
-    uses: ./.github/workflows/lint_and_test.yaml
+    uses: ./.github/workflows/lint_and_test.yml
