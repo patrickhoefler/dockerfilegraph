@@ -4,13 +4,11 @@ updates:
     directory: /
     schedule:
       interval: daily
-  - package-ecosystem: gomod
+  - package-ecosystem: github-actions
     directory: /
     schedule:
       interval: daily
-
-
-  - package-ecosystem: github-actions
+  - package-ecosystem: gomod
     directory: /
     schedule:
       interval: daily
