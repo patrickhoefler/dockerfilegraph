@@ -1,10 +1,9 @@
 # dockerfilegraph
 
-[![GitHub Workflow Status](https://img.shields.io/github/workflow/status/patrickhoefler/dockerfilegraph/CI)](https://github.com/patrickhoefler/dockerfilegraph/actions?query=branch%3Amain)
+[![GitHub Workflow Status](https://img.shields.io/github/actions/workflow/status/patrickhoefler/dockerfilegraph/ci.yml?branch=main)](https://github.com/patrickhoefler/dockerfilegraph/actions/workflows/ci.yml?query=branch%3Amain)
 [![Go Report Card](https://goreportcard.com/badge/github.com/patrickhoefler/dockerfilegraph)](https://goreportcard.com/report/github.com/patrickhoefler/dockerfilegraph)
 [![GitHub release (latest SemVer)](https://img.shields.io/github/v/release/patrickhoefler/dockerfilegraph)](https://github.com/patrickhoefler/dockerfilegraph/releases/latest)
 [![GitHub](https://img.shields.io/github/license/patrickhoefler/dockerfilegraph)](https://github.com/patrickhoefler/dockerfilegraph/blob/main/LICENSE)
-[![FOSSA Status](https://app.fossa.com/api/projects/git%2Bgithub.com%2Fpatrickhoefler%2Fdockerfilegraph.svg?type=shield)](https://app.fossa.com/projects/git%2Bgithub.com%2Fpatrickhoefler%2Fdockerfilegraph?ref=badge_shield)
 
 `dockerfilegraph` visualizes your multi-stage Dockerfiles.
 
