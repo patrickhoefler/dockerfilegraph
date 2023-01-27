@@ -7,9 +7,10 @@ import (
 
 func TestBuildDotFile(t *testing.T) {
 	type args struct {
-		simplifiedDockerfile SimplifiedDockerfile
-		legend               bool
+		edgeStyle            string
 		layers               bool
+		legend               bool
+		simplifiedDockerfile SimplifiedDockerfile
 	}
 	tests := []struct {
 		name         string
@@ -19,6 +20,8 @@ func TestBuildDotFile(t *testing.T) {
 		{
 			name: "legend",
 			args: args{
+				edgeStyle: "default",
+				legend:    true,
 				simplifiedDockerfile: SimplifiedDockerfile{
 					BeforeFirstStage: []Layer{
 						{
@@ -43,13 +46,14 @@ func TestBuildDotFile(t *testing.T) {
 						},
 					},
 				},
-				legend: true,
 			},
 			wantContains: "release",
 		},
 		{
 			name: "layers",
 			args: args{
+				edgeStyle: "default",
+				layers:    true,
 				simplifiedDockerfile: SimplifiedDockerfile{
 					BeforeFirstStage: []Layer{
 						{
@@ -74,7 +78,6 @@ func TestBuildDotFile(t *testing.T) {
 						},
 					},
 				},
-				layers: true,
 			},
 			wantContains: "release",
 		},
@@ -83,8 +86,11 @@ func TestBuildDotFile(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			if got := BuildDotFile(
 				tt.args.simplifiedDockerfile, tt.args.legend, tt.args.layers,
+				tt.args.edgeStyle,
 			); !strings.Contains(got, tt.wantContains) {
-				t.Errorf("BuildDotFile() = %v, did not contain %v", got, tt.wantContains)
+				t.Errorf(
+					"BuildDotFile() = %v, did not contain %v", got, tt.wantContains,
+				)
 			}
 		})
 	}

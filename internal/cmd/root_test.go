@@ -27,6 +27,7 @@ var usage = `Usage:
 
 Flags:
   -d, --dpi int           dots per inch of the PNG export (default 96)
+  -e, --edgestyle         style of the graph edges, one of: default, solid (default default)
   -f, --filename string   name of the Dockerfile (default "Dockerfile")
   -h, --help              help for dockerfilegraph
       --layers            display all layers (default false)
@@ -95,63 +96,6 @@ It outputs a graph representation of the build process.
 			dockerfileContent: " ", // space is needed so that the default Dockerfile is not used
 			wantErr:           true,
 			wantOut:           "Error: file with no instructions\n" + usage + "\n",
-		},
-		{
-			name:        "output flag canon",
-			cliArgs:     []string{"--output", "canon"},
-			wantOut:     "Successfully created Dockerfile.canon\n",
-			wantOutFile: "Dockerfile.canon",
-			wantOutFileContent: `digraph G {
-	graph [compound=true,
-		nodesep=1,
-		rankdir=LR
-	];
-	node [label="\N"];
-	external_image_0	[color=grey20,
-		fontcolor=grey20,
-		label="ubuntu:latest",
-		shape=box,
-		style="dashed,rounded",
-		width=2];
-	stage_0	[label=ubuntu,
-		shape=box,
-		style=rounded,
-		width=2];
-	external_image_0 -> stage_0;
-	stage_2	[fillcolor=grey90,
-		label=release,
-		shape=box,
-		style="filled,rounded",
-		width=2];
-	stage_0 -> stage_2	[arrowhead=empty];
-	external_image_1	[color=grey20,
-		fontcolor=grey20,
-		label="golang:1.19",
-		shape=box,
-		style="dashed,rounded",
-		width=2];
-	stage_1	[label=build,
-		shape=box,
-		style=rounded,
-		width=2];
-	external_image_1 -> stage_1;
-	stage_1 -> stage_2	[arrowhead=empty];
-	external_image_2	[color=grey20,
-		fontcolor=grey20,
-		label=buildcache,
-		shape=box,
-		style="dashed,rounded",
-		width=2];
-	external_image_2 -> stage_1	[arrowhead=ediamond];
-	external_image_3	[color=grey20,
-		fontcolor=grey20,
-		label=scratch,
-		shape=box,
-		style="dashed,rounded",
-		width=2];
-	external_image_3 -> stage_2;
-}
-`,
 		},
 		{
 			name:        "output flag dot",
@@ -277,6 +221,125 @@ It outputs a graph representation of the build process.
 		stage_2_layer_2 -> stage_2_layer_3;
 	}
 	stage_0_layer_1 -> stage_2_layer_1	[arrowhead=empty,
+		ltail=cluster_stage_0,
+		style=dashed];
+	external_image_0	[color=grey20,
+		fontcolor=grey20,
+		label="ubuntu:latest",
+		shape=box,
+		style="dashed,rounded",
+		width=2];
+	external_image_0 -> stage_0_layer_0;
+	stage_1_layer_1 -> stage_2_layer_2	[arrowhead=empty,
+		ltail=cluster_stage_1,
+		style=dashed];
+	external_image_1	[color=grey20,
+		fontcolor=grey20,
+		label="golang:1.19",
+		shape=box,
+		style="dashed,rounded",
+		width=2];
+	external_image_1 -> stage_1_layer_0;
+	external_image_2	[color=grey20,
+		fontcolor=grey20,
+		label=buildcache,
+		shape=box,
+		style="dashed,rounded",
+		width=2];
+	external_image_2 -> stage_1_layer_1	[arrowhead=ediamond,
+		style=dotted];
+	external_image_3	[color=grey20,
+		fontcolor=grey20,
+		label=scratch,
+		shape=box,
+		style="dashed,rounded",
+		width=2];
+	external_image_3 -> stage_2_layer_0;
+}
+`,
+		},
+		{
+			name:        "layers flag with solid edges",
+			cliArgs:     []string{"--layers", "-o", "canon", "-e", "solid"},
+			wantOut:     "Successfully created Dockerfile.canon\n",
+			wantOutFile: "Dockerfile.canon",
+			wantOutFileContent: `digraph G {
+	graph [compound=true,
+		nodesep=1,
+		rankdir=LR
+	];
+	node [label="\N"];
+	subgraph cluster_stage_0 {
+		graph [label=ubuntu,
+			margin=16
+		];
+		stage_0_layer_0	[fillcolor=white,
+			label="FROM ubuntu:lates...",
+			penwidth=0.5,
+			shape=box,
+			style="filled,rounded",
+			width=2];
+		stage_0_layer_1	[fillcolor=white,
+			label="RUN   apt-get upd...",
+			penwidth=0.5,
+			shape=box,
+			style="filled,rounded",
+			width=2];
+		stage_0_layer_0 -> stage_0_layer_1;
+	}
+	subgraph cluster_stage_1 {
+		graph [label=build,
+			margin=16
+		];
+		stage_1_layer_0	[fillcolor=white,
+			label="FROM golang:1.19 ...",
+			penwidth=0.5,
+			shape=box,
+			style="filled,rounded",
+			width=2];
+		stage_1_layer_1	[fillcolor=white,
+			label="RUN --mount=type=...",
+			penwidth=0.5,
+			shape=box,
+			style="filled,rounded",
+			width=2];
+		stage_1_layer_0 -> stage_1_layer_1;
+	}
+	subgraph cluster_stage_2 {
+		graph [fillcolor=grey90,
+			label=release,
+			margin=16,
+			style=filled
+		];
+		stage_2_layer_0	[fillcolor=white,
+			label="FROM scratch AS r...",
+			penwidth=0.5,
+			shape=box,
+			style="filled,rounded",
+			width=2];
+		stage_2_layer_1	[fillcolor=white,
+			label="COPY --from=ubunt...",
+			penwidth=0.5,
+			shape=box,
+			style="filled,rounded",
+			width=2];
+		stage_2_layer_0 -> stage_2_layer_1;
+		stage_2_layer_2	[fillcolor=white,
+			label="COPY --from=build...",
+			penwidth=0.5,
+			shape=box,
+			style="filled,rounded",
+			width=2];
+		stage_2_layer_1 -> stage_2_layer_2;
+		stage_2_layer_3	[fillcolor=white,
+			label="ENTRYPOINT ['/exa...",
+			penwidth=0.5,
+			shape=box,
+			style="filled,rounded",
+			width=2];
+		stage_2_layer_2 -> stage_2_layer_3;
+	}
+	stage_0_layer_1 -> stage_2_layer_1	[arrowhead=empty,
 		ltail=cluster_stage_0];
 	external_image_0	[color=grey20,
 		fontcolor=grey20,
@@ -314,6 +377,89 @@ It outputs a graph representation of the build process.
 		{
 			name:        "legend flag",
 			cliArgs:     []string{"--legend", "-o", "canon"},
+			wantOut:     "Successfully created Dockerfile.canon\n",
+			wantOutFile: "Dockerfile.canon",
+			wantOutFileContent: `digraph G {
+	graph [compound=true,
+		nodesep=1,
+		rankdir=LR
+	];
+	node [label="\N"];
+	subgraph cluster_legend {
+		key	[fontname=monospace,
+			fontsize=10,
+			label=<<table border="0" cellpadding="2" cellspacing="0" cellborder="0">
+	<tr><td align="right" port="i0">FROM&nbsp;...&nbsp;</td></tr>
+	<tr><td align="right" port="i1">COPY --from=...&nbsp;</td></tr>
+	<tr><td align="right" port="i2">RUN --mount=type=cache,from=...&nbsp;</td></tr>
+</table>>,
+			shape=plaintext];
+		key2	[fontname=monospace,
+			fontsize=10,
+			label=<<table border="0" cellpadding="2" cellspacing="0" cellborder="0">
+	<tr><td port="i0">&nbsp;</td></tr>
+	<tr><td port="i1">&nbsp;</td></tr>
+	<tr><td port="i2">&nbsp;</td></tr>
+</table>>,
+			shape=plaintext];
+		key:i0:e -> key2:i0:w;
+		key:i1:e -> key2:i1:w	[arrowhead=empty,
+			style=dashed];
+		key:i2:e -> key2:i2:w	[arrowhead=ediamond,
+			style=dotted];
+	}
+	external_image_0	[color=grey20,
+		fontcolor=grey20,
+		label="ubuntu:latest",
+		shape=box,
+		style="dashed,rounded",
+		width=2];
+	stage_0	[label=ubuntu,
+		shape=box,
+		style=rounded,
+		width=2];
+	external_image_0 -> stage_0;
+	stage_2	[fillcolor=grey90,
+		label=release,
+		shape=box,
+		style="filled,rounded",
+		width=2];
+	stage_0 -> stage_2	[arrowhead=empty,
+		style=dashed];
+	external_image_1	[color=grey20,
+		fontcolor=grey20,
+		label="golang:1.19",
+		shape=box,
+		style="dashed,rounded",
+		width=2];
+	stage_1	[label=build,
+		shape=box,
+		style=rounded,
+		width=2];
+	external_image_1 -> stage_1;
+	stage_1 -> stage_2	[arrowhead=empty,
+		style=dashed];
+	external_image_2	[color=grey20,
+		fontcolor=grey20,
+		label=buildcache,
+		shape=box,
+		style="dashed,rounded",
+		width=2];
+	external_image_2 -> stage_1	[arrowhead=ediamond,
+		style=dotted];
+	external_image_3	[color=grey20,
+		fontcolor=grey20,
+		label=scratch,
+		shape=box,
+		style="dashed,rounded",
+		width=2];
+	external_image_3 -> stage_2;
+}
+`,
+		},
+		{
+			name:        "legend flag with solid edges",
+			cliArgs:     []string{"--legend", "-o", "canon", "-e", "solid"},
 			wantOut:     "Successfully created Dockerfile.canon\n",
 			wantOutFile: "Dockerfile.canon",
 			wantOutFileContent: `digraph G {

@@ -14,12 +14,13 @@ import (
 )
 
 var (
-	dpiFlag      int
-	filenameFlag string
-	layersFlag   bool
-	legendFlag   bool
-	outputFlag   enum
-	versionFlag  bool
+	dpiFlag       int
+	edgeStyleFlag enum
+	filenameFlag  string
+	layersFlag    bool
+	legendFlag    bool
+	outputFlag    enum
+	versionFlag   bool
 )
 
 // dfgWriter is a writer that prints to stdout. When testing, we
@@ -55,7 +56,9 @@ It outputs a graph representation of the build process.`,
 			}
 			defer os.Remove(dotFile.Name())
 
-			dotFileContent := dockerfile2dot.BuildDotFile(dockerfile, legendFlag, layersFlag)
+			dotFileContent := dockerfile2dot.BuildDotFile(
+				dockerfile, legendFlag, layersFlag, edgeStyleFlag.String(),
+			)
 
 			_, err = dotFile.Write([]byte(dotFileContent))
 			if err != nil {
@@ -107,6 +110,14 @@ It outputs a graph representation of the build process.`,
 		"d",
 		96, // the default dpi setting of Graphviz
 		"dots per inch of the PNG export",
+	)
+
+	edgeStyleFlag = newEnum("default", "solid")
+	rootCmd.Flags().VarP(
+		&edgeStyleFlag,
+		"edgestyle",
+		"e",
+		"style of the graph edges, one of: "+strings.Join(edgeStyleFlag.AllowedValues(), ", "),
 	)
 
 	rootCmd.Flags().StringVarP(

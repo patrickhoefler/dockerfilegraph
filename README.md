@@ -7,31 +7,36 @@
 
 `dockerfilegraph` visualizes your multi-stage Dockerfiles.
 
-It creates a visual graph representation of the build process. The graph contains the following nodes:
+It creates a visual graph representation of the build process.
+The graph contains the following nodes:
 
-- All _build stages_
-- The _default build target_ highlighted in grey
-- _External images_ with dashed borders
+- All build stages
+- The default build target (highlighted in grey)
+- External images (with dashed borders)
 
 The edges of the graph represent:
 
-- _FROM_ dependencies with a full arrow head
-- _COPY --from=..._ dependencies with an empty arrow head
-- _RUN --mount=type=cache,from=..._ dependencies with an empty diamond arrow head
+- `FROM ...` dependencies
+  (with a solid line and a full arrow head)
+- `COPY --from=...` dependencies
+  (with a dashed line and an empty arrow head)
+- `RUN --mount=type=cache,from=...` dependencies
+  (with a dotted line and an empty diamond arrow head)
 
-You can add an optional legend to the graph and change the output format and resolution. For all the details, see the [options](#more-options) below.
+You can add an optional legend to the graph and change the output format and resolution.
+For all the details, see the [options](#more-options) below.
 
 ## Example Output
 
 ### Including `--legend`
 
-![Example output including a legend](https://user-images.githubusercontent.com/547220/169665156-09cb79a9-8441-48a7-b2af-4e010eec4b13.png)
+![Example output including a legend](https://user-images.githubusercontent.com/547220/215192032-e5553646-2095-4884-826d-64034e613395.png)
 
 ---
 
 ### Including `--layers`
 
-![Example output including layers](https://user-images.githubusercontent.com/547220/169665172-0a083ae4-6b9c-4900-ad91-aa9085e21b52.png)
+![Example output including layers](https://user-images.githubusercontent.com/547220/215192059-ae3bf14f-432d-4fa0-b7d9-382e5777e862.png)
 
 ## Getting Started
 
@@ -41,7 +46,8 @@ You can add an optional legend to the graph and change the output format and res
 
 ### Installation and Usage
 
-Running `dockerfilegraph` without any arguments will create a `Dockerfile.pdf` in your current working directory. This PDF contains a visual graph representation of your multi-stage Dockerfile.
+Running `dockerfilegraph` without any arguments will create a `Dockerfile.pdf` in your current working directory.
+This PDF contains a visual graph representation of your multi-stage Dockerfile.
 
 #### docker / [nerdctl](https://github.com/containerd/nerdctl)
 
@@ -104,6 +110,7 @@ Usage:
 
 Flags:
   -d, --dpi int           dots per inch of the PNG export (default 96)
+  -e, --edgestyle         style of the graph edges, one of: default, solid (default default)
   -f, --filename string   name of the Dockerfile (default "Dockerfile")
   -h, --help              help for dockerfilegraph
       --layers            display all layers (default false)
