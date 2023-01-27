@@ -11,6 +11,7 @@ import (
 // BuildDotFile builds a GraphViz .dot file from a simplified Dockerfile
 func BuildDotFile(
 	simplifiedDockerfile SimplifiedDockerfile, legend bool, layers bool,
+	edgeStyle string,
 ) string {
 	// Create a new graph
 	graph := gographviz.NewEscape()
@@ -22,7 +23,7 @@ func BuildDotFile(
 
 	// Add the legend if requested
 	if legend {
-		addLegend(graph)
+		addLegend(graph, edgeStyle)
 	}
 
 	// Add the external images
@@ -106,7 +107,9 @@ func BuildDotFile(
 		}
 
 		// Add the egdes for this build stage
-		addEdgesForStage(stageIndex, stage, graph, simplifiedDockerfile, layers)
+		addEdgesForStage(
+			stageIndex, stage, graph, simplifiedDockerfile, layers, edgeStyle,
+		)
 	}
 
 	// Add the ARGS that appear before the first stage, if layers are requested
@@ -137,7 +140,7 @@ func BuildDotFile(
 
 func addEdgesForStage(
 	stageIndex int, stage Stage, graph *gographviz.Escape,
-	simplifiedDockerfile SimplifiedDockerfile, layers bool,
+	simplifiedDockerfile SimplifiedDockerfile, layers bool, edgeStyle string,
 ) {
 	for layerIndex, layer := range stage.Layers {
 		if layer.WaitFor.Name == "" {
@@ -147,8 +150,14 @@ func addEdgesForStage(
 		edgeAttrs := map[string]string{}
 		if layer.WaitFor.Type == waitForType(copy) {
 			edgeAttrs["arrowhead"] = "empty"
+			if edgeStyle == "default" {
+				edgeAttrs["style"] = "dashed"
+			}
 		} else if layer.WaitFor.Type == waitForType(runMountTypeCache) {
 			edgeAttrs["arrowhead"] = "ediamond"
+			if edgeStyle == "default" {
+				edgeAttrs["style"] = "dotted"
+			}
 		}
 
 		sourceNodeID, additionalEdgeAttrs := getWaitForNodeID(
@@ -167,7 +176,7 @@ func addEdgesForStage(
 	}
 }
 
-func addLegend(graph *gographviz.Escape) {
+func addLegend(graph *gographviz.Escape, edgeStyle string) {
 	_ = graph.AddSubGraph("G", "cluster_legend", nil)
 
 	_ = graph.AddNode("cluster_legend", "key",
@@ -196,13 +205,23 @@ func addLegend(graph *gographviz.Escape) {
 	)
 
 	_ = graph.AddPortEdge("key", "i0:e", "key2", "i0:w", true, nil)
+
+	copyEdgeAttrs := map[string]string{"arrowhead": "empty"}
+	if edgeStyle == "default" {
+		copyEdgeAttrs["style"] = "dashed"
+	}
 	_ = graph.AddPortEdge(
 		"key", "i1:e", "key2", "i1:w", true,
-		map[string]string{"arrowhead": "empty"},
+		copyEdgeAttrs,
 	)
+
+	cacheEdgeAttrs := map[string]string{"arrowhead": "ediamond"}
+	if edgeStyle == "default" {
+		cacheEdgeAttrs["style"] = "dotted"
+	}
 	_ = graph.AddPortEdge(
 		"key", "i2:e", "key2", "i2:w", true,
-		map[string]string{"arrowhead": "ediamond"},
+		cacheEdgeAttrs,
 	)
 }
 
