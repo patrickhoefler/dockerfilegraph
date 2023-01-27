@@ -31,7 +31,7 @@ Flags:
   -h, --help              help for dockerfilegraph
       --layers            display all layers (default false)
       --legend            add a legend (default false)
-  -o, --output            output file format, one of: canon, dot, pdf, png (default pdf)
+  -o, --output            output file format, one of: canon, dot, pdf, png, svg (default pdf)
       --version           display the version of dockerfilegraph
 `
 
@@ -176,6 +176,12 @@ It outputs a graph representation of the build process.
 			cliArgs:     []string{"--output", "png", "--dpi", "200"},
 			wantOut:     "Successfully created Dockerfile.png\n",
 			wantOutFile: "Dockerfile.png",
+		},
+		{
+			name:        "output flag svg",
+			cliArgs:     []string{"--output", "svg"},
+			wantOut:     "Successfully created Dockerfile.svg\n",
+			wantOutFile: "Dockerfile.svg",
 		},
 		{
 			name:        "filename flag",
