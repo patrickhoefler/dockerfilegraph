@@ -131,7 +131,7 @@ It outputs a graph representation of the build process.`,
 		"add a legend (default false)",
 	)
 
-	outputFlag = newEnum("pdf", "canon", "dot", "png")
+	outputFlag = newEnum("pdf", "canon", "dot", "png", "svg")
 	rootCmd.Flags().VarP(
 		&outputFlag,
 		"output",
