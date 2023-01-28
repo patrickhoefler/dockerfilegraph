@@ -30,13 +30,15 @@ For all the details, see the [options](#more-options) below.
 
 ### Including `--legend`
 
-![Example output including a legend](https://user-images.githubusercontent.com/547220/215192032-e5553646-2095-4884-826d-64034e613395.png)
-
----
+![Example output including a legend](./examples/images/Dockerfile-legend.svg)
 
 ### Including `--layers`
 
-![Example output including layers](https://user-images.githubusercontent.com/547220/215192059-ae3bf14f-432d-4fa0-b7d9-382e5777e862.png)
+![Example output including layers](./examples/images/Dockerfile-layers.svg)
+
+### Large Dockerfile including `--concentrate` and `--unflatten 4`
+
+![Example output with `--concentrate` and `--unflatten 4`](./examples/images/Dockerfile-large.svg)
 
 ## Getting Started
 
@@ -110,13 +112,14 @@ Usage:
 
 Flags:
   -c, --concentrate       concentrate the edges (default false)
-  -d, --dpi int           dots per inch of the PNG export (default 96)
+  -d, --dpi uint          dots per inch of the PNG export (default 96)
   -e, --edgestyle         style of the graph edges, one of: default, solid (default default)
   -f, --filename string   name of the Dockerfile (default "Dockerfile")
   -h, --help              help for dockerfilegraph
       --layers            display all layers (default false)
       --legend            add a legend (default false)
   -o, --output            output file format, one of: canon, dot, pdf, png, raw, svg (default pdf)
+  -u, --unflatten uint    stagger length of leaf edges between [1,u] (default 0)
       --version           display the version of dockerfilegraph
 ```
 

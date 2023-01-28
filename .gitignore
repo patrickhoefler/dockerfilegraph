@@ -20,4 +20,4 @@ dockerfilegraph
 # dockerfilegraph
 Dockerfile.*
 !/Dockerfile.alpine
-!example/Dockerfile.large
+!examples/dockerfiles/Dockerfile.large

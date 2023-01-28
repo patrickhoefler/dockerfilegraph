@@ -6,6 +6,7 @@ import (
 	"io"
 	"os"
 	"os/exec"
+	"strconv"
 	"strings"
 
 	"github.com/patrickhoefler/dockerfilegraph/internal/dockerfile2dot"
@@ -15,12 +16,13 @@ import (
 
 var (
 	concentrateFlag bool
-	dpiFlag         int
+	dpiFlag         uint
 	edgeStyleFlag   enum
 	filenameFlag    string
 	layersFlag      bool
 	legendFlag      bool
 	outputFlag      enum
+	unflattenFlag   uint
 	versionFlag     bool
 )
 
@@ -75,6 +77,37 @@ It outputs a graph representation of the build process.`,
 				return
 			}
 
+			var unflattenFile *os.File
+			if unflattenFlag > 0 {
+				unflattenFile, err = os.CreateTemp("", "dockerfile.*.dot")
+				if err != nil {
+					return
+				}
+				defer os.Remove(unflattenFile.Name())
+
+				unflattenCmd := exec.Command(
+					"unflatten",
+					"-l", strconv.FormatUint(uint64(unflattenFlag), 10),
+					"-o", unflattenFile.Name(), dotFile.Name(),
+				)
+				unflattenCmd.Stdout = dfgWriter
+				unflattenCmd.Stderr = dfgWriter
+				err = unflattenCmd.Run()
+				if err != nil {
+					return
+				}
+
+				err = unflattenFile.Close()
+				if err != nil {
+					return
+				}
+
+				err = os.Rename(unflattenFile.Name(), dotFile.Name())
+				if err != nil {
+					return
+				}
+			}
+
 			filename := "Dockerfile." + outputFlag.String()
 
 			if outputFlag.String() == "raw" {
@@ -82,9 +115,7 @@ It outputs a graph representation of the build process.`,
 				if err != nil {
 					return
 				}
-
 				fmt.Fprintf(dfgWriter, "Successfully created %s\n", filename)
-
 				return
 			}
 
@@ -128,7 +159,7 @@ It outputs a graph representation of the build process.`,
 		"concentrate the edges (default false)",
 	)
 
-	rootCmd.Flags().IntVarP(
+	rootCmd.Flags().UintVarP(
 		&dpiFlag,
 		"dpi",
 		"d",
@@ -172,6 +203,14 @@ It outputs a graph representation of the build process.`,
 		"output",
 		"o",
 		"output file format, one of: "+strings.Join(outputFlag.AllowedValues(), ", "),
+	)
+
+	rootCmd.Flags().UintVarP(
+		&unflattenFlag,
+		"unflatten",
+		"u",
+		0, // turned off
+		"stagger length of leaf edges between [1,u] (default 0)",
 	)
 
 	rootCmd.Flags().BoolVar(
