@@ -26,13 +26,14 @@ var usage = `Usage:
   dockerfilegraph [flags]
 
 Flags:
+  -c, --concentrate       concentrate the edges (default false)
   -d, --dpi int           dots per inch of the PNG export (default 96)
   -e, --edgestyle         style of the graph edges, one of: default, solid (default default)
   -f, --filename string   name of the Dockerfile (default "Dockerfile")
   -h, --help              help for dockerfilegraph
       --layers            display all layers (default false)
       --legend            add a legend (default false)
-  -o, --output            output file format, one of: canon, dot, pdf, png, svg (default pdf)
+  -o, --output            output file format, one of: canon, dot, pdf, png, raw, svg (default pdf)
       --version           display the version of dockerfilegraph
 `
 
@@ -141,126 +142,64 @@ It outputs a graph representation of the build process.
 		},
 		{
 			name:        "layers flag",
-			cliArgs:     []string{"--layers", "-o", "canon"},
-			wantOut:     "Successfully created Dockerfile.canon\n",
-			wantOutFile: "Dockerfile.canon",
+			cliArgs:     []string{"--layers", "-o", "raw"},
+			wantOut:     "Successfully created Dockerfile.raw\n",
+			wantOutFile: "Dockerfile.raw",
+			//nolint:lll
 			wantOutFileContent: `digraph G {
-	graph [compound=true,
-		nodesep=1,
-		rankdir=LR
-	];
-	node [label="\N"];
+	compound=true;
+	nodesep=1;
+	rankdir=LR;
+	stage_0_layer_0->stage_0_layer_1;
+	external_image_0->stage_0_layer_0;
+	stage_1_layer_0->stage_1_layer_1;
+	external_image_1->stage_1_layer_0;
+	external_image_2->stage_1_layer_1[ arrowhead=ediamond, style=dotted ];
+	stage_2_layer_0->stage_2_layer_1;
+	stage_2_layer_1->stage_2_layer_2;
+	stage_2_layer_2->stage_2_layer_3;
+	external_image_3->stage_2_layer_0;
+	stage_0_layer_1->stage_2_layer_1[ arrowhead=empty, ltail=cluster_stage_0, style=dashed ];
+	stage_1_layer_1->stage_2_layer_2[ arrowhead=empty, ltail=cluster_stage_1, style=dashed ];
 	subgraph cluster_stage_0 {
-		graph [label=ubuntu,
-			margin=16
-		];
-		stage_0_layer_0	[fillcolor=white,
-			label="FROM ubuntu:lates...",
-			penwidth=0.5,
-			shape=box,
-			style="filled,rounded",
-			width=2];
-		stage_0_layer_1	[fillcolor=white,
-			label="RUN   apt-get upd...",
-			penwidth=0.5,
-			shape=box,
-			style="filled,rounded",
-			width=2];
-		stage_0_layer_0 -> stage_0_layer_1;
-	}
+	label=ubuntu;
+	margin=16;
+	stage_0_layer_0 [ fillcolor=white, label="FROM ubuntu:lates...", penwidth=0.5, shape=box, style="filled,rounded", width=2 ];
+	stage_0_layer_1 [ fillcolor=white, label="RUN   apt-get upd...", penwidth=0.5, shape=box, style="filled,rounded", width=2 ];
+
+}
+;
 	subgraph cluster_stage_1 {
-		graph [label=build,
-			margin=16
-		];
-		stage_1_layer_0	[fillcolor=white,
-			label="FROM golang:1.19 ...",
-			penwidth=0.5,
-			shape=box,
-			style="filled,rounded",
-			width=2];
-		stage_1_layer_1	[fillcolor=white,
-			label="RUN --mount=type=...",
-			penwidth=0.5,
-			shape=box,
-			style="filled,rounded",
-			width=2];
-		stage_1_layer_0 -> stage_1_layer_1;
-	}
+	label=build;
+	margin=16;
+	stage_1_layer_0 [ fillcolor=white, label="FROM golang:1.19 ...", penwidth=0.5, shape=box, style="filled,rounded", width=2 ];
+	stage_1_layer_1 [ fillcolor=white, label="RUN --mount=type=...", penwidth=0.5, shape=box, style="filled,rounded", width=2 ];
+
+}
+;
 	subgraph cluster_stage_2 {
-		graph [fillcolor=grey90,
-			label=release,
-			margin=16,
-			style=filled
-		];
-		stage_2_layer_0	[fillcolor=white,
-			label="FROM scratch AS r...",
-			penwidth=0.5,
-			shape=box,
-			style="filled,rounded",
-			width=2];
-		stage_2_layer_1	[fillcolor=white,
-			label="COPY --from=ubunt...",
-			penwidth=0.5,
-			shape=box,
-			style="filled,rounded",
-			width=2];
-		stage_2_layer_0 -> stage_2_layer_1;
-		stage_2_layer_2	[fillcolor=white,
-			label="COPY --from=build...",
-			penwidth=0.5,
-			shape=box,
-			style="filled,rounded",
-			width=2];
-		stage_2_layer_1 -> stage_2_layer_2;
-		stage_2_layer_3	[fillcolor=white,
-			label="ENTRYPOINT ['/exa...",
-			penwidth=0.5,
-			shape=box,
-			style="filled,rounded",
-			width=2];
-		stage_2_layer_2 -> stage_2_layer_3;
-	}
-	stage_0_layer_1 -> stage_2_layer_1	[arrowhead=empty,
-		ltail=cluster_stage_0,
-		style=dashed];
-	external_image_0	[color=grey20,
-		fontcolor=grey20,
-		label="ubuntu:latest",
-		shape=box,
-		style="dashed,rounded",
-		width=2];
-	external_image_0 -> stage_0_layer_0;
-	stage_1_layer_1 -> stage_2_layer_2	[arrowhead=empty,
-		ltail=cluster_stage_1,
-		style=dashed];
-	external_image_1	[color=grey20,
-		fontcolor=grey20,
-		label="golang:1.19",
-		shape=box,
-		style="dashed,rounded",
-		width=2];
-	external_image_1 -> stage_1_layer_0;
-	external_image_2	[color=grey20,
-		fontcolor=grey20,
-		label=buildcache,
-		shape=box,
-		style="dashed,rounded",
-		width=2];
-	external_image_2 -> stage_1_layer_1	[arrowhead=ediamond,
-		style=dotted];
-	external_image_3	[color=grey20,
-		fontcolor=grey20,
-		label=scratch,
-		shape=box,
-		style="dashed,rounded",
-		width=2];
-	external_image_3 -> stage_2_layer_0;
+	fillcolor=grey90;
+	label=release;
+	margin=16;
+	style=filled;
+	stage_2_layer_0 [ fillcolor=white, label="FROM scratch AS r...", penwidth=0.5, shape=box, style="filled,rounded", width=2 ];
+	stage_2_layer_1 [ fillcolor=white, label="COPY --from=ubunt...", penwidth=0.5, shape=box, style="filled,rounded", width=2 ];
+	stage_2_layer_2 [ fillcolor=white, label="COPY --from=build...", penwidth=0.5, shape=box, style="filled,rounded", width=2 ];
+	stage_2_layer_3 [ fillcolor=white, label="ENTRYPOINT ['/exa...", penwidth=0.5, shape=box, style="filled,rounded", width=2 ];
+
+}
+;
+	external_image_0 [ color=grey20, fontcolor=grey20, label="ubuntu:latest", shape=box, style="dashed,rounded", width=2 ];
+	external_image_1 [ color=grey20, fontcolor=grey20, label="golang:1.19", shape=box, style="dashed,rounded", width=2 ];
+	external_image_2 [ color=grey20, fontcolor=grey20, label="buildcache", shape=box, style="dashed,rounded", width=2 ];
+	external_image_3 [ color=grey20, fontcolor=grey20, label="scratch", shape=box, style="dashed,rounded", width=2 ];
+
 }
 `,
 		},
 		{
 			name:        "layers flag with solid edges",
-			cliArgs:     []string{"--layers", "-o", "canon", "-e", "solid"},
+			cliArgs:     []string{"--layers", "-e", "solid", "-o", "canon"},
 			wantOut:     "Successfully created Dockerfile.canon\n",
 			wantOutFile: "Dockerfile.canon",
 			wantOutFileContent: `digraph G {
@@ -375,12 +314,13 @@ It outputs a graph representation of the build process.
 `,
 		},
 		{
-			name:        "legend flag",
-			cliArgs:     []string{"--legend", "-o", "canon"},
+			name:        "legend flag with concentrated edges",
+			cliArgs:     []string{"--legend", "--concentrate", "-o", "canon"},
 			wantOut:     "Successfully created Dockerfile.canon\n",
 			wantOutFile: "Dockerfile.canon",
 			wantOutFileContent: `digraph G {
 	graph [compound=true,
+		concentrate=true,
 		nodesep=1,
 		rankdir=LR
 	];
@@ -459,7 +399,7 @@ It outputs a graph representation of the build process.
 		},
 		{
 			name:        "legend flag with solid edges",
-			cliArgs:     []string{"--legend", "-o", "canon", "-e", "solid"},
+			cliArgs:     []string{"--legend", "-e", "solid", "-o", "canon"},
 			wantOut:     "Successfully created Dockerfile.canon\n",
 			wantOutFile: "Dockerfile.canon",
 			wantOutFileContent: `digraph G {

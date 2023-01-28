@@ -10,8 +10,11 @@ import (
 
 // BuildDotFile builds a GraphViz .dot file from a simplified Dockerfile
 func BuildDotFile(
-	simplifiedDockerfile SimplifiedDockerfile, legend bool, layers bool,
+	simplifiedDockerfile SimplifiedDockerfile,
+	concentrate bool,
 	edgeStyle string,
+	layers bool,
+	legend bool,
 ) string {
 	// Create a new graph
 	graph := gographviz.NewEscape()
@@ -20,6 +23,9 @@ func BuildDotFile(
 	_ = graph.AddAttr("G", "compound", "true") // allow edges between clusters
 	_ = graph.AddAttr("G", "nodesep", "1")
 	_ = graph.AddAttr("G", "rankdir", "LR")
+	if concentrate {
+		_ = graph.AddAttr("G", "concentrate", "true")
+	}
 
 	// Add the legend if requested
 	if legend {

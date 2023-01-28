@@ -109,13 +109,14 @@ Usage:
   dockerfilegraph [flags]
 
 Flags:
+  -c, --concentrate       concentrate the edges (default false)
   -d, --dpi int           dots per inch of the PNG export (default 96)
   -e, --edgestyle         style of the graph edges, one of: default, solid (default default)
   -f, --filename string   name of the Dockerfile (default "Dockerfile")
   -h, --help              help for dockerfilegraph
       --layers            display all layers (default false)
       --legend            add a legend (default false)
-  -o, --output            output file format, one of: canon, dot, pdf, png, svg (default pdf)
+  -o, --output            output file format, one of: canon, dot, pdf, png, raw, svg (default pdf)
       --version           display the version of dockerfilegraph
 ```
 
