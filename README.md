@@ -116,7 +116,7 @@ Flags:
   -h, --help              help for dockerfilegraph
       --layers            display all layers (default false)
       --legend            add a legend (default false)
-  -o, --output            output file format, one of: canon, dot, pdf, png, svg (default pdf)
+  -o, --output            output file format, one of: canon, dot, pdf, png, raw, svg (default pdf)
       --version           display the version of dockerfilegraph
 ```
 

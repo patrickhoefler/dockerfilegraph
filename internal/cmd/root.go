@@ -77,6 +77,17 @@ It outputs a graph representation of the build process.`,
 
 			filename := "Dockerfile." + outputFlag.String()
 
+			if outputFlag.String() == "raw" {
+				err = os.Rename(dotFile.Name(), filename)
+				if err != nil {
+					return
+				}
+
+				fmt.Fprintf(dfgWriter, "Successfully created %s\n", filename)
+
+				return
+			}
+
 			dotArgs := []string{
 				"-T" + outputFlag.String(),
 				"-o" + filename,
@@ -155,7 +166,7 @@ It outputs a graph representation of the build process.`,
 		"add a legend (default false)",
 	)
 
-	outputFlag = newEnum("pdf", "canon", "dot", "png", "svg")
+	outputFlag = newEnum("pdf", "canon", "dot", "png", "raw", "svg")
 	rootCmd.Flags().VarP(
 		&outputFlag,
 		"output",
