@@ -1,5 +1,5 @@
 ### TLS root certs and non-root user
-FROM ubuntu:latest@sha256:b6b83d3c331794420340093eb706a6f152d9c1fa51b262d9bf34594887c2c7ac AS ubuntu
+FROM ubuntu:latest@sha256:27cb6e6ccef575a4698b66f5de06c7ecd61589132d5a91d098f7f3f9285415a9 AS ubuntu
 
 RUN \
   # Note that the lack of a "lock" mechanism for apt dependencies
