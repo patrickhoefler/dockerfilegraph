@@ -27,13 +27,14 @@ var usage = `Usage:
 
 Flags:
   -c, --concentrate       concentrate the edges (default false)
-  -d, --dpi int           dots per inch of the PNG export (default 96)
+  -d, --dpi uint          dots per inch of the PNG export (default 96)
   -e, --edgestyle         style of the graph edges, one of: default, solid (default default)
   -f, --filename string   name of the Dockerfile (default "Dockerfile")
   -h, --help              help for dockerfilegraph
       --layers            display all layers (default false)
       --legend            add a legend (default false)
   -o, --output            output file format, one of: canon, dot, pdf, png, raw, svg (default pdf)
+  -u, --unflatten uint    stagger length of leaf edges between [1,u] (default 0)
       --version           display the version of dockerfilegraph
 `
 
@@ -314,8 +315,8 @@ It outputs a graph representation of the build process.
 `,
 		},
 		{
-			name:        "legend flag with concentrated edges",
-			cliArgs:     []string{"--legend", "--concentrate", "-o", "canon"},
+			name:        "legend flag with concentrated edges and unflattened",
+			cliArgs:     []string{"--legend", "-c", "-u", "2", "-o", "canon"},
 			wantOut:     "Successfully created Dockerfile.canon\n",
 			wantOutFile: "Dockerfile.canon",
 			wantOutFileContent: `digraph G {
@@ -358,7 +359,7 @@ It outputs a graph representation of the build process.
 		shape=box,
 		style=rounded,
 		width=2];
-	external_image_0 -> stage_0;
+	external_image_0 -> stage_0	[minlen=1];
 	stage_2	[fillcolor=grey90,
 		label=release,
 		shape=box,
@@ -376,7 +377,7 @@ It outputs a graph representation of the build process.
 		shape=box,
 		style=rounded,
 		width=2];
-	external_image_1 -> stage_1;
+	external_image_1 -> stage_1	[minlen=1];
 	stage_1 -> stage_2	[arrowhead=empty,
 		style=dashed];
 	external_image_2	[color=grey20,
@@ -386,6 +387,7 @@ It outputs a graph representation of the build process.
 		style="dashed,rounded",
 		width=2];
 	external_image_2 -> stage_1	[arrowhead=ediamond,
+		minlen=2,
 		style=dotted];
 	external_image_3	[color=grey20,
 		fontcolor=grey20,
@@ -393,7 +395,7 @@ It outputs a graph representation of the build process.
 		shape=box,
 		style="dashed,rounded",
 		width=2];
-	external_image_3 -> stage_2;
+	external_image_3 -> stage_2	[minlen=1];
 }
 `,
 		},
