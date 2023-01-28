@@ -7,10 +7,11 @@ import (
 
 func TestBuildDotFile(t *testing.T) {
 	type args struct {
+		simplifiedDockerfile SimplifiedDockerfile
+		concentrate          bool
 		edgeStyle            string
 		layers               bool
 		legend               bool
-		simplifiedDockerfile SimplifiedDockerfile
 	}
 	tests := []struct {
 		name         string
@@ -85,8 +86,11 @@ func TestBuildDotFile(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			if got := BuildDotFile(
-				tt.args.simplifiedDockerfile, tt.args.legend, tt.args.layers,
+				tt.args.simplifiedDockerfile,
+				tt.args.concentrate,
 				tt.args.edgeStyle,
+				tt.args.layers,
+				tt.args.legend,
 			); !strings.Contains(got, tt.wantContains) {
 				t.Errorf(
 					"BuildDotFile() = %v, did not contain %v", got, tt.wantContains,

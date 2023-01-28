@@ -14,13 +14,14 @@ import (
 )
 
 var (
-	dpiFlag       int
-	edgeStyleFlag enum
-	filenameFlag  string
-	layersFlag    bool
-	legendFlag    bool
-	outputFlag    enum
-	versionFlag   bool
+	concentrateFlag bool
+	dpiFlag         int
+	edgeStyleFlag   enum
+	filenameFlag    string
+	layersFlag      bool
+	legendFlag      bool
+	outputFlag      enum
+	versionFlag     bool
 )
 
 // dfgWriter is a writer that prints to stdout. When testing, we
@@ -57,7 +58,11 @@ It outputs a graph representation of the build process.`,
 			defer os.Remove(dotFile.Name())
 
 			dotFileContent := dockerfile2dot.BuildDotFile(
-				dockerfile, legendFlag, layersFlag, edgeStyleFlag.String(),
+				dockerfile,
+				concentrateFlag,
+				edgeStyleFlag.String(),
+				layersFlag,
+				legendFlag,
 			)
 
 			_, err = dotFile.Write([]byte(dotFileContent))
@@ -104,6 +109,14 @@ It outputs a graph representation of the build process.`,
 	}
 
 	// Flags
+	rootCmd.Flags().BoolVarP(
+		&concentrateFlag,
+		"concentrate",
+		"c",
+		false,
+		"concentrate the edges (default false)",
+	)
+
 	rootCmd.Flags().IntVarP(
 		&dpiFlag,
 		"dpi",

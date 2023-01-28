@@ -26,6 +26,7 @@ var usage = `Usage:
   dockerfilegraph [flags]
 
 Flags:
+  -c, --concentrate       concentrate the edges (default false)
   -d, --dpi int           dots per inch of the PNG export (default 96)
   -e, --edgestyle         style of the graph edges, one of: default, solid (default default)
   -f, --filename string   name of the Dockerfile (default "Dockerfile")
@@ -260,7 +261,7 @@ It outputs a graph representation of the build process.
 		},
 		{
 			name:        "layers flag with solid edges",
-			cliArgs:     []string{"--layers", "-o", "canon", "-e", "solid"},
+			cliArgs:     []string{"--layers", "-e", "solid", "-o", "canon"},
 			wantOut:     "Successfully created Dockerfile.canon\n",
 			wantOutFile: "Dockerfile.canon",
 			wantOutFileContent: `digraph G {
@@ -375,12 +376,13 @@ It outputs a graph representation of the build process.
 `,
 		},
 		{
-			name:        "legend flag",
-			cliArgs:     []string{"--legend", "-o", "canon"},
+			name:        "legend flag with concentrated edges",
+			cliArgs:     []string{"--legend", "--concentrate", "-o", "canon"},
 			wantOut:     "Successfully created Dockerfile.canon\n",
 			wantOutFile: "Dockerfile.canon",
 			wantOutFileContent: `digraph G {
 	graph [compound=true,
+		concentrate=true,
 		nodesep=1,
 		rankdir=LR
 	];
@@ -459,7 +461,7 @@ It outputs a graph representation of the build process.
 		},
 		{
 			name:        "legend flag with solid edges",
-			cliArgs:     []string{"--legend", "-o", "canon", "-e", "solid"},
+			cliArgs:     []string{"--legend", "-e", "solid", "-o", "canon"},
 			wantOut:     "Successfully created Dockerfile.canon\n",
 			wantOutFile: "Dockerfile.canon",
 			wantOutFileContent: `digraph G {

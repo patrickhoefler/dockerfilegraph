@@ -109,6 +109,7 @@ Usage:
   dockerfilegraph [flags]
 
 Flags:
+  -c, --concentrate       concentrate the edges (default false)
   -d, --dpi int           dots per inch of the PNG export (default 96)
   -e, --edgestyle         style of the graph edges, one of: default, solid (default default)
   -f, --filename string   name of the Dockerfile (default "Dockerfile")
