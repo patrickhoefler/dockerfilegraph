@@ -48,8 +48,8 @@
 <!-- external_image_0 -->
 <g id="node3" class="node">
 <title>external_image_0</title>
-<path fill="none" stroke="#333333" stroke-dasharray="5,2" d="M205,-394C205,-394 40,-394 40,-394 34,-394 28,-388 28,-382 28,-382 28,-370 28,-370 28,-364 34,-358 40,-358 40,-358 205,-358 205,-358 211,-358 217,-364 217,-370 217,-370 217,-382 217,-382 217,-388 211,-394 205,-394"/>
-<text text-anchor="middle" x="122.5" y="-372.3" font-family="Times,serif" font-size="14.00" fill="#333333">ubuntu:latest...34594887c2c7ac</text>
+<path fill="none" stroke="#333333" stroke-dasharray="5,2" d="M182.5,-394C182.5,-394 62.5,-394 62.5,-394 56.5,-394 50.5,-388 50.5,-382 50.5,-382 50.5,-370 50.5,-370 50.5,-364 56.5,-358 62.5,-358 62.5,-358 182.5,-358 182.5,-358 188.5,-358 194.5,-364 194.5,-370 194.5,-370 194.5,-382 194.5,-382 194.5,-388 188.5,-394 182.5,-394"/>
+<text text-anchor="middle" x="122.5" y="-372.3" font-family="Times,serif" font-size="14.00" fill="#333333">ubuntu:l...887c2c7ac</text>
 </g>
 <!-- stage_0 -->
 <g id="node4" class="node">
@@ -60,8 +60,8 @@
 <!-- external_image_0&#45;&gt;stage_0 -->
 <g id="edge4" class="edge">
 <title>external_image_0&#45;&gt;stage_0</title>
-<path fill="none" stroke="black" d="M217.32,-376C229.37,-376 241.64,-376 253.49,-376"/>
-<polygon fill="black" stroke="black" points="253.19,-379.5 263.19,-376 253.19,-372.5 253.19,-379.5"/>
+<path fill="none" stroke="black" d="M194.85,-376C213.7,-376 234.19,-376 253.58,-376"/>
+<polygon fill="black" stroke="black" points="253.32,-379.5 263.32,-376 253.32,-372.5 253.32,-379.5"/>
 </g>
 <!-- stage_2 -->
 <g id="node9" class="node">
@@ -78,8 +78,8 @@
 <!-- external_image_1 -->
 <g id="node5" class="node">
 <title>external_image_1</title>
-<path fill="none" stroke="#333333" stroke-dasharray="5,2" d="M209,-286C209,-286 36,-286 36,-286 30,-286 24,-280 24,-274 24,-274 24,-262 24,-262 24,-256 30,-250 36,-250 36,-250 209,-250 209,-250 215,-250 221,-256 221,-262 221,-262 221,-274 221,-274 221,-280 215,-286 209,-286"/>
-<text text-anchor="middle" x="122.5" y="-264.3" font-family="Times,serif" font-size="14.00" fill="#333333">golang:1.18.4...26796b738433da</text>
+<path fill="none" stroke="#333333" stroke-dasharray="5,2" d="M182.5,-286C182.5,-286 62.5,-286 62.5,-286 56.5,-286 50.5,-280 50.5,-274 50.5,-274 50.5,-262 50.5,-262 50.5,-256 56.5,-250 62.5,-250 62.5,-250 182.5,-250 182.5,-250 188.5,-250 194.5,-256 194.5,-262 194.5,-262 194.5,-274 194.5,-274 194.5,-280 188.5,-286 182.5,-286"/>
+<text text-anchor="middle" x="122.5" y="-264.3" font-family="Times,serif" font-size="14.00" fill="#333333">golang:1...b738433da</text>
 </g>
 <!-- stage_1 -->
 <g id="node6" class="node">
@@ -90,8 +90,8 @@
 <!-- external_image_1&#45;&gt;stage_1 -->
 <g id="edge5" class="edge">
 <title>external_image_1&#45;&gt;stage_1</title>
-<path fill="none" stroke="black" d="M221.35,-268C232.07,-268 242.91,-268 253.41,-268"/>
-<polygon fill="black" stroke="black" points="253.16,-271.5 263.16,-268 253.16,-264.5 253.16,-271.5"/>
+<path fill="none" stroke="black" d="M194.85,-268C213.7,-268 234.19,-268 253.58,-268"/>
+<polygon fill="black" stroke="black" points="253.32,-271.5 263.32,-268 253.32,-264.5 253.32,-271.5"/>
 </g>
 <!-- stage_1&#45;&gt;stage_2 -->
 <g id="edge9" class="edge">
