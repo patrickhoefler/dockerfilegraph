@@ -12,12 +12,12 @@ import (
 func newLayer(
 	child *parser.Node, replacements map[string]string,
 ) (layer Layer) {
-	maxLength := 20
-
 	label := replaceArgVars(child.Original, replacements)
 	label = strings.Replace(label, "\"", "'", -1)
-	if len(label) > maxLength {
-		label = truncate.Truncate(label, maxLength, "...", truncate.PositionEnd)
+	if len(label) > maxLabelLength {
+		label = truncate.Truncate(
+			label, maxLabelLength, "...", truncate.PositionEnd,
+		)
 	}
 	layer.Label = label
 

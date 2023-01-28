@@ -8,6 +8,8 @@ import (
 	"github.com/awalterschulze/gographviz"
 )
 
+const maxLabelLength = 20
+
 // BuildDotFile builds a GraphViz .dot file from a simplified Dockerfile
 func BuildDotFile(
 	simplifiedDockerfile SimplifiedDockerfile,
@@ -34,7 +36,7 @@ func BuildDotFile(
 
 	// Add the external images
 	for externalImageIndex, externalImage := range simplifiedDockerfile.ExternalImages {
-		maxLabelLength := 30
+
 		label := externalImage.Name
 		if len(label) > maxLabelLength {
 			label = truncate.Truncate(label, maxLabelLength, "...", truncate.PositionMiddle)
