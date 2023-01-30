@@ -9,8 +9,9 @@ import (
 
 func TestLoadAndParseDockerfile(t *testing.T) {
 	type args struct {
-		inputFS  afero.Fs
-		filename string
+		inputFS        afero.Fs
+		filename       string
+		maxLabelLength int
 	}
 
 	dockerfileFS := afero.NewMemMapFs()
@@ -33,8 +34,9 @@ func TestLoadAndParseDockerfile(t *testing.T) {
 		{
 			name: "should work in the current working directory",
 			args: args{
-				inputFS:  dockerfileFS,
-				filename: "Dockerfile",
+				inputFS:        dockerfileFS,
+				filename:       "Dockerfile",
+				maxLabelLength: 20,
 			},
 			want: SimplifiedDockerfile{
 				ExternalImages: []ExternalImage{{Name: "scratch"}},
@@ -52,8 +54,9 @@ func TestLoadAndParseDockerfile(t *testing.T) {
 		{
 			name: "should work in any directory",
 			args: args{
-				inputFS:  dockerfileFS,
-				filename: "subdir/../Dockerfile",
+				inputFS:        dockerfileFS,
+				filename:       "subdir/../Dockerfile",
+				maxLabelLength: 20,
 			},
 			want: SimplifiedDockerfile{
 				ExternalImages: []ExternalImage{{Name: "scratch"}},
@@ -72,7 +75,11 @@ func TestLoadAndParseDockerfile(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := LoadAndParseDockerfile(tt.args.inputFS, tt.args.filename)
+			got, err := LoadAndParseDockerfile(
+				tt.args.inputFS,
+				tt.args.filename,
+				tt.args.maxLabelLength,
+			)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("LoadAndParseDockerfile() error = %v, wantErr %v", err, tt.wantErr)
 				return

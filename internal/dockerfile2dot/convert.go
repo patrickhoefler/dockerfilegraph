@@ -10,7 +10,9 @@ import (
 )
 
 func newLayer(
-	child *parser.Node, replacements map[string]string,
+	child *parser.Node,
+	replacements map[string]string,
+	maxLabelLength int,
 ) (layer Layer) {
 	label := replaceArgVars(child.Original, replacements)
 	label = strings.Replace(label, "\"", "'", -1)
@@ -24,9 +26,10 @@ func newLayer(
 	return
 }
 
-func dockerfileToSimplifiedDockerfile(content []byte) (
-	simplifiedDockerfile SimplifiedDockerfile, err error,
-) {
+func dockerfileToSimplifiedDockerfile(
+	content []byte,
+	maxLabelLength int,
+) (simplifiedDockerfile SimplifiedDockerfile, err error) {
 	result, err := parser.Parse(bytes.NewReader(content))
 	if err != nil {
 		return
@@ -57,7 +60,7 @@ func dockerfileToSimplifiedDockerfile(content []byte) (
 
 			// Add a new layer
 			layerIndex = 0
-			layer := newLayer(child, argReplacements)
+			layer := newLayer(child, argReplacements, maxLabelLength)
 
 			// Set the waitFor ID
 			layer.WaitFor = WaitFor{
@@ -73,7 +76,7 @@ func dockerfileToSimplifiedDockerfile(content []byte) (
 		case "COPY":
 			// Add a new layer
 			layerIndex++
-			layer := newLayer(child, argReplacements)
+			layer := newLayer(child, argReplacements, maxLabelLength)
 
 			// If there is a "--from" option, set the waitFor ID
 			for _, flag := range child.Flags {
@@ -95,7 +98,7 @@ func dockerfileToSimplifiedDockerfile(content []byte) (
 		case "RUN":
 			// Add a new layer
 			layerIndex++
-			layer := newLayer(child, argReplacements)
+			layer := newLayer(child, argReplacements, maxLabelLength)
 
 			// If there is a "--from" option, set the waitFor ID
 			for _, flag := range child.Flags {
@@ -117,7 +120,7 @@ func dockerfileToSimplifiedDockerfile(content []byte) (
 		default:
 			// Add a new layer
 			layerIndex++
-			layer := newLayer(child, argReplacements)
+			layer := newLayer(child, argReplacements, maxLabelLength)
 
 			if stageIndex == -1 {
 				simplifiedDockerfile.BeforeFirstStage = append(

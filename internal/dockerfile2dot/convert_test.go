@@ -8,7 +8,8 @@ import (
 
 func Test_dockerfileToSimplifiedDockerfile(t *testing.T) {
 	type args struct {
-		content []byte
+		content        []byte
+		maxLabelLength int
 	}
 	tests := []struct {
 		name string
@@ -17,9 +18,10 @@ func Test_dockerfileToSimplifiedDockerfile(t *testing.T) {
 	}{
 		{
 			name: "Most minimal Dockerfile",
-			args: args{content: []byte(`
-			FROM scratch
-			`)},
+			args: args{
+				content:        []byte("FROM scratch"),
+				maxLabelLength: 20,
+			},
 			want: SimplifiedDockerfile{
 				ExternalImages: []ExternalImage{
 					{Name: "scratch"},
@@ -37,13 +39,16 @@ func Test_dockerfileToSimplifiedDockerfile(t *testing.T) {
 		},
 		{
 			name: "All waitFor types",
-			args: args{content: []byte(`
-			# syntax=docker/dockerfile:1
-			FROM ubuntu as base
-			FROM scratch
-			COPY --from=base . .
-			RUN --mount=type=cache,from=buildcache,source=/go/pkg/mod/cache/,target=/go/pkg/mod/cache/ go build
-			`)},
+			args: args{
+				content: []byte(`
+# syntax=docker/dockerfile:1
+FROM ubuntu as base
+FROM scratch
+COPY --from=base . .
+RUN --mount=type=cache,from=buildcache,source=/go/pkg/mod/cache/,target=/go/pkg/mod/cache/ go build
+`),
+				maxLabelLength: 20,
+			},
 			want: SimplifiedDockerfile{
 				ExternalImages: []ExternalImage{
 					{Name: "ubuntu"},
@@ -81,21 +86,24 @@ func Test_dockerfileToSimplifiedDockerfile(t *testing.T) {
 		},
 		{
 			name: "ARGs before FROM",
-			args: args{content: []byte(`
-			# syntax=docker/dockerfile:1
-			ARG UBUNTU_VERSION=22.04
-			ARG PHP_VERSION=8.0
-			ARG ALPINE_VERSION=3.15
+			args: args{
+				content: []byte(`
+# syntax=docker/dockerfile:1
+ARG UBUNTU_VERSION=22.04
+ARG PHP_VERSION=8.0
+ARG ALPINE_VERSION=3.15
 
-			FROM ubuntu:$UBUNTU_VERSION as base
-			USER app
+FROM ubuntu:$UBUNTU_VERSION as base
+USER app
 
-			FROM php:${PHP_VERSION}-fpm-alpine${ALPINE_VERSION} as php
+FROM php:${PHP_VERSION}-fpm-alpine${ALPINE_VERSION} as php
 
-			FROM scratch
-			COPY --from=base . .
-			RUN --mount=type=cache,source=/go/pkg/mod/cache/,target=/go/pkg/mod/cache/,from=buildcache go build
-			`)},
+FROM scratch
+COPY --from=base . .
+RUN --mount=type=cache,source=/go/pkg/mod/cache/,target=/go/pkg/mod/cache/,from=buildcache go build
+`),
+				maxLabelLength: 20,
+			},
 			want: SimplifiedDockerfile{
 				ExternalImages: []ExternalImage{
 					{Name: "ubuntu:22.04"},
@@ -154,19 +162,22 @@ func Test_dockerfileToSimplifiedDockerfile(t *testing.T) {
 		},
 		{
 			name: "External image used in multiple stages",
-			args: args{content: []byte(`
-			# syntax=docker/dockerfile:1.4
+			args: args{
+				content: []byte(`
+# syntax=docker/dockerfile:1.4
 
-			FROM scratch AS download-node-setup
-			ADD https://deb.nodesource.com/setup_16.x ./
+FROM scratch AS download-node-setup
+ADD https://deb.nodesource.com/setup_16.x ./
 
-			FROM scratch AS download-get-pip
-			ADD https://bootstrap.pypa.io/get-pip.py ./
+FROM scratch AS download-get-pip
+ADD https://bootstrap.pypa.io/get-pip.py ./
 
-			FROM alpine AS final
-			COPY --from=download-node-setup setup_16.x ./
-			COPY --from=download-get-pip get-pip.py ./
-			`)},
+FROM alpine AS final
+COPY --from=download-node-setup setup_16.x ./
+COPY --from=download-get-pip get-pip.py ./
+`),
+				maxLabelLength: 20,
+			},
 			want: SimplifiedDockerfile{
 				ExternalImages: []ExternalImage{
 					{Name: "scratch"},
@@ -230,7 +241,10 @@ func Test_dockerfileToSimplifiedDockerfile(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := dockerfileToSimplifiedDockerfile(tt.args.content)
+			got, err := dockerfileToSimplifiedDockerfile(
+				tt.args.content,
+				tt.args.maxLabelLength,
+			)
 			if err != nil {
 				t.Errorf("dockerfileToSimplifiedDockerfile() error = %v", err)
 				return

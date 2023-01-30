@@ -1,16 +1,48 @@
-FROM scratch AS base
-COPY --from=external_0 file_0_0 /
-COPY --from=external_1 file_1_0 /
-COPY --from=external_2 file_2_0 /
-COPY --from=external_3 file_3_0 /
-COPY --from=external_4 file_4_0 /
-COPY --from=external_5 file_5_0 /
-COPY --from=external_6 file_6_0 /
+FROM --platform=linux/amd64 ubuntu:22.04 AS ubuntu_amd64
 
-FROM base AS build
-RUN --mount=type=cache,from=buildcache,source=/build,target=/build make build
+FROM --platform=linux/arm64 ubuntu:22.04 AS ubuntu_arm64
 
-FROM build AS final
-COPY --from=supplemental file_supplemental_0 /
-COPY --from=supplemental file_supplemental_1 /
-COPY --from=supplemental file_supplemental_2 /
+FROM ubuntu:22.04 AS ubuntu_with_amd64_emulation
+COPY --from=ubuntu_amd64 /etc/apt/sources.list /etc/apt/sources.list.amd64
+COPY --from=ubuntu_arm64 /etc/apt/sources.list /etc/apt/sources.list.arm64
+COPY --from=ubuntu_amd64 /usr/bin/cat ./cat
+COPY --from=ubuntu_arm64 /usr/bin/cat ./cat
+
+FROM alpine:3.12.0 AS a_dependency
+
+FROM ubuntu_with_amd64_emulation AS base
+COPY --from=a_dependency /bin/cat /tmp/cat
+COPY --from=docker.io/alpine:3.14 /bin/cat /tmp/cat
+COPY --from=docker.io/alpine:3.14.1 /bin/cat /tmp/cat
+COPY --from=docker.io/alpine:3.14.2 /bin/cat /tmp/cat
+COPY --from=docker.io/alpine:3.14.3 /bin/cat /tmp/cat
+COPY --from=docker.io/alpine:3.14.4 /bin/cat /tmp/cat
+COPY --from=docker.io/alpine:3.14.5 /bin/cat /tmp/cat
+COPY --from=docker.io/alpine:3.14.6 /bin/cat /tmp/cat
+COPY --from=docker.io/alpine:3.14.7 /bin/cat /tmp/cat
+COPY --from=docker.io/alpine:3.14.8 /bin/cat /tmp/cat
+COPY --from=docker.io/alpine:3.15 /bin/cat /tmp/cat
+COPY --from=docker.io/alpine:3.15.1 /bin/cat /tmp/cat
+COPY --from=docker.io/alpine:3.15.2 /bin/cat /tmp/cat
+COPY --from=docker.io/alpine:3.15.3 /bin/cat /tmp/cat
+COPY --from=docker.io/alpine:3.15.4 /bin/cat /tmp/cat
+COPY --from=docker.io/alpine:3.15.5 /bin/cat /tmp/cat
+COPY --from=docker.io/alpine:3.15.6 /bin/cat /tmp/cat
+COPY --from=docker.io/alpine:3.16.1 /bin/cat /tmp/cat
+COPY --from=docker.io/alpine:3.16.2 /bin/cat /tmp/cat
+COPY --from=docker.io/alpine:3.16.3 /bin/cat /tmp/cat
+COPY --from=docker.io/alpine:3.16 /bin/cat /tmp/cat
+
+FROM --platform=$BUILDPLATFORM ubuntu:22.04 AS build_buildplatform
+RUN --mount=type=cache,target=/root/.m2/repository echo mvn dependencies ...
+RUN --mount=type=cache,target=/root/.m2/repository echo mvn package ...
+
+FROM base as test
+COPY --from=build_buildplatform /bin/cat /tmp/cat
+COPY --from=build_buildplatform /bin/cat /tmp/cat
+COPY --from=build_buildplatform /bin/cat /tmp/cat
+RUN --mount=type=cache,target=/root/.m2/repository echo mvn verify ...
+
+FROM base
+COPY --from=build_buildplatform /bin/cat /tmp/cat
+COPY --from=build_buildplatform /bin/cat /tmp/cat
