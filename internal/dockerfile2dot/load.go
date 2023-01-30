@@ -12,7 +12,11 @@ import (
 
 // LoadAndParseDockerfile looks for the Dockerfile and returns a
 // SimplifiedDockerfile.
-func LoadAndParseDockerfile(inputFS afero.Fs, filename string) (SimplifiedDockerfile, error) {
+func LoadAndParseDockerfile(
+	inputFS afero.Fs,
+	filename string,
+	maxLabelLength int,
+) (SimplifiedDockerfile, error) {
 	content, err := afero.ReadFile(inputFS, filename)
 	if err != nil {
 		if errors.Is(err, fs.ErrNotExist) {
@@ -24,5 +28,5 @@ func LoadAndParseDockerfile(inputFS afero.Fs, filename string) (SimplifiedDocker
 		}
 		panic(err)
 	}
-	return dockerfileToSimplifiedDockerfile(content)
+	return dockerfileToSimplifiedDockerfile(content, maxLabelLength)
 }

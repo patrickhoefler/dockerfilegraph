@@ -8,15 +8,14 @@ import (
 	"github.com/awalterschulze/gographviz"
 )
 
-const maxLabelLength = 20
-
 // BuildDotFile builds a GraphViz .dot file from a simplified Dockerfile
 func BuildDotFile(
 	simplifiedDockerfile SimplifiedDockerfile,
 	concentrate bool,
-	edgeStyle string,
+	edgestyle string,
 	layers bool,
 	legend bool,
+	maxLabelLength int,
 ) string {
 	// Create a new graph
 	graph := gographviz.NewEscape()
@@ -31,15 +30,18 @@ func BuildDotFile(
 
 	// Add the legend if requested
 	if legend {
-		addLegend(graph, edgeStyle)
+		addLegend(graph, edgestyle)
 	}
 
 	// Add the external images
 	for externalImageIndex, externalImage := range simplifiedDockerfile.ExternalImages {
-
 		label := externalImage.Name
 		if len(label) > maxLabelLength {
-			label = truncate.Truncate(label, maxLabelLength, "...", truncate.PositionMiddle)
+			truncatePosition := truncate.PositionMiddle
+			if maxLabelLength < 5 {
+				truncatePosition = truncate.PositionEnd
+			}
+			label = truncate.Truncate(label, maxLabelLength, "...", truncatePosition)
 		}
 
 		_ = graph.AddNode(
@@ -62,17 +64,6 @@ func BuildDotFile(
 			"shape": "box",
 			"style": "rounded",
 			"width": "2",
-		}
-
-		// Add the build stages if layers are not requested
-		if !layers {
-			// Color the last stage, because it is the default build target
-			if stageIndex == len(simplifiedDockerfile.Stages)-1 {
-				attrs["style"] = "\"filled,rounded\""
-				attrs["fillcolor"] = "grey90"
-			}
-
-			_ = graph.AddNode("G", fmt.Sprintf("stage_%d", stageIndex), attrs)
 		}
 
 		// Add layers if requested
@@ -112,11 +103,20 @@ func BuildDotFile(
 					)
 				}
 			}
+		} else {
+			// Add the build stages.
+			// Color the last one, because it is the default build target.
+			if stageIndex == len(simplifiedDockerfile.Stages)-1 {
+				attrs["style"] = "\"filled,rounded\""
+				attrs["fillcolor"] = "grey90"
+			}
+
+			_ = graph.AddNode("G", fmt.Sprintf("stage_%d", stageIndex), attrs)
 		}
 
 		// Add the egdes for this build stage
 		addEdgesForStage(
-			stageIndex, stage, graph, simplifiedDockerfile, layers, edgeStyle,
+			stageIndex, stage, graph, simplifiedDockerfile, layers, edgestyle,
 		)
 	}
 
@@ -148,7 +148,7 @@ func BuildDotFile(
 
 func addEdgesForStage(
 	stageIndex int, stage Stage, graph *gographviz.Escape,
-	simplifiedDockerfile SimplifiedDockerfile, layers bool, edgeStyle string,
+	simplifiedDockerfile SimplifiedDockerfile, layers bool, edgestyle string,
 ) {
 	for layerIndex, layer := range stage.Layers {
 		if layer.WaitFor.Name == "" {
@@ -158,12 +158,12 @@ func addEdgesForStage(
 		edgeAttrs := map[string]string{}
 		if layer.WaitFor.Type == waitForType(copy) {
 			edgeAttrs["arrowhead"] = "empty"
-			if edgeStyle == "default" {
+			if edgestyle == "default" {
 				edgeAttrs["style"] = "dashed"
 			}
 		} else if layer.WaitFor.Type == waitForType(runMountTypeCache) {
 			edgeAttrs["arrowhead"] = "ediamond"
-			if edgeStyle == "default" {
+			if edgestyle == "default" {
 				edgeAttrs["style"] = "dotted"
 			}
 		}
@@ -184,7 +184,7 @@ func addEdgesForStage(
 	}
 }
 
-func addLegend(graph *gographviz.Escape, edgeStyle string) {
+func addLegend(graph *gographviz.Escape, edgestyle string) {
 	_ = graph.AddSubGraph("G", "cluster_legend", nil)
 
 	_ = graph.AddNode("cluster_legend", "key",
@@ -215,7 +215,7 @@ func addLegend(graph *gographviz.Escape, edgeStyle string) {
 	_ = graph.AddPortEdge("key", "i0:e", "key2", "i0:w", true, nil)
 
 	copyEdgeAttrs := map[string]string{"arrowhead": "empty"}
-	if edgeStyle == "default" {
+	if edgestyle == "default" {
 		copyEdgeAttrs["style"] = "dashed"
 	}
 	_ = graph.AddPortEdge(
@@ -224,7 +224,7 @@ func addLegend(graph *gographviz.Escape, edgeStyle string) {
 	)
 
 	cacheEdgeAttrs := map[string]string{"arrowhead": "ediamond"}
-	if edgeStyle == "default" {
+	if edgestyle == "default" {
 		cacheEdgeAttrs["style"] = "dotted"
 	}
 	_ = graph.AddPortEdge(

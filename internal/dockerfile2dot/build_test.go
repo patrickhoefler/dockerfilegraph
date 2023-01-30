@@ -9,9 +9,10 @@ func TestBuildDotFile(t *testing.T) {
 	type args struct {
 		simplifiedDockerfile SimplifiedDockerfile
 		concentrate          bool
-		edgeStyle            string
+		edgestyle            string
 		layers               bool
 		legend               bool
+		maxLabelLength       int
 	}
 	tests := []struct {
 		name         string
@@ -21,8 +22,6 @@ func TestBuildDotFile(t *testing.T) {
 		{
 			name: "legend",
 			args: args{
-				edgeStyle: "default",
-				legend:    true,
 				simplifiedDockerfile: SimplifiedDockerfile{
 					BeforeFirstStage: []Layer{
 						{
@@ -47,14 +46,15 @@ func TestBuildDotFile(t *testing.T) {
 						},
 					},
 				},
+				edgestyle:      "default",
+				legend:         true,
+				maxLabelLength: 20,
 			},
 			wantContains: "release",
 		},
 		{
 			name: "layers",
 			args: args{
-				edgeStyle: "default",
-				layers:    true,
 				simplifiedDockerfile: SimplifiedDockerfile{
 					BeforeFirstStage: []Layer{
 						{
@@ -79,6 +79,9 @@ func TestBuildDotFile(t *testing.T) {
 						},
 					},
 				},
+				edgestyle:      "default",
+				layers:         true,
+				maxLabelLength: 20,
 			},
 			wantContains: "release",
 		},
@@ -88,9 +91,10 @@ func TestBuildDotFile(t *testing.T) {
 			if got := BuildDotFile(
 				tt.args.simplifiedDockerfile,
 				tt.args.concentrate,
-				tt.args.edgeStyle,
+				tt.args.edgestyle,
 				tt.args.layers,
 				tt.args.legend,
+				tt.args.maxLabelLength,
 			); !strings.Contains(got, tt.wantContains) {
 				t.Errorf(
 					"BuildDotFile() = %v, did not contain %v", got, tt.wantContains,

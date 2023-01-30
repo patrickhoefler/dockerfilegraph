@@ -15,15 +15,16 @@ import (
 )
 
 var (
-	concentrateFlag bool
-	dpiFlag         uint
-	edgeStyleFlag   enum
-	filenameFlag    string
-	layersFlag      bool
-	legendFlag      bool
-	outputFlag      enum
-	unflattenFlag   uint
-	versionFlag     bool
+	concentrateFlag    bool
+	dpiFlag            uint
+	edgestyleFlag      enum
+	filenameFlag       string
+	layersFlag         bool
+	legendFlag         bool
+	maxLabelLengthFlag uint
+	outputFlag         enum
+	unflattenFlag      uint
+	versionFlag        bool
 )
 
 // dfgWriter is a writer that prints to stdout. When testing, we
@@ -43,12 +44,19 @@ func NewRootCmd(dfgWriter io.Writer, inputFS afero.Fs) *cobra.Command {
 		Long: `dockerfilegraph visualizes your multi-stage Dockerfile.
 It outputs a graph representation of the build process.`,
 		Args: cobra.NoArgs,
+		PreRunE: func(cmd *cobra.Command, args []string) (err error) {
+			return checkFlags()
+		},
 		RunE: func(cmd *cobra.Command, args []string) (err error) {
 			if versionFlag {
 				return printVersion(dfgWriter)
 			}
 
-			dockerfile, err := dockerfile2dot.LoadAndParseDockerfile(inputFS, filenameFlag)
+			dockerfile, err := dockerfile2dot.LoadAndParseDockerfile(
+				inputFS,
+				filenameFlag,
+				int(maxLabelLengthFlag),
+			)
 			if err != nil {
 				return
 			}
@@ -62,9 +70,10 @@ It outputs a graph representation of the build process.`,
 			dotFileContent := dockerfile2dot.BuildDotFile(
 				dockerfile,
 				concentrateFlag,
-				edgeStyleFlag.String(),
+				edgestyleFlag.String(),
 				layersFlag,
 				legendFlag,
+				int(maxLabelLengthFlag),
 			)
 
 			_, err = dotFile.Write([]byte(dotFileContent))
@@ -167,12 +176,12 @@ It outputs a graph representation of the build process.`,
 		"dots per inch of the PNG export",
 	)
 
-	edgeStyleFlag = newEnum("default", "solid")
+	edgestyleFlag = newEnum("default", "solid")
 	rootCmd.Flags().VarP(
-		&edgeStyleFlag,
+		&edgestyleFlag,
 		"edgestyle",
 		"e",
-		"style of the graph edges, one of: "+strings.Join(edgeStyleFlag.AllowedValues(), ", "),
+		"style of the graph edges, one of: "+strings.Join(edgestyleFlag.AllowedValues(), ", "),
 	)
 
 	rootCmd.Flags().StringVarP(
@@ -195,6 +204,14 @@ It outputs a graph representation of the build process.`,
 		"legend",
 		false,
 		"add a legend (default false)",
+	)
+
+	rootCmd.Flags().UintVarP(
+		&maxLabelLengthFlag,
+		"max-label-length",
+		"m",
+		20,
+		"maximum length of the node labels, must be at least 4",
 	)
 
 	outputFlag = newEnum("pdf", "canon", "dot", "png", "raw", "svg")
@@ -230,4 +247,12 @@ func Execute() {
 		// Cobra prints the error message
 		os.Exit(1)
 	}
+}
+
+func checkFlags() (err error) {
+	if maxLabelLengthFlag < 4 {
+		err = fmt.Errorf("--max-label-length must be at least 4")
+		return
+	}
+	return
 }

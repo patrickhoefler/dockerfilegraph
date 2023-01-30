@@ -26,16 +26,17 @@ var usage = `Usage:
   dockerfilegraph [flags]
 
 Flags:
-  -c, --concentrate       concentrate the edges (default false)
-  -d, --dpi uint          dots per inch of the PNG export (default 96)
-  -e, --edgestyle         style of the graph edges, one of: default, solid (default default)
-  -f, --filename string   name of the Dockerfile (default "Dockerfile")
-  -h, --help              help for dockerfilegraph
-      --layers            display all layers (default false)
-      --legend            add a legend (default false)
-  -o, --output            output file format, one of: canon, dot, pdf, png, raw, svg (default pdf)
-  -u, --unflatten uint    stagger length of leaf edges between [1,u] (default 0)
-      --version           display the version of dockerfilegraph
+  -c, --concentrate             concentrate the edges (default false)
+  -d, --dpi uint                dots per inch of the PNG export (default 96)
+  -e, --edgestyle               style of the graph edges, one of: default, solid (default default)
+  -f, --filename string         name of the Dockerfile (default "Dockerfile")
+  -h, --help                    help for dockerfilegraph
+      --layers                  display all layers (default false)
+      --legend                  add a legend (default false)
+  -m, --max-label-length uint   maximum length of the node labels, must be at least 4 (default 20)
+  -o, --output                  output file format, one of: canon, dot, pdf, png, raw, svg (default pdf)
+  -u, --unflatten uint          stagger length of leaf edges between [1,u] (default 0)
+      --version                 display the version of dockerfilegraph
 `
 
 // Taken from example/Dockerfile.
@@ -98,6 +99,12 @@ It outputs a graph representation of the build process.
 			dockerfileContent: " ", // space is needed so that the default Dockerfile is not used
 			wantErr:           true,
 			wantOut:           "Error: file with no instructions\n" + usage + "\n",
+		},
+		{
+			name:    "--max-label-length too small",
+			cliArgs: []string{"--max-label-length", "3"},
+			wantErr: true,
+			wantOut: "Error: --max-label-length must be at least 4\n" + usage + "\n",
 		},
 		{
 			name:        "output flag dot",
