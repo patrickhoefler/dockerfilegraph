@@ -22,7 +22,9 @@ var (
 	layersFlag         bool
 	legendFlag         bool
 	maxLabelLengthFlag uint
+	nodesepFlag        float64
 	outputFlag         enum
+	ranksepFlag        float64
 	unflattenFlag      uint
 	versionFlag        bool
 )
@@ -74,6 +76,8 @@ It outputs a graph representation of the build process.`,
 				layersFlag,
 				legendFlag,
 				int(maxLabelLengthFlag),
+				fmt.Sprintf("%.2f", nodesepFlag),
+				fmt.Sprintf("%.2f", ranksepFlag),
 			)
 
 			_, err = dotFile.Write([]byte(dotFileContent))
@@ -214,12 +218,28 @@ It outputs a graph representation of the build process.`,
 		"maximum length of the node labels, must be at least 4",
 	)
 
+	rootCmd.Flags().Float64VarP(
+		&nodesepFlag,
+		"nodesep",
+		"n",
+		1,
+		"minimum space between two adjacent nodes in the same rank",
+	)
+
 	outputFlag = newEnum("pdf", "canon", "dot", "png", "raw", "svg")
 	rootCmd.Flags().VarP(
 		&outputFlag,
 		"output",
 		"o",
 		"output file format, one of: "+strings.Join(outputFlag.AllowedValues(), ", "),
+	)
+
+	rootCmd.Flags().Float64VarP(
+		&ranksepFlag,
+		"ranksep",
+		"r",
+		0.5,
+		"minimum separation between ranks",
 	)
 
 	rootCmd.Flags().UintVarP(

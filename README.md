@@ -36,7 +36,7 @@ For all the details, see the [options](#more-options) below.
 
 ![Example output including layers](./examples/images/Dockerfile-layers.svg)
 
-### Large Dockerfile including `--concentrate` and `--unflatten 4`
+### Large graph with flags `--concentrate --nodesep 0.3 --unflatten 4`
 
 ![Example output with `--concentrate` and `--unflatten 4`](./examples/images/Dockerfile-large.svg)
 
@@ -119,7 +119,9 @@ Flags:
       --layers                  display all layers (default false)
       --legend                  add a legend (default false)
   -m, --max-label-length uint   maximum length of the node labels, must be at least 4 (default 20)
+  -n, --nodesep float           minimum space between two adjacent nodes in the same rank (default 1)
   -o, --output                  output file format, one of: canon, dot, pdf, png, raw, svg (default pdf)
+  -r, --ranksep float           minimum separation between ranks (default 0.5)
   -u, --unflatten uint          stagger length of leaf edges between [1,u] (default 0)
       --version                 display the version of dockerfilegraph
 ```

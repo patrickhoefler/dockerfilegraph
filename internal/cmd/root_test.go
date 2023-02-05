@@ -34,7 +34,9 @@ Flags:
       --layers                  display all layers (default false)
       --legend                  add a legend (default false)
   -m, --max-label-length uint   maximum length of the node labels, must be at least 4 (default 20)
+  -n, --nodesep float           minimum space between two adjacent nodes in the same rank (default 1)
   -o, --output                  output file format, one of: canon, dot, pdf, png, raw, svg (default pdf)
+  -r, --ranksep float           minimum separation between ranks (default 0.5)
   -u, --unflatten uint          stagger length of leaf edges between [1,u] (default 0)
       --version                 display the version of dockerfilegraph
 `
@@ -156,8 +158,9 @@ It outputs a graph representation of the build process.
 			//nolint:lll
 			wantOutFileContent: `digraph G {
 	compound=true;
-	nodesep=1;
+	nodesep=1.00;
 	rankdir=LR;
+	ranksep=0.50;
 	stage_0_layer_0->stage_0_layer_1;
 	external_image_0->stage_0_layer_0;
 	stage_1_layer_0->stage_1_layer_1;
@@ -212,8 +215,9 @@ It outputs a graph representation of the build process.
 			wantOutFile: "Dockerfile.canon",
 			wantOutFileContent: `digraph G {
 	graph [compound=true,
-		nodesep=1,
-		rankdir=LR
+		nodesep=1.00,
+		rankdir=LR,
+		ranksep=0.50
 	];
 	node [label="\N"];
 	subgraph cluster_stage_0 {
@@ -329,8 +333,9 @@ It outputs a graph representation of the build process.
 			wantOutFileContent: `digraph G {
 	graph [compound=true,
 		concentrate=true,
-		nodesep=1,
-		rankdir=LR
+		nodesep=1.00,
+		rankdir=LR,
+		ranksep=0.50
 	];
 	node [label="\N"];
 	subgraph cluster_legend {
@@ -413,8 +418,9 @@ It outputs a graph representation of the build process.
 			wantOutFile: "Dockerfile.canon",
 			wantOutFileContent: `digraph G {
 	graph [compound=true,
-		nodesep=1,
-		rankdir=LR
+		nodesep=1.00,
+		rankdir=LR,
+		ranksep=0.50
 	];
 	node [label="\N"];
 	subgraph cluster_legend {
