@@ -13,6 +13,8 @@ func TestBuildDotFile(t *testing.T) {
 		layers               bool
 		legend               bool
 		maxLabelLength       int
+		nodesep              string
+		ranksep              string
 	}
 	tests := []struct {
 		name         string
@@ -49,6 +51,8 @@ func TestBuildDotFile(t *testing.T) {
 				edgestyle:      "default",
 				legend:         true,
 				maxLabelLength: 20,
+				nodesep:        "0.5",
+				ranksep:        "0.5",
 			},
 			wantContains: "release",
 		},
@@ -82,6 +86,8 @@ func TestBuildDotFile(t *testing.T) {
 				edgestyle:      "default",
 				layers:         true,
 				maxLabelLength: 20,
+				nodesep:        "0.5",
+				ranksep:        "0.5",
 			},
 			wantContains: "release",
 		},
@@ -95,6 +101,8 @@ func TestBuildDotFile(t *testing.T) {
 				tt.args.layers,
 				tt.args.legend,
 				tt.args.maxLabelLength,
+				tt.args.nodesep,
+				tt.args.ranksep,
 			); !strings.Contains(got, tt.wantContains) {
 				t.Errorf(
 					"BuildDotFile() = %v, did not contain %v", got, tt.wantContains,
