@@ -174,7 +174,7 @@ It creates a visual graph representation of the build process.
 }
 ;
 	subgraph cluster_stage_1 {
-	label="build-tool-depend...";
+	label="build-tool-dependencies";
 	margin=16;
 	stage_1_layer_0 [ fillcolor=white, label="FROM golang:1.19 ...", penwidth=0.5, shape=box, style="filled,rounded", width=2 ];
 	stage_1_layer_1 [ fillcolor=white, label="RUN --mount=type=...", penwidth=0.5, shape=box, style="filled,rounded", width=2 ];
@@ -232,7 +232,7 @@ It creates a visual graph representation of the build process.
 		stage_0_layer_0 -> stage_0_layer_1;
 	}
 	subgraph cluster_stage_1 {
-		graph [label="build-tool-depend...",
+		graph [label="build-tool-dependencies",
 			margin=16
 		];
 		stage_1_layer_0	[fillcolor=white,
