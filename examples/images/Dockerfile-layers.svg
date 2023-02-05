@@ -17,7 +17,7 @@
 <g id="clust2" class="cluster">
 <title>cluster_stage_1</title>
 <polygon fill="none" stroke="black" points="344,-332 344,-423 700,-423 700,-332 344,-332"/>
-<text text-anchor="middle" x="522" y="-407.8" font-family="Times,serif" font-size="14.00">build&#45;tool&#45;depend...</text>
+<text text-anchor="middle" x="522" y="-407.8" font-family="Times,serif" font-size="14.00">build&#45;tool&#45;dependencies</text>
 </g>
 <g id="clust3" class="cluster">
 <title>cluster_stage_2</title>

@@ -74,7 +74,7 @@ func BuildDotFile(
 			cluster := fmt.Sprintf("cluster_stage_%d", stageIndex)
 
 			clusterAttrs := map[string]string{
-				"label":  getStageLabel(stageIndex, stage, maxLabelLength),
+				"label":  getStageLabel(stageIndex, stage, 0),
 				"margin": "16",
 			}
 
@@ -237,7 +237,7 @@ func addLegend(graph *gographviz.Escape, edgestyle string) {
 }
 
 func getStageLabel(stageIndex int, stage Stage, maxLabelLength int) string {
-	if len(stage.Name) > maxLabelLength {
+	if maxLabelLength > 0 && len(stage.Name) > maxLabelLength {
 		return truncate.Truncate(
 			stage.Name, maxLabelLength, "...", truncate.PositionEnd,
 		)
