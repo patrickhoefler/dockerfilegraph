@@ -85,7 +85,7 @@
 <g id="node6" class="node">
 <title>stage_1</title>
 <path fill="none" stroke="black" d="M397,-286C397,-286 277,-286 277,-286 271,-286 265,-280 265,-274 265,-274 265,-262 265,-262 265,-256 271,-250 277,-250 277,-250 397,-250 397,-250 403,-250 409,-256 409,-262 409,-262 409,-274 409,-274 409,-280 403,-286 397,-286"/>
-<text text-anchor="middle" x="337" y="-264.3" font-family="Times,serif" font-size="14.00">build</text>
+<text text-anchor="middle" x="337" y="-264.3" font-family="Times,serif" font-size="14.00">build&#45;tool&#45;depend...</text>
 </g>
 <!-- external_image_1&#45;&gt;stage_1 -->
 <g id="edge5" class="edge">

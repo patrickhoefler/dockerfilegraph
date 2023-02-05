@@ -41,34 +41,27 @@ Flags:
       --version                 display the version of dockerfilegraph
 `
 
-// Taken from example/Dockerfile.
 var dockerfileContent = `
 ### TLS root certs and non-root user
 FROM ubuntu:latest AS ubuntu
 
 RUN \
-  # Note that the lack of a "lock" mechanism for apt dependencies
-  # currently prevents a fully reproducible build
   apt-get update \
   && apt-get install -y --no-install-recommends \
-  # Install TLS root certificates
   ca-certificates \
   && rm -rf /var/lib/apt/lists/*
 
 # ---
 
-FROM golang:1.19 AS build
+FROM golang:1.19 AS build-tool-dependencies
 RUN --mount=type=cache,from=buildcache,source=/go/pkg/mod/cache/,target=/go/pkg/mod/cache/ go build
 
 # ---
 
-### Release image
 FROM scratch AS release
 
-# Copy the TLS certificates for encrypted network communication
 COPY --from=ubuntu /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/ca-certificates.crt
-
-COPY --from=build . .
+COPY --from=build-tool-dependencies . .
 
 ENTRYPOINT ["/example"]
 `
@@ -181,7 +174,7 @@ It creates a visual graph representation of the build process.
 }
 ;
 	subgraph cluster_stage_1 {
-	label=build;
+	label="build-tool-depend...";
 	margin=16;
 	stage_1_layer_0 [ fillcolor=white, label="FROM golang:1.19 ...", penwidth=0.5, shape=box, style="filled,rounded", width=2 ];
 	stage_1_layer_1 [ fillcolor=white, label="RUN --mount=type=...", penwidth=0.5, shape=box, style="filled,rounded", width=2 ];
@@ -239,7 +232,7 @@ It creates a visual graph representation of the build process.
 		stage_0_layer_0 -> stage_0_layer_1;
 	}
 	subgraph cluster_stage_1 {
-		graph [label=build,
+		graph [label="build-tool-depend...",
 			margin=16
 		];
 		stage_1_layer_0	[fillcolor=white,
@@ -385,7 +378,7 @@ It creates a visual graph representation of the build process.
 		shape=box,
 		style="dashed,rounded",
 		width=2];
-	stage_1	[label=build,
+	stage_1	[label="build-tool-depend...",
 		shape=box,
 		style=rounded,
 		width=2];
@@ -467,7 +460,7 @@ It creates a visual graph representation of the build process.
 		shape=box,
 		style="dashed,rounded",
 		width=2];
-	stage_1	[label=build,
+	stage_1	[label="build-tool-depend...",
 		shape=box,
 		style=rounded,
 		width=2];

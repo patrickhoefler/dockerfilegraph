@@ -63,7 +63,7 @@ func BuildDotFile(
 
 	for stageIndex, stage := range simplifiedDockerfile.Stages {
 		attrs := map[string]string{
-			"label": "\"" + getStageLabel(stageIndex, stage) + "\"",
+			"label": "\"" + getStageLabel(stageIndex, stage, maxLabelLength) + "\"",
 			"shape": "box",
 			"style": "rounded",
 			"width": "2",
@@ -74,7 +74,7 @@ func BuildDotFile(
 			cluster := fmt.Sprintf("cluster_stage_%d", stageIndex)
 
 			clusterAttrs := map[string]string{
-				"label":  getStageLabel(stageIndex, stage),
+				"label":  getStageLabel(stageIndex, stage, maxLabelLength),
 				"margin": "16",
 			}
 
@@ -236,11 +236,18 @@ func addLegend(graph *gographviz.Escape, edgestyle string) {
 	)
 }
 
-func getStageLabel(stageIndex int, stage Stage) string {
-	if stage.Name != "" {
-		return stage.Name
+func getStageLabel(stageIndex int, stage Stage, maxLabelLength int) string {
+	if len(stage.Name) > maxLabelLength {
+		return truncate.Truncate(
+			stage.Name, maxLabelLength, "...", truncate.PositionEnd,
+		)
 	}
-	return fmt.Sprintf("%d", stageIndex)
+
+	if stage.Name == "" {
+		return fmt.Sprintf("%d", stageIndex)
+	}
+
+	return stage.Name
 }
 
 // getWaitForNodeID returns the ID of the node identified by the stage ID or
