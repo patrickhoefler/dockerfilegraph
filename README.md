@@ -105,7 +105,7 @@ make build
 ```text
 ❯ dockerfilegraph --help
 dockerfilegraph visualizes your multi-stage Dockerfile.
-It outputs a graph representation of the build process.
+It creates a visual graph representation of the build process.
 
 Usage:
   dockerfilegraph [flags]

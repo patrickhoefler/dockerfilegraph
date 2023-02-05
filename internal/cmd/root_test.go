@@ -79,7 +79,7 @@ func TestRootCmd(t *testing.T) {
 			name:    "help flag",
 			cliArgs: []string{"--help"},
 			wantOut: `dockerfilegraph visualizes your multi-stage Dockerfile.
-It outputs a graph representation of the build process.
+It creates a visual graph representation of the build process.
 
 ` + usage,
 		},

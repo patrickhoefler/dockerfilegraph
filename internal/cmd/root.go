@@ -44,7 +44,7 @@ func NewRootCmd(dfgWriter io.Writer, inputFS afero.Fs) *cobra.Command {
 		Use:   "dockerfilegraph",
 		Short: "Visualize your multi-stage Dockerfile",
 		Long: `dockerfilegraph visualizes your multi-stage Dockerfile.
-It outputs a graph representation of the build process.`,
+It creates a visual graph representation of the build process.`,
 		Args: cobra.NoArgs,
 		PreRunE: func(cmd *cobra.Command, args []string) (err error) {
 			return checkFlags()
