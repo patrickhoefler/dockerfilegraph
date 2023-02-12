@@ -39,7 +39,9 @@ func (d dfgWriter) Write(p []byte) (n int, err error) {
 }
 
 // NewRootCmd creates a new root command.
-func NewRootCmd(dfgWriter io.Writer, inputFS afero.Fs) *cobra.Command {
+func NewRootCmd(
+	dfgWriter io.Writer, inputFS afero.Fs, dotCmd string,
+) *cobra.Command {
 	rootCmd := &cobra.Command{
 		Use:   "dockerfilegraph",
 		Short: "Visualize your multi-stage Dockerfile",
@@ -54,6 +56,13 @@ It creates a visual graph representation of the build process.`,
 				return printVersion(dfgWriter)
 			}
 
+			// Make sure that graphviz is installed.
+			_, err = exec.LookPath(dotCmd)
+			if err != nil {
+				return
+			}
+
+			// Load and parse the Dockerfile.
 			dockerfile, err := dockerfile2dot.LoadAndParseDockerfile(
 				inputFS,
 				filenameFlag,
@@ -90,32 +99,8 @@ It creates a visual graph representation of the build process.`,
 				return
 			}
 
-			var unflattenFile *os.File
 			if unflattenFlag > 0 {
-				unflattenFile, err = os.CreateTemp("", "dockerfile.*.dot")
-				if err != nil {
-					return
-				}
-				defer os.Remove(unflattenFile.Name())
-
-				unflattenCmd := exec.Command(
-					"unflatten",
-					"-l", strconv.FormatUint(uint64(unflattenFlag), 10),
-					"-o", unflattenFile.Name(), dotFile.Name(),
-				)
-				unflattenCmd.Stdout = dfgWriter
-				unflattenCmd.Stderr = dfgWriter
-				err = unflattenCmd.Run()
-				if err != nil {
-					return
-				}
-
-				err = unflattenFile.Close()
-				if err != nil {
-					return
-				}
-
-				err = os.Rename(unflattenFile.Name(), dotFile.Name())
+				err = unflatten(dotFile, dfgWriter)
 				if err != nil {
 					return
 				}
@@ -141,7 +126,7 @@ It creates a visual graph representation of the build process.`,
 			}
 			dotArgs = append(dotArgs, dotFile.Name())
 
-			out, err := exec.Command("dot", dotArgs...).CombinedOutput()
+			out, err := exec.Command(dotCmd, dotArgs...).CombinedOutput()
 			if err != nil {
 				fmt.Fprintf(dfgWriter,
 					`Oh no, something went wrong while generating the graph!
@@ -154,7 +139,7 @@ It creates a visual graph representation of the build process.`,
 					%s`,
 					dotFileContent, string(out),
 				)
-				os.Exit(1)
+				return
 			}
 
 			fmt.Fprintf(dfgWriter, "Successfully created %s\n", filename)
@@ -260,9 +245,44 @@ It creates a visual graph representation of the build process.`,
 	return rootCmd
 }
 
+func unflatten(dotFile *os.File, dfgWriter io.Writer) (err error) {
+	var unflattenFile *os.File
+	unflattenFile, err = os.CreateTemp("", "dockerfile.*.dot")
+	if err != nil {
+		return
+	}
+	defer os.Remove(unflattenFile.Name())
+
+	unflattenCmd := exec.Command(
+		"unflatten",
+		"-l", strconv.FormatUint(uint64(unflattenFlag), 10),
+		"-o", unflattenFile.Name(), dotFile.Name(),
+	)
+	unflattenCmd.Stdout = dfgWriter
+	unflattenCmd.Stderr = dfgWriter
+	err = unflattenCmd.Run()
+	if err != nil {
+		return
+	}
+
+	err = unflattenFile.Close()
+	if err != nil {
+		return
+	}
+
+	err = os.Rename(unflattenFile.Name(), dotFile.Name())
+	if err != nil {
+		return
+	}
+
+	return
+}
+
 // Execute executes the root command.
 func Execute() {
-	err := NewRootCmd(dfgWriter{}, afero.NewOsFs()).Execute()
+	err := NewRootCmd(
+		dfgWriter{}, afero.NewOsFs(), "dot",
+	).Execute()
 	if err != nil {
 		// Cobra prints the error message
 		os.Exit(1)
