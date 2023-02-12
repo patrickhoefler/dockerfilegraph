@@ -28,15 +28,15 @@ For all the details, see the [options](#more-options) below.
 
 ## Example Output
 
-### Including `--legend`
+### Dockerfile graph including a `--legend`
 
 ![Example output including a legend](./examples/images/Dockerfile-legend.svg)
 
-### Including `--layers`
+### Dockerfile graph visualizing the image `--layers`
 
 ![Example output including layers](./examples/images/Dockerfile-layers.svg)
 
-### Large graph with flags `--concentrate --nodesep 0.3 --unflatten 4`
+### Complex Dockerfile graph created with `--concentrate --nodesep 0.3 --unflatten 4`
 
 ![Example output with `--concentrate` and `--unflatten 4`](./examples/images/Dockerfile-large.svg)
 
