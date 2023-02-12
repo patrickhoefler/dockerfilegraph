@@ -15,6 +15,7 @@ type test struct {
 	name               string
 	cliArgs            []string
 	dockerfileContent  string
+	dotCmd             string
 	wantErr            bool
 	wantOut            string
 	wantOutRegex       string
@@ -94,6 +95,12 @@ It creates a visual graph representation of the build process.
 			dockerfileContent: " ", // space is needed so that the default Dockerfile is not used
 			wantErr:           true,
 			wantOut:           "Error: file with no instructions\n" + usage + "\n",
+		},
+		{
+			name:    "graphviz not installed",
+			dotCmd:  "dot-not-found-in-path",
+			wantErr: true,
+			wantOut: "Error: exec: \"dot-not-found-in-path\": executable file not found in $PATH\n" + usage + "\n",
 		},
 		{
 			name:    "--max-label-length too small",
@@ -496,7 +503,10 @@ It creates a visual graph representation of the build process.
 		t.Run(tt.name, func(t *testing.T) {
 			buf := new(bytes.Buffer)
 
-			command := cmd.NewRootCmd(buf, inputFS)
+			if tt.dotCmd == "" {
+				tt.dotCmd = "dot"
+			}
+			command := cmd.NewRootCmd(buf, inputFS, tt.dotCmd)
 			command.SetArgs(tt.cliArgs)
 
 			// Redirect Cobra output
