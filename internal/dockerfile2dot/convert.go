@@ -65,7 +65,7 @@ func dockerfileToSimplifiedDockerfile(
 			// Set the waitFor ID
 			layer.WaitFor = WaitFor{
 				Name: replaceArgVars(child.Next.Value, argReplacements),
-				Type: waitForType(from),
+				Type: waitForType(waitForFrom),
 			}
 
 			simplifiedDockerfile.Stages[stageIndex].Layers = append(
@@ -85,7 +85,7 @@ func dockerfileToSimplifiedDockerfile(
 				if len(result) > 1 {
 					layer.WaitFor = WaitFor{
 						Name: string(result[1]),
-						Type: waitForType(copy),
+						Type: waitForType(waitForCopy),
 					}
 				}
 			}
@@ -107,7 +107,7 @@ func dockerfileToSimplifiedDockerfile(
 				if len(result) > 1 {
 					layer.WaitFor = WaitFor{
 						Name: string(result[1]),
-						Type: waitForType(runMountTypeCache),
+						Type: waitForType(waitForCache),
 					}
 				}
 			}

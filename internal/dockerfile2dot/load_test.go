@@ -45,7 +45,7 @@ func TestLoadAndParseDockerfile(t *testing.T) {
 						Layers: []Layer{
 							{
 								Label:   "FROM scratch",
-								WaitFor: WaitFor{Name: "scratch", Type: waitForType(from)}},
+								WaitFor: WaitFor{Name: "scratch", Type: waitForType(waitForFrom)}},
 						},
 					},
 				},
@@ -65,7 +65,7 @@ func TestLoadAndParseDockerfile(t *testing.T) {
 						Layers: []Layer{
 							{
 								Label:   "FROM scratch",
-								WaitFor: WaitFor{Name: "scratch", Type: waitForType(from)}},
+								WaitFor: WaitFor{Name: "scratch", Type: waitForType(waitForFrom)}},
 						},
 					},
 				},

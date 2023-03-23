@@ -34,9 +34,9 @@ type ExternalImage struct {
 type waitForType int
 
 const (
-	copy waitForType = iota
-	from
-	runMountTypeCache
+	waitForCopy waitForType = iota
+	waitForFrom
+	waitForCache
 )
 
 // WaitFor holds the name of the stage or external image for which the builder

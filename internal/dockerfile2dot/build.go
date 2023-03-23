@@ -159,12 +159,12 @@ func addEdgesForStage(
 		}
 
 		edgeAttrs := map[string]string{}
-		if layer.WaitFor.Type == waitForType(copy) {
+		if layer.WaitFor.Type == waitForType(waitForCopy) {
 			edgeAttrs["arrowhead"] = "empty"
 			if edgestyle == "default" {
 				edgeAttrs["style"] = "dashed"
 			}
-		} else if layer.WaitFor.Type == waitForType(runMountTypeCache) {
+		} else if layer.WaitFor.Type == waitForType(waitForCache) {
 			edgeAttrs["arrowhead"] = "ediamond"
 			if edgestyle == "default" {
 				edgeAttrs["style"] = "dotted"
