@@ -41,7 +41,7 @@ func TestBuildDotFile(t *testing.T) {
 									Label: "FROM...",
 									WaitFor: WaitFor{
 										Name: "build",
-										Type: waitForType(from),
+										Type: waitForType(waitForFrom),
 									},
 								},
 							},
@@ -76,7 +76,7 @@ func TestBuildDotFile(t *testing.T) {
 									Label: "FROM...",
 									WaitFor: WaitFor{
 										Name: "build",
-										Type: waitForType(from),
+										Type: waitForType(waitForFrom),
 									},
 								},
 							},
