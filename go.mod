@@ -1,6 +1,6 @@
 module github.com/patrickhoefler/dockerfilegraph
 
-go 1.19
+go 1.20
 
 require (
 	github.com/aquilax/truncate v1.0.0
