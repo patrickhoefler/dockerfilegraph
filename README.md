@@ -7,14 +7,14 @@
 
 `dockerfilegraph` visualizes your multi-stage Dockerfiles.
 
-It creates a visual graph representation of the build process.
-The graph contains the following nodes:
+It uses [Graphviz](https://graphviz.org/) to create a visual representation of the build process.
+The build graph contains the following nodes:
 
 - All build stages
 - The default build target (highlighted in grey)
 - External images (with dashed borders)
 
-The edges of the graph represent:
+The edges of the build graph represent:
 
 - `FROM ...` dependencies
   (with a solid line and a full arrow head)
@@ -51,7 +51,7 @@ For all the details, see the [options](#more-options) below.
 Running `dockerfilegraph` without any arguments will create a `Dockerfile.pdf` in your current working directory.
 This PDF contains a visual graph representation of your multi-stage Dockerfile.
 
-#### docker / [nerdctl](https://github.com/containerd/nerdctl)
+#### [docker](https://docker.com/) / [nerdctl](https://github.com/containerd/nerdctl)
 
 ##### Image based on Ubuntu 22.10
 
@@ -82,7 +82,11 @@ brew install patrickhoefler/tap/dockerfilegraph
 dockerfilegraph
 ```
 
-#### [toolctl](https://toolctl.io/)
+#### [toolctl](https://github.com/toolctl/toolctl)
+
+Make sure that [Graphviz](https://graphviz.org/) is installed locally.
+
+Then:
 
 ```text
 toolctl install dockerfilegraph
