@@ -20,7 +20,7 @@ The edges of the build graph represent:
   (with a solid line and a full arrow head)
 - `COPY --from=...` dependencies
   (with a dashed line and an empty arrow head)
-- `RUN --mount=type=cache,from=...` dependencies
+- `RUN --mount=(.*)from=...` dependencies
   (with a dotted line and an empty diamond arrow head)
 
 You can add an optional legend to the graph and change the output format and resolution.

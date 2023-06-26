@@ -36,12 +36,12 @@ type waitForType int
 const (
 	waitForCopy waitForType = iota
 	waitForFrom
-	waitForCache
+	waitForMount
 )
 
 // WaitFor holds the name of the stage or external image for which the builder
 // has to wait, and the type, i.e. the reason why it has to wait for it
 type WaitFor struct {
 	Name string      // the name of the stage or external image for which the builder has to wait
-	Type waitForType // one of "from", "copy" or "runMountTypeCache"
+	Type waitForType // the reason why it has to wait
 }

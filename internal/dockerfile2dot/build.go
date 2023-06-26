@@ -164,7 +164,7 @@ func addEdgesForStage(
 			if edgestyle == "default" {
 				edgeAttrs["style"] = "dashed"
 			}
-		} else if layer.WaitFor.Type == waitForType(waitForCache) {
+		} else if layer.WaitFor.Type == waitForType(waitForMount) {
 			edgeAttrs["arrowhead"] = "ediamond"
 			if edgestyle == "default" {
 				edgeAttrs["style"] = "dotted"
@@ -198,7 +198,7 @@ func addLegend(graph *gographviz.Escape, edgestyle string) {
 			"label": `<<table border="0" cellpadding="2" cellspacing="0" cellborder="0">
 	<tr><td align="right" port="i0">FROM&nbsp;...&nbsp;</td></tr>
 	<tr><td align="right" port="i1">COPY --from=...&nbsp;</td></tr>
-	<tr><td align="right" port="i2">RUN --mount=type=cache,from=...&nbsp;</td></tr>
+	<tr><td align="right" port="i2">RUN --mount=(.*)from=...&nbsp;</td></tr>
 </table>>`,
 		},
 	)
@@ -226,13 +226,13 @@ func addLegend(graph *gographviz.Escape, edgestyle string) {
 		copyEdgeAttrs,
 	)
 
-	cacheEdgeAttrs := map[string]string{"arrowhead": "ediamond"}
+	mountEdgeAttrs := map[string]string{"arrowhead": "ediamond"}
 	if edgestyle == "default" {
-		cacheEdgeAttrs["style"] = "dotted"
+		mountEdgeAttrs["style"] = "dotted"
 	}
 	_ = graph.AddPortEdge(
 		"key", "i2:e", "key2", "i2:w", true,
-		cacheEdgeAttrs,
+		mountEdgeAttrs,
 	)
 }
 
