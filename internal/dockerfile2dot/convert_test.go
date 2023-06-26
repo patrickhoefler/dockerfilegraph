@@ -77,7 +77,38 @@ RUN --mount=type=cache,from=buildcache,source=/go/pkg/mod/cache/,target=/go/pkg/
 							},
 							{
 								Label:   "RUN --mount=type=...",
-								WaitFor: WaitFor{Name: "buildcache", Type: waitForType(waitForCache)},
+								WaitFor: WaitFor{Name: "buildcache", Type: waitForType(waitForMount)},
+							},
+						},
+					},
+				},
+			},
+		},
+		{
+			name: "bind mount",
+			args: args{
+				content: []byte(`
+# syntax=docker/dockerfile:1
+FROM scratch
+RUN --mount=from=build,source=/build/,target=/build/ go build
+`),
+				maxLabelLength: 20,
+			},
+			want: SimplifiedDockerfile{
+				ExternalImages: []ExternalImage{
+					{Name: "scratch"},
+					{Name: "build"},
+				},
+				Stages: []Stage{
+					{
+						Layers: []Layer{
+							{
+								Label:   "FROM scratch",
+								WaitFor: WaitFor{Name: "scratch", Type: waitForType(waitForFrom)},
+							},
+							{
+								Label:   "RUN --mount=from=...",
+								WaitFor: WaitFor{Name: "build", Type: waitForType(waitForMount)},
 							},
 						},
 					},
@@ -148,7 +179,7 @@ RUN --mount=type=cache,source=/go/pkg/mod/cache/,target=/go/pkg/mod/cache/,from=
 							},
 							{
 								Label:   "RUN --mount=type=...",
-								WaitFor: WaitFor{Name: "buildcache", Type: waitForType(waitForCache)},
+								WaitFor: WaitFor{Name: "buildcache", Type: waitForType(waitForMount)},
 							},
 						},
 					},

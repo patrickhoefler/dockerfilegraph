@@ -344,7 +344,7 @@ It creates a visual graph representation of the build process.
 			label=<<table border="0" cellpadding="2" cellspacing="0" cellborder="0">
 	<tr><td align="right" port="i0">FROM&nbsp;...&nbsp;</td></tr>
 	<tr><td align="right" port="i1">COPY --from=...&nbsp;</td></tr>
-	<tr><td align="right" port="i2">RUN --mount=type=cache,from=...&nbsp;</td></tr>
+	<tr><td align="right" port="i2">RUN --mount=(.*)from=...&nbsp;</td></tr>
 </table>>,
 			shape=plaintext];
 		key2	[fontname=monospace,
@@ -429,7 +429,7 @@ It creates a visual graph representation of the build process.
 			label=<<table border="0" cellpadding="2" cellspacing="0" cellborder="0">
 	<tr><td align="right" port="i0">FROM&nbsp;...&nbsp;</td></tr>
 	<tr><td align="right" port="i1">COPY --from=...&nbsp;</td></tr>
-	<tr><td align="right" port="i2">RUN --mount=type=cache,from=...&nbsp;</td></tr>
+	<tr><td align="right" port="i2">RUN --mount=(.*)from=...&nbsp;</td></tr>
 </table>>,
 			shape=plaintext];
 		key2	[fontname=monospace,

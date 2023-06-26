@@ -100,14 +100,14 @@ func dockerfileToSimplifiedDockerfile(
 			layerIndex++
 			layer := newLayer(child, argReplacements, maxLabelLength)
 
-			// If there is a "--from" option, set the waitFor ID
+			// If there is a "--mount=(.*)from=..." option, set the waitFor ID
 			for _, flag := range child.Flags {
-				regex := regexp.MustCompile("--mount=type=cache,.*from=(.+?)(?:,| |$)")
+				regex := regexp.MustCompile("--mount=.*from=(.+?)(?:,| |$)")
 				result := regex.FindSubmatch([]byte(flag))
 				if len(result) > 1 {
 					layer.WaitFor = WaitFor{
 						Name: string(result[1]),
-						Type: waitForType(waitForCache),
+						Type: waitForType(waitForMount),
 					}
 				}
 			}
