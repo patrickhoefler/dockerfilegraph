@@ -53,7 +53,7 @@ This PDF contains a visual graph representation of your multi-stage Dockerfile.
 
 #### [docker](https://docker.com/) / [nerdctl](https://github.com/containerd/nerdctl)
 
-##### Image based on Ubuntu 22.10
+##### Image based on Ubuntu 22.04
 
 ```shell
 docker run \
