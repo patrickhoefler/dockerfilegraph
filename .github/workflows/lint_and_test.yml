@@ -117,7 +117,7 @@ jobs:
           go-version-file: 'go.mod'
 
       - name: Build binaries and Docker image with GoReleaser
-        uses: goreleaser/goreleaser-action@81d9ad71850a31bc2c99f6355208b6442d0a5783 # v4.5.0
+        uses: goreleaser/goreleaser-action@5fdedb94abba051217030cc86d4523cf3f02243d # v4.6.0
         with:
           args: release --snapshot --skip-publish
 
