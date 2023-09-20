@@ -269,6 +269,99 @@ COPY --from=download-get-pip get-pip.py ./
 				},
 			},
 		},
+		{
+			name: "External image used in multiple stages with reused final stage",
+			args: args{
+				content: []byte(`
+# syntax=docker/dockerfile:1.4
+FROM alpine AS final
+
+FROM scratch AS download-node-setup
+ADD https://deb.nodesource.com/setup_16.x ./
+FROM final AS final
+COPY --from=download-node-setup setup_16.x ./
+
+FROM scratch AS download-get-pip
+ADD https://bootstrap.pypa.io/get-pip.py ./
+FROM final AS final
+COPY --from=download-get-pip get-pip.py ./
+`),
+				maxLabelLength: 20,
+			},
+			want: SimplifiedDockerfile{
+				ExternalImages: []ExternalImage{
+					{Name: "alpine"},
+					{Name: "scratch"},
+				},
+				Stages: []Stage{
+						{
+							Name: "final",
+							Layers: []Layer{
+								{
+									Label: "FROM alpine AS final",
+									WaitFor: WaitFor{
+										Name: "alpine",
+										Type: waitForType(waitForFrom),
+									},
+								},
+								{
+									Label: "FROM final AS final",
+									WaitFor: WaitFor{
+										Name: "final",
+										Type: waitForType(waitForFrom),
+									},
+								},
+								{
+									Label: "COPY --from=downl...",
+									WaitFor: WaitFor{
+										Name: "download-node-setup",
+										Type: waitForType(waitForCopy),
+									},
+								},
+								{
+									Label: "FROM final AS final",
+									WaitFor: WaitFor{
+										Name: "final",
+										Type: waitForType(waitForFrom),
+									},
+								},
+								{
+									Label: "COPY --from=downl...",
+									WaitFor: WaitFor{
+										Name: "download-get-pip",
+										Type: waitForType(waitForCopy),
+									},
+								},
+						},
+					},
+					{
+						Name: "download-node-setup",
+						Layers: []Layer{
+							{
+								Label: "FROM scratch AS d...",
+								WaitFor: WaitFor{
+									Name: "scratch",
+									Type: waitForType(waitForFrom),
+								},
+							},
+							{Label: "ADD https://deb.n..."},
+						},
+					},
+					{
+						Name: "download-get-pip",
+						Layers: []Layer{
+							{
+								Label: "FROM scratch AS d...",
+								WaitFor: WaitFor{
+									Name: "scratch",
+									Type: waitForType(waitForFrom),
+								}},
+							{Label: "ADD https://boots..."},
+						},
+					},
+				},
+			},
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

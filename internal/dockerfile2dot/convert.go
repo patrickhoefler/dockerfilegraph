@@ -36,9 +36,10 @@ func dockerfileToSimplifiedDockerfile(
 	}
 
 	// Set that holds all stage IDs
-	stages := make(map[string]struct{})
+	stagesIdxes := make(map[string]int)
 
 	stageIndex := -1
+	nextStageIndex := -1
 	layerIndex := -1
 
 	argReplacements := make(map[string]string)
@@ -46,17 +47,28 @@ func dockerfileToSimplifiedDockerfile(
 	for _, child := range result.AST.Children {
 		switch strings.ToUpper(child.Value) {
 		case "FROM":
-			// Create a new stage
-			stageIndex++
-			stage := Stage{}
-
+			stageName := ""
+			stageIndex = -1
 			// If there is an "AS" alias, set is at the name
 			if child.Next.Next != nil {
-				stage.Name = child.Next.Next.Next.Value
-				stages[stage.Name] = struct{}{}
+				stageName = child.Next.Next.Next.Value
+				// if the stage already exists
+				if idx, ok := stagesIdxes[stageName]; ok {
+					stageIndex = idx
+				}
 			}
 
-			simplifiedDockerfile.Stages = append(simplifiedDockerfile.Stages, stage)
+			if stageIndex < 0 {
+				stage := Stage{}
+				// Otherwise, create a new stage
+				nextStageIndex++
+				stageIndex = nextStageIndex
+				if stageName != "" {
+					stagesIdxes[stageName] = stageIndex
+					stage.Name = stageName
+				}
+				simplifiedDockerfile.Stages = append(simplifiedDockerfile.Stages, stage)
+			}
 
 			// Add a new layer
 			layerIndex = 0
@@ -145,13 +157,13 @@ func dockerfileToSimplifiedDockerfile(
 		}
 	}
 
-	addExternalImages(&simplifiedDockerfile, stages)
+	addExternalImages(&simplifiedDockerfile, stagesIdxes)
 
 	return
 }
 
 func addExternalImages(
-	simplifiedDockerfile *SimplifiedDockerfile, stages map[string]struct{},
+	simplifiedDockerfile *SimplifiedDockerfile, stages map[string]int,
 ) {
 	for _, stage := range simplifiedDockerfile.Stages {
 		for _, layer := range stage.Layers {
