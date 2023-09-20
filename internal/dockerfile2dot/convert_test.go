@@ -294,44 +294,44 @@ COPY --from=download-get-pip get-pip.py ./
 					{Name: "scratch"},
 				},
 				Stages: []Stage{
-						{
-							Name: "final",
-							Layers: []Layer{
-								{
-									Label: "FROM alpine AS final",
-									WaitFor: WaitFor{
-										Name: "alpine",
-										Type: waitForType(waitForFrom),
-									},
+					{
+						Name: "final",
+						Layers: []Layer{
+							{
+								Label: "FROM alpine AS final",
+								WaitFor: WaitFor{
+									Name: "alpine",
+									Type: waitForType(waitForFrom),
 								},
-								{
-									Label: "FROM final AS final",
-									WaitFor: WaitFor{
-										Name: "final",
-										Type: waitForType(waitForFrom),
-									},
+							},
+							{
+								Label: "FROM final AS final",
+								WaitFor: WaitFor{
+									Name: "final",
+									Type: waitForType(waitForFrom),
 								},
-								{
-									Label: "COPY --from=downl...",
-									WaitFor: WaitFor{
-										Name: "download-node-setup",
-										Type: waitForType(waitForCopy),
-									},
+							},
+							{
+								Label: "COPY --from=downl...",
+								WaitFor: WaitFor{
+									Name: "download-node-setup",
+									Type: waitForType(waitForCopy),
 								},
-								{
-									Label: "FROM final AS final",
-									WaitFor: WaitFor{
-										Name: "final",
-										Type: waitForType(waitForFrom),
-									},
+							},
+							{
+								Label: "FROM final AS final",
+								WaitFor: WaitFor{
+									Name: "final",
+									Type: waitForType(waitForFrom),
 								},
-								{
-									Label: "COPY --from=downl...",
-									WaitFor: WaitFor{
-										Name: "download-get-pip",
-										Type: waitForType(waitForCopy),
-									},
+							},
+							{
+								Label: "COPY --from=downl...",
+								WaitFor: WaitFor{
+									Name: "download-get-pip",
+									Type: waitForType(waitForCopy),
 								},
+							},
 						},
 					},
 					{

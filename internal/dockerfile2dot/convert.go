@@ -49,7 +49,7 @@ func dockerfileToSimplifiedDockerfile(
 		case "FROM":
 			stageName := ""
 			stageIndex = -1
-			// If there is an "AS" alias, set is at the name
+			// If there is an "AS" alias, set it as the name
 			if child.Next.Next != nil {
 				stageName = child.Next.Next.Next.Value
 				// if the stage already exists
