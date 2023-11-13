@@ -1,6 +1,7 @@
 package dockerfile2dot
 
 import (
+	"fmt"
 	"testing"
 
 	"github.com/google/go-cmp/cmp"
@@ -30,8 +31,9 @@ func Test_dockerfileToSimplifiedDockerfile(t *testing.T) {
 					{
 						Layers: []Layer{
 							{
-								Label:   "FROM scratch",
-								WaitFor: WaitFor{Name: "scratch", Type: waitForType(waitForFrom)}},
+								Label:    "FROM scratch",
+								WaitFors: []WaitFor{{Name: "scratch", Type: waitForType(waitForFrom)}},
+							},
 						},
 					},
 				},
@@ -60,24 +62,62 @@ RUN --mount=type=cache,from=buildcache,source=/go/pkg/mod/cache/,target=/go/pkg/
 						Name: "base",
 						Layers: []Layer{
 							{
-								Label:   "FROM ubuntu as base",
-								WaitFor: WaitFor{Name: "ubuntu", Type: waitForType(waitForFrom)},
+								Label:    "FROM ubuntu as base",
+								WaitFors: []WaitFor{{Name: "ubuntu", Type: waitForType(waitForFrom)}},
 							},
 						},
 					},
 					{
 						Layers: []Layer{
 							{
-								Label:   "FROM scratch",
-								WaitFor: WaitFor{Name: "scratch", Type: waitForType(waitForFrom)},
+								Label:    "FROM scratch",
+								WaitFors: []WaitFor{{Name: "scratch", Type: waitForType(waitForFrom)}},
 							},
 							{
-								Label:   "COPY --from=base . .",
-								WaitFor: WaitFor{Name: "base", Type: waitForType(waitForCopy)},
+								Label:    "COPY --from=base . .",
+								WaitFors: []WaitFor{{Name: "base", Type: waitForType(waitForCopy)}},
 							},
 							{
-								Label:   "RUN --mount=type=...",
-								WaitFor: WaitFor{Name: "buildcache", Type: waitForType(waitForMount)},
+								Label:    "RUN --mount=type=...",
+								WaitFors: []WaitFor{{Name: "buildcache", Type: waitForType(waitForMount)}},
+							},
+						},
+					},
+				},
+			},
+		},
+		{
+			name: "Wait for multiple mounts",
+			args: args{
+				content: []byte(`
+# syntax=docker/dockerfile:1
+FROM ubuntu as base
+RUN \
+  --mount=type=cache,from=buildcache,source=/go/pkg/mod/cache/,target=/go/pkg/mod/cache/ \
+  --mount=from=artifacts,source=/artifacts/embeddata,target=/artifacts/embeddata go build
+`),
+				maxLabelLength: 20,
+			},
+			want: SimplifiedDockerfile{
+				ExternalImages: []ExternalImage{
+					{Name: "ubuntu"},
+					{Name: "buildcache"},
+					{Name: "artifacts"},
+				},
+				Stages: []Stage{
+					{
+						Name: "base",
+						Layers: []Layer{
+							{
+								Label:    "FROM ubuntu as base",
+								WaitFors: []WaitFor{{Name: "ubuntu", Type: waitForType(waitForFrom)}},
+							},
+							{
+								Label: "RUN   --mount=typ...",
+								WaitFors: []WaitFor{
+									{Name: "buildcache", Type: waitForType(waitForMount)},
+									{Name: "artifacts", Type: waitForType(waitForMount)},
+								},
 							},
 						},
 					},
@@ -103,12 +143,12 @@ RUN --mount=from=build,source=/build/,target=/build/ go build
 					{
 						Layers: []Layer{
 							{
-								Label:   "FROM scratch",
-								WaitFor: WaitFor{Name: "scratch", Type: waitForType(waitForFrom)},
+								Label:    "FROM scratch",
+								WaitFors: []WaitFor{{Name: "scratch", Type: waitForType(waitForFrom)}},
 							},
 							{
-								Label:   "RUN --mount=from=...",
-								WaitFor: WaitFor{Name: "build", Type: waitForType(waitForMount)},
+								Label:    "RUN --mount=from=...",
+								WaitFors: []WaitFor{{Name: "build", Type: waitForType(waitForMount)}},
 							},
 						},
 					},
@@ -147,8 +187,8 @@ RUN --mount=type=cache,source=/go/pkg/mod/cache/,target=/go/pkg/mod/cache/,from=
 						Name: "base",
 						Layers: []Layer{
 							{
-								Label:   "FROM ubuntu:22.04...",
-								WaitFor: WaitFor{Name: "ubuntu:22.04", Type: waitForType(waitForFrom)},
+								Label:    "FROM ubuntu:22.04...",
+								WaitFors: []WaitFor{{Name: "ubuntu:22.04", Type: waitForType(waitForFrom)}},
 							},
 							{
 								Label: "USER app",
@@ -160,26 +200,26 @@ RUN --mount=type=cache,source=/go/pkg/mod/cache/,target=/go/pkg/mod/cache/,from=
 						Layers: []Layer{
 							{
 								Label: "FROM php:8.0-fpm-...",
-								WaitFor: WaitFor{
+								WaitFors: []WaitFor{{
 									Name: "php:8.0-fpm-alpine3.15",
 									Type: waitForType(waitForFrom),
-								},
+								}},
 							},
 						},
 					},
 					{
 						Layers: []Layer{
 							{
-								Label:   "FROM scratch",
-								WaitFor: WaitFor{Name: "scratch", Type: waitForType(waitForFrom)},
+								Label:    "FROM scratch",
+								WaitFors: []WaitFor{{Name: "scratch", Type: waitForType(waitForFrom)}},
 							},
 							{
-								Label:   "COPY --from=base . .",
-								WaitFor: WaitFor{Name: "base", Type: waitForType(waitForCopy)},
+								Label:    "COPY --from=base . .",
+								WaitFors: []WaitFor{{Name: "base", Type: waitForType(waitForCopy)}},
 							},
 							{
-								Label:   "RUN --mount=type=...",
-								WaitFor: WaitFor{Name: "buildcache", Type: waitForType(waitForMount)},
+								Label:    "RUN --mount=type=...",
+								WaitFors: []WaitFor{{Name: "buildcache", Type: waitForType(waitForMount)}},
 							},
 						},
 					},
@@ -220,10 +260,10 @@ COPY --from=download-get-pip get-pip.py ./
 						Layers: []Layer{
 							{
 								Label: "FROM scratch AS d...",
-								WaitFor: WaitFor{
+								WaitFors: []WaitFor{{
 									Name: "scratch",
 									Type: waitForType(waitForFrom),
-								},
+								}},
 							},
 							{Label: "ADD https://deb.n..."},
 						},
@@ -233,10 +273,11 @@ COPY --from=download-get-pip get-pip.py ./
 						Layers: []Layer{
 							{
 								Label: "FROM scratch AS d...",
-								WaitFor: WaitFor{
+								WaitFors: []WaitFor{{
 									Name: "scratch",
 									Type: waitForType(waitForFrom),
 								}},
+							},
 							{Label: "ADD https://boots..."},
 						},
 					},
@@ -245,24 +286,24 @@ COPY --from=download-get-pip get-pip.py ./
 						Layers: []Layer{
 							{
 								Label: "FROM alpine AS final",
-								WaitFor: WaitFor{
+								WaitFors: []WaitFor{{
 									Name: "alpine",
 									Type: waitForType(waitForFrom),
-								},
+								}},
 							},
 							{
 								Label: "COPY --from=downl...",
-								WaitFor: WaitFor{
+								WaitFors: []WaitFor{{
 									Name: "download-node-setup",
 									Type: waitForType(waitForCopy),
-								},
+								}},
 							},
 							{
 								Label: "COPY --from=downl...",
-								WaitFor: WaitFor{
+								WaitFors: []WaitFor{{
 									Name: "download-get-pip",
 									Type: waitForType(waitForCopy),
-								},
+								}},
 							},
 						},
 					},
@@ -276,6 +317,9 @@ COPY --from=download-get-pip get-pip.py ./
 				tt.args.content,
 				tt.args.maxLabelLength,
 			)
+			if tt.name == "Wait for multiple mounts" {
+				fmt.Printf("%q", got.Stages[0].Layers[1])
+			}
 			if err != nil {
 				t.Errorf("dockerfileToSimplifiedDockerfile() error = %v", err)
 				return

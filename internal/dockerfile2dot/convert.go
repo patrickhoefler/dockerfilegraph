@@ -63,10 +63,10 @@ func dockerfileToSimplifiedDockerfile(
 			layer := newLayer(child, argReplacements, maxLabelLength)
 
 			// Set the waitFor ID
-			layer.WaitFor = WaitFor{
+			layer.WaitFors = []WaitFor{{
 				Name: replaceArgVars(child.Next.Value, argReplacements),
 				Type: waitForType(waitForFrom),
-			}
+			}}
 
 			simplifiedDockerfile.Stages[stageIndex].Layers = append(
 				simplifiedDockerfile.Stages[stageIndex].Layers,
@@ -83,10 +83,10 @@ func dockerfileToSimplifiedDockerfile(
 				regex := regexp.MustCompile("--from=(.+)")
 				result := regex.FindSubmatch([]byte(flag))
 				if len(result) > 1 {
-					layer.WaitFor = WaitFor{
+					layer.WaitFors = []WaitFor{{
 						Name: string(result[1]),
 						Type: waitForType(waitForCopy),
-					}
+					}}
 				}
 			}
 
@@ -103,11 +103,13 @@ func dockerfileToSimplifiedDockerfile(
 			// If there is a "--mount=(.*)from=..." option, set the waitFor ID
 			for _, flag := range child.Flags {
 				regex := regexp.MustCompile("--mount=.*from=(.+?)(?:,| |$)")
-				result := regex.FindSubmatch([]byte(flag))
-				if len(result) > 1 {
-					layer.WaitFor = WaitFor{
-						Name: string(result[1]),
-						Type: waitForType(waitForMount),
+				matches := regex.FindAllSubmatch([]byte(flag), -1)
+				for _, match := range matches {
+					if len(match) > 1 {
+						layer.WaitFors = append(layer.WaitFors, WaitFor{
+							Name: string(match[1]),
+							Type: waitForType(waitForMount),
+						})
 					}
 				}
 			}
@@ -155,33 +157,31 @@ func addExternalImages(
 ) {
 	for _, stage := range simplifiedDockerfile.Stages {
 		for _, layer := range stage.Layers {
-			// Check if the layer waits for anything
-			if layer.WaitFor.Name == "" {
-				continue
-			}
+			for _, waitFor := range layer.WaitFors {
 
-			// Check if the layer waits for a stage
-			if _, ok := stages[layer.WaitFor.Name]; ok {
-				continue
-			}
-
-			// Check if we already added the external image
-			externalImageAlreadyAdded := false
-			for _, externalImage := range simplifiedDockerfile.ExternalImages {
-				if externalImage.Name == layer.WaitFor.Name {
-					externalImageAlreadyAdded = true
-					break
+				// Check if the layer waits for a stage
+				if _, ok := stages[waitFor.Name]; ok {
+					continue
 				}
-			}
-			if externalImageAlreadyAdded {
-				continue
-			}
 
-			// Add the external image
-			simplifiedDockerfile.ExternalImages = append(
-				simplifiedDockerfile.ExternalImages,
-				ExternalImage{Name: layer.WaitFor.Name},
-			)
+				// Check if we already added the external image
+				externalImageAlreadyAdded := false
+				for _, externalImage := range simplifiedDockerfile.ExternalImages {
+					if externalImage.Name == waitFor.Name {
+						externalImageAlreadyAdded = true
+						break
+					}
+				}
+				if externalImageAlreadyAdded {
+					continue
+				}
+
+				// Add the external image
+				simplifiedDockerfile.ExternalImages = append(
+					simplifiedDockerfile.ExternalImages,
+					ExternalImage{Name: waitFor.Name},
+				)
+			}
 		}
 	}
 }
