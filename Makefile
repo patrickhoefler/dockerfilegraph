@@ -26,3 +26,12 @@ example-images:
 
 	go run . -f examples/dockerfiles/Dockerfile.large -c -n 0.3 -o svg -u 4 \
 		&& mv Dockerfile.svg examples/images/Dockerfile-large.svg
+
+lint:
+	# https://github.com/golangci/golangci-lint needs to be installed.
+	golangci-lint run
+
+test:
+	go test ./... --coverprofile=cover.out
+	go install github.com/patrickhoefler/gocovergate@latest
+	gocovergate
