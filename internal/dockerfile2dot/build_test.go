@@ -39,10 +39,10 @@ func TestBuildDotFile(t *testing.T) {
 							Layers: []Layer{
 								{
 									Label: "FROM...",
-									WaitFor: WaitFor{
+									WaitFors: []WaitFor{{
 										Name: "build",
 										Type: waitForType(waitForFrom),
-									},
+									}},
 								},
 							},
 						},
@@ -74,10 +74,10 @@ func TestBuildDotFile(t *testing.T) {
 							Layers: []Layer{
 								{
 									Label: "FROM...",
-									WaitFor: WaitFor{
+									WaitFors: []WaitFor{{
 										Name: "build",
 										Type: waitForType(waitForFrom),
-									},
+									}},
 								},
 							},
 						},

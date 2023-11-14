@@ -22,8 +22,8 @@ type Stage struct {
 // Layer stores the changes compared to the image it’s based on within a
 // multi-stage Dockerfile.
 type Layer struct {
-	Label   string  // the command and truncated args
-	WaitFor WaitFor // stage or external image for which this layer needs to wait
+	Label    string    // the command and truncated args
+	WaitFors []WaitFor // stages or external images for which this layer needs to wait
 }
 
 // ExternalImage holds the name of an external image.

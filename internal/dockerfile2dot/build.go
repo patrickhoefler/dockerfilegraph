@@ -154,36 +154,34 @@ func addEdgesForStage(
 	simplifiedDockerfile SimplifiedDockerfile, layers bool, edgestyle string,
 ) {
 	for layerIndex, layer := range stage.Layers {
-		if layer.WaitFor.Name == "" {
-			continue
-		}
-
-		edgeAttrs := map[string]string{}
-		if layer.WaitFor.Type == waitForType(waitForCopy) {
-			edgeAttrs["arrowhead"] = "empty"
-			if edgestyle == "default" {
-				edgeAttrs["style"] = "dashed"
+		for _, waitFor := range layer.WaitFors {
+			edgeAttrs := map[string]string{}
+			if waitFor.Type == waitForType(waitForCopy) {
+				edgeAttrs["arrowhead"] = "empty"
+				if edgestyle == "default" {
+					edgeAttrs["style"] = "dashed"
+				}
+			} else if waitFor.Type == waitForType(waitForMount) {
+				edgeAttrs["arrowhead"] = "ediamond"
+				if edgestyle == "default" {
+					edgeAttrs["style"] = "dotted"
+				}
 			}
-		} else if layer.WaitFor.Type == waitForType(waitForMount) {
-			edgeAttrs["arrowhead"] = "ediamond"
-			if edgestyle == "default" {
-				edgeAttrs["style"] = "dotted"
+
+			sourceNodeID, additionalEdgeAttrs := getWaitForNodeID(
+				simplifiedDockerfile, waitFor.Name, layers,
+			)
+			for k, v := range additionalEdgeAttrs {
+				edgeAttrs[k] = v
 			}
-		}
 
-		sourceNodeID, additionalEdgeAttrs := getWaitForNodeID(
-			simplifiedDockerfile, layer.WaitFor.Name, layers,
-		)
-		for k, v := range additionalEdgeAttrs {
-			edgeAttrs[k] = v
-		}
+			targetNodeID := fmt.Sprintf("stage_%d", stageIndex)
+			if layers {
+				targetNodeID = targetNodeID + fmt.Sprintf("_layer_%d", layerIndex)
+			}
 
-		targetNodeID := fmt.Sprintf("stage_%d", stageIndex)
-		if layers {
-			targetNodeID = targetNodeID + fmt.Sprintf("_layer_%d", layerIndex)
+			_ = graph.AddEdge(sourceNodeID, targetNodeID, true, edgeAttrs)
 		}
-
-		_ = graph.AddEdge(sourceNodeID, targetNodeID, true, edgeAttrs)
 	}
 }
 
