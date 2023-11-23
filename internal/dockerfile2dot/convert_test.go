@@ -113,7 +113,7 @@ RUN \
 								WaitFors: []WaitFor{{Name: "ubuntu", Type: waitForType(waitForFrom)}},
 							},
 							{
-								Label: "RUN   --mount=typ...",
+								Label: "RUN --mount=type=...",
 								WaitFors: []WaitFor{
 									{Name: "buildcache", Type: waitForType(waitForMount)},
 									{Name: "artifacts", Type: waitForType(waitForMount)},
