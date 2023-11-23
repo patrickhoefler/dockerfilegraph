@@ -176,7 +176,7 @@ It creates a visual graph representation of the build process.
 	label=ubuntu;
 	margin=16;
 	stage_0_layer_0 [ fillcolor=white, label="FROM ubuntu:lates...", penwidth=0.5, shape=box, style="filled,rounded", width=2 ];
-	stage_0_layer_1 [ fillcolor=white, label="RUN   apt-get upd...", penwidth=0.5, shape=box, style="filled,rounded", width=2 ];
+	stage_0_layer_1 [ fillcolor=white, label="RUN apt-get updat...", penwidth=0.5, shape=box, style="filled,rounded", width=2 ];
 
 }
 ;
@@ -231,7 +231,7 @@ It creates a visual graph representation of the build process.
 			style="filled,rounded",
 			width=2];
 		stage_0_layer_1	[fillcolor=white,
-			label="RUN   apt-get upd...",
+			label="RUN apt-get updat...",
 			penwidth=0.5,
 			shape=box,
 			style="filled,rounded",

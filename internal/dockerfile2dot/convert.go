@@ -9,18 +9,27 @@ import (
 	"github.com/moby/buildkit/frontend/dockerfile/parser"
 )
 
+// newLayer creates a new layer object with a modified label.
 func newLayer(
-	child *parser.Node,
-	replacements map[string]string,
-	maxLabelLength int,
+	child *parser.Node, argReplacements map[string]string, maxLabelLength int,
 ) (layer Layer) {
-	label := replaceArgVars(child.Original, replacements)
+	// Replace argument variables in the original label.
+	label := replaceArgVars(child.Original, argReplacements)
+
+	// Replace double quotes with single quotes.
 	label = strings.Replace(label, "\"", "'", -1)
+
+	// Collapse multiple spaces into a single space.
+	label = strings.Join(strings.Fields(label), " ")
+
+	// Truncate the label if it exceeds the maximum length.
 	if len(label) > maxLabelLength {
 		label = truncate.Truncate(
 			label, maxLabelLength, "...", truncate.PositionEnd,
 		)
 	}
+
+	// Set the label of the layer object.
 	layer.Label = label
 
 	return
