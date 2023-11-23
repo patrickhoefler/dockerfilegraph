@@ -3,9 +3,15 @@ FROM alpine:3.18.4@sha256:eece025e432126ce23f223450a0326fbebde39cdf496a85d8c0162
 
 LABEL org.opencontainers.image.source="https://github.com/patrickhoefler/dockerfilegraph"
 
+# renovate: datasource=repology depName=alpine_3_18/font-dejavu versioning=loose
+ENV FONT_DEJAVU_VERSION="2.37-r5"
+
+# renovate: datasource=repology depName=alpine_3_18/graphviz versioning=loose
+ENV GRAPHVIZ_VERSION="8.0.5-r1"
+
 RUN apk add --update --no-cache \
-  graphviz \
-  ttf-freefont \
+  font-dejavu="${FONT_DEJAVU_VERSION}" \
+  graphviz="${GRAPHVIZ_VERSION}" \
   \
   # Add a non-root user
   && adduser -D app
@@ -13,8 +19,8 @@ RUN apk add --update --no-cache \
 # Run as non-root user
 USER app
 
-# This currently only works with goreleaser
-# or if you manually copy the binary into the main project directory
+# This only works after running `make build-linux`
+# or when using goreleaser
 COPY dockerfilegraph /
 
 ENTRYPOINT ["/dockerfilegraph"]
