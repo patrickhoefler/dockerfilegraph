@@ -109,7 +109,7 @@ make build
 ##### Container (Alpine)
 
 ```text
-make build-container-alpine
+make build-docker-image-alpine
 docker run \
   --rm \
   --user "$(id -u):$(id -g)" \
@@ -121,7 +121,7 @@ docker run \
 ##### Container (Ubuntu)
 
 ```text
-make build-container-ubuntu
+make build-docker-image-ubuntu
 docker run \
   --rm \
   --user "$(id -u):$(id -g)" \

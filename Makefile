@@ -11,10 +11,10 @@ FLAGS = -ldflags "$(LDFLAGS)"
 build: clean
 	go build $(FLAGS)
 
-build-container-alpine: build-linux
+build-docker-image-alpine: build-linux
 	docker build -t dockerfilegraph:alpine -f Dockerfile.alpine .
 
-build-container-ubuntu: build-linux
+build-docker-image-ubuntu: build-linux
 	docker build -t dockerfilegraph:ubuntu -f Dockerfile .
 
 build-linux: clean
