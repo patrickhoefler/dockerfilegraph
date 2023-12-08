@@ -95,6 +95,8 @@ dockerfilegraph
 
 #### Build from Source
 
+##### Native
+
 Make sure that [Graphviz](https://graphviz.org/) is installed locally.
 
 Then:
@@ -102,6 +104,30 @@ Then:
 ```text
 make build
 ./dockerfilegraph
+```
+
+##### Container (Alpine)
+
+```text
+make build-container-alpine
+docker run \
+  --rm \
+  --user "$(id -u):$(id -g)" \
+  --workdir /workspace \
+  --volume "$(pwd)":/workspace \
+  dockerfilegraph:alpine
+```
+
+##### Container (Ubuntu)
+
+```text
+make build-container-ubuntu
+docker run \
+  --rm \
+  --user "$(id -u):$(id -g)" \
+  --workdir /workspace \
+  --volume "$(pwd)":/workspace \
+  dockerfilegraph:ubuntu
 ```
 
 ### More Options
