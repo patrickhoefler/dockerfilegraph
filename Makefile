@@ -8,11 +8,20 @@ LDFLAGS += -X github.com/patrickhoefler/dockerfilegraph/internal/cmd.gitCommit=$
 LDFLAGS += -X github.com/patrickhoefler/dockerfilegraph/internal/cmd.buildDate=$(BUILDDATE)
 FLAGS = -ldflags "$(LDFLAGS)"
 
-build:
+build: clean
 	go build $(FLAGS)
 
-build-linux:
+build-container-alpine: clean build-linux
+	docker build -t dockerfilegraph:alpine -f Dockerfile.alpine .
+
+build-container-ubuntu: clean build-linux
+	docker build -t dockerfilegraph:ubuntu -f Dockerfile .
+
+build-linux: clean
 	GOOS=linux go build $(FLAGS)
+
+clean:
+	go clean
 
 example-images:
 	# Change to the root directory of the project.
