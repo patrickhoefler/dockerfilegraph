@@ -1,3 +1,12 @@
+### Build
+FROM golang:alpine AS build
+
+RUN apk add make graphviz
+WORKDIR /go/src
+COPY . .
+RUN make build-linux
+
+
 ### Release image
 FROM ubuntu:jammy-20231128@sha256:8eab65df33a6de2844c9aefd19efe8ddb87b7df5e9185a4ab73af936225685bb
 
@@ -22,8 +31,6 @@ RUN \
 # Run as non-root user
 USER app
 
-# This only works after running `make build-linux`
-# or when using goreleaser
-COPY dockerfilegraph /
+COPY --from=build /go/src/dockerfilegraph .
 
 ENTRYPOINT ["/dockerfilegraph"]
