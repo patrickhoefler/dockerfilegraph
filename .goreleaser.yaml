@@ -31,7 +31,7 @@ dockers:
       - 'ghcr.io/patrickhoefler/dockerfilegraph:{{ .Major }}.{{ .Minor }}.{{ .Patch }}-alpine'
 
 brews:
-  - tap:
+  - repository:
       owner: patrickhoefler
       name: homebrew-tap
 
