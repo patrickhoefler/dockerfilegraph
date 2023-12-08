@@ -95,6 +95,8 @@ dockerfilegraph
 
 #### Build from Source
 
+For all build variants, make sure that [`go`](https://go.dev/) and `make` are installed locally.
+
 ##### Native
 
 Make sure that [Graphviz](https://graphviz.org/) is installed locally.
