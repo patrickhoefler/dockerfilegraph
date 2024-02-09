@@ -1,8 +1,6 @@
 {
   "extends": [
-    "config:base",
-    "docker:pinDigests",
-    "helpers:pinGitHubActionDigests"
+    "config:best-practices"
   ],
   "automerge": true,
   "customManagers": [
@@ -18,9 +16,6 @@
     }
   ],
   "dependencyDashboard": false,
-  "ignorePaths": [
-    "**/examples/**"
-  ],
   "major": {
     "automerge": false
   },
