@@ -48,10 +48,10 @@ func NewRootCmd(
 		Long: `dockerfilegraph visualizes your multi-stage Dockerfile.
 It creates a visual graph representation of the build process.`,
 		Args: cobra.NoArgs,
-		PreRunE: func(cmd *cobra.Command, args []string) (err error) {
+		PreRunE: func(_ *cobra.Command, _ []string) (err error) {
 			return checkFlags()
 		},
-		RunE: func(cmd *cobra.Command, args []string) (err error) {
+		RunE: func(_ *cobra.Command, _ []string) (err error) {
 			if versionFlag {
 				return printVersion(dfgWriter)
 			}
