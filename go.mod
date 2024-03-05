@@ -1,12 +1,14 @@
 module github.com/patrickhoefler/dockerfilegraph
 
-go 1.20
+go 1.21
+
+toolchain go1.22.0
 
 require (
 	github.com/aquilax/truncate v1.0.0
 	github.com/awalterschulze/gographviz v2.0.3+incompatible
 	github.com/google/go-cmp v0.6.0
-	github.com/moby/buildkit v0.12.5
+	github.com/moby/buildkit v0.13.0
 	github.com/spf13/afero v1.11.0
 	github.com/spf13/cobra v1.8.0
 )
