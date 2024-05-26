@@ -1,13 +1,13 @@
 ### Release image
-FROM ubuntu:jammy-20240427@sha256:a6d2b38300ce017add71440577d5b0a90460d0e57fd7aec21dd0d1b0761bbfb2
+FROM ubuntu:noble-20240429@sha256:d21429c4635332e96a4baae3169e3f02ac8e24e6ae3d89a86002d49a1259a4f7
 
 LABEL org.opencontainers.image.source="https://github.com/patrickhoefler/dockerfilegraph"
 
-# renovate: datasource=repology depName=ubuntu_22_04/fonts-dejavu versioning=loose
-ENV FONTS_DEJAVU_VERSION="2.37-2build1"
+# renovate: datasource=repology depName=ubuntu_24_04/fonts-dejavu versioning=loose
+ENV FONTS_DEJAVU_VERSION="2.37-8"
 
-# renovate: datasource=repology depName=ubuntu_22_04/graphviz versioning=loose
-ENV GRAPHVIZ_VERSION="2.42.2-6"
+# renovate: datasource=repology depName=ubuntu_24_04/graphviz versioning=loose
+ENV GRAPHVIZ_VERSION="2.42.2-9build1"
 
 RUN \
   apt-get update \
