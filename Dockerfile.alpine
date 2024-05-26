@@ -3,11 +3,11 @@ FROM alpine:3.20.0@sha256:77726ef6b57ddf65bb551896826ec38bc3e53f75cdde31354fbffb
 
 LABEL org.opencontainers.image.source="https://github.com/patrickhoefler/dockerfilegraph"
 
-# renovate: datasource=repology depName=alpine_3_19/font-dejavu versioning=loose
+# renovate: datasource=repology depName=alpine_3_20/font-dejavu versioning=loose
 ENV FONT_DEJAVU_VERSION="2.37-r5"
 
-# renovate: datasource=repology depName=alpine_3_19/graphviz versioning=loose
-ENV GRAPHVIZ_VERSION="9.0.0-r0"
+# renovate: datasource=repology depName=alpine_3_20/graphviz versioning=loose
+ENV GRAPHVIZ_VERSION="9.0.0-r1"
 
 RUN apk add --update --no-cache \
   font-dejavu="${FONT_DEJAVU_VERSION}" \
