@@ -38,7 +38,8 @@ jobs:
       - name: Run GoReleaser
         uses: goreleaser/goreleaser-action@5742e2a039330cbb23ebf35f046f814d4c6ff811 # v5.1.0
         with:
-          args: release --rm-dist
+          version: '~> v2'
+          args: release --clean
         env:
           # needed for updating https://github.com/patrickhoefler/homebrew-tap
           GITHUB_TOKEN: ${{ secrets.GH_PAT }}

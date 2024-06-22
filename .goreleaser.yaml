@@ -1,3 +1,5 @@
+version: 2
+
 builds:
   - env:
       - CGO_ENABLED=0
@@ -12,7 +14,7 @@ builds:
       - -X github.com/patrickhoefler/dockerfilegraph/internal/cmd.buildDate={{.Date}}
 
 changelog:
-  skip: true
+  disable: true
 
 dockers:
   - dockerfile: Dockerfile
