@@ -7,7 +7,7 @@ LABEL org.opencontainers.image.source="https://github.com/patrickhoefler/dockerf
 ENV FONTS_DEJAVU_VERSION="2.37-8"
 
 # renovate: datasource=repology depName=ubuntu_24_04/graphviz versioning=loose
-ENV GRAPHVIZ_VERSION="2.42.2-9build1"
+ENV GRAPHVIZ_VERSION="2.42.2-9ubuntu0.1"
 
 RUN \
   apt-get update \
