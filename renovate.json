@@ -1,8 +1,5 @@
 {
-  "extends": [
-    "config:best-practices"
-  ],
-  "automerge": true,
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
   "customManagers": [
     {
       "customType": "regex",
@@ -15,11 +12,21 @@
       "versioningTemplate": "{{#if versioning}}{{{versioning}}}{{else}}semver{{/if}}"
     }
   ],
-  "dependencyDashboard": false,
-  "major": {
-    "automerge": false
-  },
+  "extends": [
+    "config:best-practices",
+    ":disableDependencyDashboard",
+    ":pinAllExceptPeerDependencies",
+    ":maintainLockFilesWeekly"
+  ],
   "packageRules": [
+    {
+      "automerge": true,
+      "matchCurrentVersion": "!/^0/",
+      "matchUpdateTypes": [
+        "minor",
+        "patch"
+      ]
+    },
     {
       "matchDatasources": [
         "docker"
@@ -32,5 +39,6 @@
   ],
   "postUpdateOptions": [
     "gomodTidy"
-  ]
+  ],
+  "prConcurrentLimit": 2
 }
