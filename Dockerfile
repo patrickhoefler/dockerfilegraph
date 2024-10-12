@@ -1,5 +1,5 @@
 ### Release image
-FROM ubuntu:noble-20241009@sha256:31a822ee055607bdc4d041a2dcb5b46cfbf5eeadf5b01323f0453f377b50678a
+FROM ubuntu:noble-20241009@sha256:ab64a8382e935382638764d8719362bb50ee418d944c1f3d26e0c99fae49a345
 
 LABEL org.opencontainers.image.source="https://github.com/patrickhoefler/dockerfilegraph"
 
