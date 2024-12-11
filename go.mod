@@ -3,7 +3,7 @@ module github.com/patrickhoefler/dockerfilegraph
 go 1.23.2
 
 require (
-	github.com/aquilax/truncate v1.0.0
+	github.com/aquilax/truncate v1.0.1
 	github.com/awalterschulze/gographviz v2.0.3+incompatible
 	github.com/google/go-cmp v0.6.0
 	github.com/moby/buildkit v0.18.1
