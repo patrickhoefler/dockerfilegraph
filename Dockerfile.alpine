@@ -7,7 +7,7 @@ LABEL org.opencontainers.image.source="https://github.com/patrickhoefler/dockerf
 ENV FONT_DEJAVU_VERSION="2.37-r5"
 
 # renovate: datasource=repology depName=alpine_3_20/graphviz versioning=loose
-ENV GRAPHVIZ_VERSION="9.0.0-r2"
+ENV GRAPHVIZ_VERSION="12.2.0-r0"
 
 RUN apk add --update --no-cache \
   font-dejavu="${FONT_DEJAVU_VERSION}" \
