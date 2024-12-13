@@ -53,7 +53,7 @@ This PDF contains a visual graph representation of your multi-stage Dockerfile.
 
 #### [docker](https://docker.com/) / [nerdctl](https://github.com/containerd/nerdctl)
 
-##### Image based on Ubuntu 24.04
+##### Image based on Ubuntu 24.10 and Graphviz 2.42
 
 ```shell
 docker run \
@@ -64,7 +64,7 @@ docker run \
   ghcr.io/patrickhoefler/dockerfilegraph
 ```
 
-##### Image based on Alpine Linux 3.20
+##### Image based on Alpine Linux 3.21 and Graphviz 12.2
 
 ```shell
 docker run \

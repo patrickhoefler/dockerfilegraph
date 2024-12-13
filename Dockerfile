@@ -1,5 +1,5 @@
 ### Release image
-FROM ubuntu:noble-20241015@sha256:278628f08d4979fb9af9ead44277dbc9c92c2465922310916ad0c46ec9999295
+FROM ubuntu:oracular-20241120
 
 LABEL org.opencontainers.image.source="https://github.com/patrickhoefler/dockerfilegraph"
 
@@ -7,7 +7,7 @@ LABEL org.opencontainers.image.source="https://github.com/patrickhoefler/dockerf
 ENV FONTS_DEJAVU_VERSION="2.37-8"
 
 # renovate: datasource=repology depName=ubuntu_24_04/graphviz versioning=loose
-ENV GRAPHVIZ_VERSION="2.42.2-9ubuntu0.1"
+ENV GRAPHVIZ_VERSION="2.42.4-2build2"
 
 RUN \
   apt-get update \
