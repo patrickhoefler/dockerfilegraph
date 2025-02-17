@@ -8,7 +8,7 @@ require (
 	github.com/google/go-cmp v0.6.0
 	github.com/moby/buildkit v0.19.0
 	github.com/spf13/afero v1.12.0
-	github.com/spf13/cobra v1.9.0
+	github.com/spf13/cobra v1.9.1
 )
 
 require (
