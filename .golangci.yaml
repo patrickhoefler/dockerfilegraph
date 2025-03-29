@@ -1,21 +1,18 @@
+version: "2"
+
 linters:
   enable:
     - gocyclo
-    - gofmt
-    - govet
-    - ineffassign
     - lll
     - misspell
     - revive
-    - staticcheck
+  settings:
+    gocyclo:
+      min-complexity: 15
+  exclusions:
+    presets:
+      - std-error-handling
 
-linters-settings:
-  gocyclo:
-    min-complexity: 15
-
-issues:
-  include:
-    - EXC0012
-    - EXC0013
-    - EXC0014
-    - EXC0015
+formatters:
+  enable:
+    - gofmt
