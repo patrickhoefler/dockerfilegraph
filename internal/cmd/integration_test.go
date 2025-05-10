@@ -15,12 +15,17 @@ func TestIntegrationCLIGeneratesOutputFile(t *testing.T) {
 	tempDir := t.TempDir()
 	dockerfilePath := copyExampleDockerfile(t, tempDir)
 
-	originalWorkingDirectory, _ := os.Getwd()
-	if err := os.Chdir(tempDir); err != nil {
+	originalWorkingDirectory, err := os.Getwd()
+	if err != nil {
+		t.Fatalf("failed to get working directory: %v", err)
+	}
+	err = os.Chdir(tempDir)
+	if err != nil {
 		t.Fatalf("failed to change to temp dir: %v", err)
 	}
 	defer func() {
-		if err := os.Chdir(originalWorkingDirectory); err != nil {
+		err := os.Chdir(originalWorkingDirectory)
+		if err != nil {
 			t.Fatalf("failed to restore working directory: %v", err)
 		}
 	}()
