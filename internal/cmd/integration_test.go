@@ -7,6 +7,7 @@ import (
 	"runtime"
 	"testing"
 
+	"github.com/google/go-cmp/cmp"
 	"github.com/patrickhoefler/dockerfilegraph/internal/cmd"
 	"github.com/spf13/afero"
 )
@@ -88,12 +89,13 @@ func checkGoldenFile(t *testing.T, dotBytes []byte) {
 		if err != nil {
 			t.Fatalf("failed to read golden file: %v", err)
 		}
-		if !bytes.Equal(dotBytes, goldenBytes) {
+		diff := cmp.Diff(string(goldenBytes), string(dotBytes))
+		if diff != "" {
 			t.Errorf(
 				"output DOT does not match golden file.\n"+
 					"To update, delete %s and re-run the test.\n"+
-					"--- Got ---\n%s\n--- Want ---\n%s",
-				goldenFile, dotBytes, goldenBytes,
+					"Diff (-want +got):\n%s",
+				goldenFile, diff,
 			)
 		}
 	}
