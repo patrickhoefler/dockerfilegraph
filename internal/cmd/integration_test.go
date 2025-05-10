@@ -27,7 +27,7 @@ func TestIntegrationCLIGeneratesOutputFile(t *testing.T) {
 
 	inputFS := afero.NewOsFs()
 	outputFile := filepath.Join(tempDir, "Dockerfile.pdf")
-	buf := runCLI(t, inputFS, dockerfilePath, outputFile)
+	buf := runCLI(t, inputFS, dockerfilePath)
 
 	info, err := os.Stat(outputFile)
 	if err != nil {
@@ -57,7 +57,7 @@ func copyExampleDockerfile(t *testing.T, tempDir string) string {
 	return dockerfileDst
 }
 
-func runCLI(t *testing.T, inputFS afero.Fs, dockerfilePath, outputFile string) *bytes.Buffer {
+func runCLI(t *testing.T, inputFS afero.Fs, dockerfilePath string) *bytes.Buffer {
 	buf := new(bytes.Buffer)
 	command := cmd.NewRootCmd(buf, inputFS, "dot")
 	command.SetArgs([]string{"--filename", filepath.Base(dockerfilePath), "--output", "pdf"})
