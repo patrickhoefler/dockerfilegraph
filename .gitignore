@@ -23,5 +23,5 @@ dockerfilegraph
 # dockerfilegraph
 Dockerfile.*
 !/Dockerfile.alpine
-!Dockerfile.golden.pdf
+!Dockerfile.golden.dot
 !examples/dockerfiles/Dockerfile.large
