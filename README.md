@@ -58,7 +58,7 @@ Run `dockerfilegraph` in your project directory to generate a `Dockerfile.pdf` w
   ```shell
   docker run --rm --user "$(id -u):$(id -g)" \
     -v "$(pwd)":/workspace -w /workspace \
-    ghcr.io/patrickhoefler/dockerfilegraph:alpine
+    ghcr.io/patrickhoefler/dockerfilegraph
   ```
 
 - **Ubuntu-based** (Graphviz 2.42):
@@ -66,7 +66,7 @@ Run `dockerfilegraph` in your project directory to generate a `Dockerfile.pdf` w
   ```shell
   docker run --rm --user "$(id -u):$(id -g)" \
     -v "$(pwd)":/workspace -w /workspace \
-    ghcr.io/patrickhoefler/dockerfilegraph
+    ghcr.io/patrickhoefler/dockerfilegraph:ubuntu
   ```
 
 #### Homebrew

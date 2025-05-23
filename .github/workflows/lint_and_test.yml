@@ -129,10 +129,10 @@ jobs:
             ghcr.io/patrickhoefler/dockerfilegraph:latest \
             --version
 
-      - name: Get the version on Alpine
+      - name: Get the version on Ubuntu
         run: |
           docker run \
-            ghcr.io/patrickhoefler/dockerfilegraph:alpine \
+            ghcr.io/patrickhoefler/dockerfilegraph:ubuntu \
             --version
 
       - name: Run the Docker image with flags
@@ -147,14 +147,14 @@ jobs:
             --output png \
             --dpi 200
 
-      - name: Run the Alpine-based Docker image with flags
+      - name: Run the Ubuntu-based Docker image with flags
         run: |
           cd examples/dockerfiles
           docker run \
             --user "$(id -u):$(id -g)" \
             --workdir /workspace \
             --volume "$(pwd)":/workspace \
-            ghcr.io/patrickhoefler/dockerfilegraph:alpine \
+            ghcr.io/patrickhoefler/dockerfilegraph:ubuntu \
             --legend \
             --output png \
             --dpi 200

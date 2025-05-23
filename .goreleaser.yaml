@@ -23,14 +23,19 @@ dockers:
       - 'ghcr.io/patrickhoefler/dockerfilegraph:{{ .Major }}'
       - 'ghcr.io/patrickhoefler/dockerfilegraph:{{ .Major }}.{{ .Minor }}'
       - 'ghcr.io/patrickhoefler/dockerfilegraph:{{ .Major }}.{{ .Minor }}.{{ .Patch }}'
-
-  - dockerfile: Dockerfile.alpine
-    image_templates:
       - 'ghcr.io/patrickhoefler/dockerfilegraph:alpine'
       - 'ghcr.io/patrickhoefler/dockerfilegraph:latest-alpine'
       - 'ghcr.io/patrickhoefler/dockerfilegraph:{{ .Major }}-alpine'
       - 'ghcr.io/patrickhoefler/dockerfilegraph:{{ .Major }}.{{ .Minor }}-alpine'
       - 'ghcr.io/patrickhoefler/dockerfilegraph:{{ .Major }}.{{ .Minor }}.{{ .Patch }}-alpine'
+
+  - dockerfile: Dockerfile.ubuntu
+    image_templates:
+      - 'ghcr.io/patrickhoefler/dockerfilegraph:ubuntu'
+      - 'ghcr.io/patrickhoefler/dockerfilegraph:latest-ubuntu'
+      - 'ghcr.io/patrickhoefler/dockerfilegraph:{{ .Major }}-ubuntu'
+      - 'ghcr.io/patrickhoefler/dockerfilegraph:{{ .Major }}.{{ .Minor }}-ubuntu'
+      - 'ghcr.io/patrickhoefler/dockerfilegraph:{{ .Major }}.{{ .Minor }}.{{ .Patch }}-ubuntu'
 
 brews:
   - repository:
