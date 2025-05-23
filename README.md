@@ -5,38 +5,39 @@
 [![GitHub release (latest SemVer)](https://img.shields.io/github/v/release/patrickhoefler/dockerfilegraph)](https://github.com/patrickhoefler/dockerfilegraph/releases/latest)
 [![GitHub](https://img.shields.io/github/license/patrickhoefler/dockerfilegraph)](https://github.com/patrickhoefler/dockerfilegraph/blob/main/LICENSE)
 
-`dockerfilegraph` visualizes your multi-stage Dockerfiles.
+A command-line tool that visualizes multi-stage Dockerfiles as dependency graphs.
 
-It uses [Graphviz](https://graphviz.org/) to create a visual representation of the build process.
-The build graph contains the following nodes:
+Uses [Graphviz](https://graphviz.org/) to generate visual representations of Docker build processes, helping you understand build dependencies, document architecture, and debug complex multi-stage builds.
+
+## What You Get
+
+The generated graph includes:
+
+**Nodes:**
 
 - All build stages
-- The default build target (highlighted in grey)
+- Default build target (highlighted in grey)
 - External images (with dashed borders)
 
-The edges of the build graph represent:
+**Edges:**
 
-- `FROM ...` dependencies
-  (with a solid line and a full arrow head)
-- `COPY --from=...` dependencies
-  (with a dashed line and an empty arrow head)
-- `RUN --mount=(.*)from=...` dependencies
-  (with a dotted line and an empty diamond arrow head)
+- `FROM ...` dependencies → solid line with full arrow
+- `COPY --from=...` dependencies → dashed line with empty arrow
+- `RUN --mount=(.*)from=...` dependencies → dotted line with diamond arrow
 
-You can add an optional legend to the graph and change the output format and resolution.
-For all the details, see the [options](#more-options) below.
+Supports multiple output formats (PDF, SVG, PNG), a legend, and layout customization options.
 
 ## Example Output
 
-### Dockerfile graph including a `--legend`
+### With Legend (`--legend`)
 
 ![Example output including a legend](./examples/images/Dockerfile-legend.svg)
 
-### Dockerfile graph visualizing the image `--layers`
+### With Layer Visualization (`--layers`)
 
 ![Example output including layers](./examples/images/Dockerfile-layers.svg)
 
-### Complex Dockerfile graph created with `--concentrate --nodesep 0.3 --unflatten 4`
+### Complex Multi-stage Build (`--concentrate --nodesep 0.3 --unflatten 4`)
 
 ![Example output with `--concentrate` and `--unflatten 4`](./examples/images/Dockerfile-large.svg)
 
@@ -48,91 +49,90 @@ For all the details, see the [options](#more-options) below.
 
 ### Installation and Usage
 
-Running `dockerfilegraph` without any arguments will create a `Dockerfile.pdf` in your current working directory.
-This PDF contains a visual graph representation of your multi-stage Dockerfile.
+Run `dockerfilegraph` in your project directory to generate a `Dockerfile.pdf` with your build graph.
 
-#### [docker](https://docker.com/) / [nerdctl](https://github.com/containerd/nerdctl)
+#### Docker
 
-##### Image based on Ubuntu 24.10 and Graphviz 2.42
+- **Alpine-based** (Graphviz 12.2):
+
+  ```shell
+  docker run --rm --user "$(id -u):$(id -g)" \
+    -v "$(pwd)":/workspace -w /workspace \
+    ghcr.io/patrickhoefler/dockerfilegraph:alpine
+  ```
+
+- **Ubuntu-based** (Graphviz 2.42):
+
+  ```shell
+  docker run --rm --user "$(id -u):$(id -g)" \
+    -v "$(pwd)":/workspace -w /workspace \
+    ghcr.io/patrickhoefler/dockerfilegraph
+  ```
+
+#### Homebrew
 
 ```shell
-docker run \
-  --rm \
-  --user "$(id -u):$(id -g)" \
-  --workdir /workspace \
-  --volume "$(pwd)":/workspace \
-  ghcr.io/patrickhoefler/dockerfilegraph
-```
-
-##### Image based on Alpine Linux 3.21 and Graphviz 12.2
-
-```shell
-docker run \
-  --rm \
-  --user "$(id -u):$(id -g)" \
-  --workdir /workspace \
-  --volume "$(pwd)":/workspace \
-  ghcr.io/patrickhoefler/dockerfilegraph:alpine
-```
-
-#### [Homebrew](https://brew.sh/)
-
-```text
 brew install patrickhoefler/tap/dockerfilegraph
 dockerfilegraph
 ```
 
 #### [toolctl](https://github.com/toolctl/toolctl)
 
-Make sure that [Graphviz](https://graphviz.org/) is installed locally.
+*Requirements: [Graphviz](https://graphviz.org/) installed locally*
 
-Then:
-
-```text
+```shell
 toolctl install dockerfilegraph
 dockerfilegraph
 ```
 
 #### Build from Source
 
-For all build variants, make sure that [`go`](https://go.dev/) and `make` are installed locally.
+- **Native Build**
 
-##### Native
+  *Requirements: `make`, [Go](https://go.dev/) and [Graphviz](https://graphviz.org/)*
 
-Make sure that [Graphviz](https://graphviz.org/) is installed locally.
+  ```shell
+  make build
+  ./dockerfilegraph
+  ```
 
-Then:
+- **Container Build (Alpine)**
 
-```text
-make build
-./dockerfilegraph
-```
+  *Requirements: `make`, [Go](https://go.dev/) and Docker*
 
-##### Container (Alpine)
+  ```shell
+  make build-docker-image-alpine
+  docker run \
+    --rm \
+    --user "$(id -u):$(id -g)" \
+    --workdir /workspace \
+    --volume "$(pwd)":/workspace \
+    dockerfilegraph:alpine
+  ```
 
-```text
-make build-docker-image-alpine
-docker run \
-  --rm \
-  --user "$(id -u):$(id -g)" \
-  --workdir /workspace \
-  --volume "$(pwd)":/workspace \
-  dockerfilegraph:alpine
-```
+- **Container Build (Ubuntu)**
 
-##### Container (Ubuntu)
+  *Requirements: `make`, [Go](https://go.dev/) and Docker*
 
-```text
-make build-docker-image-ubuntu
-docker run \
-  --rm \
-  --user "$(id -u):$(id -g)" \
-  --workdir /workspace \
-  --volume "$(pwd)":/workspace \
-  dockerfilegraph:ubuntu
-```
+  ```shell
+  make build-docker-image-ubuntu
+  docker run \
+    --rm \
+    --user "$(id -u):$(id -g)" \
+    --workdir /workspace \
+    --volume "$(pwd)":/workspace \
+    dockerfilegraph:ubuntu
+  ```
 
-### More Options
+## Configuration Options
+
+**Common Flags:**
+
+- `--output svg|png|pdf` - Choose your output format
+- `--legend` - Add a legend explaining the notation
+- `--layers` - Show all Docker layers
+
+**All Available Options:**
 
 ```text
 ❯ dockerfilegraph --help
@@ -157,6 +157,10 @@ Flags:
   -u, --unflatten uint          stagger length of leaf edges between [1,u] (default 0)
       --version                 display the version of dockerfilegraph
 ```
+
+## Contributing
+
+Found a bug or have a feature request? [Open an issue](https://github.com/patrickhoefler/dockerfilegraph/issues) or submit a pull request.
 
 ## License
 
