@@ -77,7 +77,7 @@ func dockerfileToSimplifiedDockerfile(
 			stageIndex++
 			stage := Stage{}
 
-			// If there is an "AS" alias, set is at the name
+			// If there is an "AS" alias, set it as the name
 			if node.Next.Next != nil {
 				stage.Name = node.Next.Next.Next.Value
 				stages[stage.Name] = struct{}{}
