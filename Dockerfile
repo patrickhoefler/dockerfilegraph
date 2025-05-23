@@ -1,23 +1,20 @@
 ### Release image
-FROM ubuntu:oracular-20250225@sha256:aadf9a3f5eda81295050d13dabe851b26a67597e424a908f25a63f589dfed48f
+FROM alpine:3.21.3@sha256:a8560b36e8b8210634f77d9f7f9efd7ffa463e380b75e2e74aff4511df3ef88c
 
 LABEL org.opencontainers.image.source="https://github.com/patrickhoefler/dockerfilegraph"
 
-# renovate: datasource=repology depName=ubuntu_24_04/fonts-dejavu versioning=loose
-ENV FONTS_DEJAVU_VERSION="2.37-8"
+# renovate: datasource=repology depName=alpine_3_21/font-dejavu versioning=loose
+ENV FONT_DEJAVU_VERSION="2.37-r5"
 
-# renovate: datasource=repology depName=ubuntu_24_04/graphviz versioning=loose
-ENV GRAPHVIZ_VERSION="2.42.4-2build2"
+# renovate: datasource=repology depName=alpine_3_21/graphviz versioning=loose
+ENV GRAPHVIZ_VERSION="12.2.0-r0"
 
-RUN \
-  apt-get update \
-  && apt-get install -y --no-install-recommends \
-  fonts-dejavu="${FONTS_DEJAVU_VERSION}" \
+RUN apk add --update --no-cache \
+  font-dejavu="${FONT_DEJAVU_VERSION}" \
   graphviz="${GRAPHVIZ_VERSION}" \
-  && rm -rf /var/lib/apt/lists/* \
   \
   # Add a non-root user
-  && useradd app
+  && adduser -D app
 
 # Run as non-root user
 USER app

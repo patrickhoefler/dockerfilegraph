@@ -12,13 +12,13 @@ build: clean
 	go build $(FLAGS)
 
 build-docker-image-alpine: build-linux
-	docker build -t dockerfilegraph:alpine -f Dockerfile.alpine .
+	docker build -t dockerfilegraph:alpine -f Dockerfile .
 
 build-docker-image-ubuntu: build-linux
-	docker build -t dockerfilegraph:ubuntu -f Dockerfile .
+	docker build -t dockerfilegraph:ubuntu -f Dockerfile.ubuntu .
 
 build-linux: clean
-	GOOS=linux go build $(FLAGS)
+	CGO_ENABLED=0 GOOS=linux go build $(FLAGS)
 
 clean:
 	go clean
