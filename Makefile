@@ -18,7 +18,7 @@ build-docker-image-ubuntu: build-linux
 	docker build -t dockerfilegraph:ubuntu -f Dockerfile.ubuntu .
 
 build-linux: clean
-	GOOS=linux go build $(FLAGS)
+	CGO_ENABLED=0 GOOS=linux go build $(FLAGS)
 
 clean:
 	go clean
