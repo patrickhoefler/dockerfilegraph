@@ -53,7 +53,7 @@ Run `dockerfilegraph` in your project directory to generate a `Dockerfile.pdf` w
 
 #### Docker
 
-- **Alpine-based** (Graphviz 12.2):
+- **Alpine-based** (Graphviz 12.2) - **Default**:
 
   ```shell
   docker run --rm --user "$(id -u):$(id -g)" \
