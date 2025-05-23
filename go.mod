@@ -6,7 +6,7 @@ require (
 	github.com/aquilax/truncate v1.0.1
 	github.com/awalterschulze/gographviz v2.0.3+incompatible
 	github.com/google/go-cmp v0.7.0
-	github.com/moby/buildkit v0.21.1
+	github.com/moby/buildkit v0.22.0
 	github.com/spf13/afero v1.14.0
 	github.com/spf13/cobra v1.9.1
 )
