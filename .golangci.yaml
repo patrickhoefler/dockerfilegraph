@@ -3,8 +3,10 @@ version: "2"
 linters:
   enable:
     - gocyclo
+    - ineffassign
     - lll
     - misspell
+    - staticcheck
     - revive
   settings:
     gocyclo:

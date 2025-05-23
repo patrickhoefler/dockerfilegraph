@@ -9,12 +9,32 @@ import (
 	"github.com/moby/buildkit/frontend/dockerfile/parser"
 )
 
+// ArgReplacement holds a key-value pair for ARG variable substitution in Dockerfiles.
+type ArgReplacement struct {
+	Key   string
+	Value string
+}
+
+const (
+	instructionFrom = "FROM"
+	instructionCopy = "COPY"
+	instructionRun  = "RUN"
+	instructionArg  = "ARG"
+)
+
+var (
+	dollarVarRegex = regexp.MustCompile(`\$([A-Za-z_][A-Za-z0-9_]*)`)
+	bracedVarRegex = regexp.MustCompile(`\$\{([A-Za-z_][A-Za-z0-9_]*)\}`)
+	fromFlagRegex  = regexp.MustCompile("--from=(.+)")
+	mountFlagRegex = regexp.MustCompile("--mount=.*from=(.+?)(?:,| |$)")
+)
+
 // newLayer creates a new layer object with a modified label.
 func newLayer(
-	child *parser.Node, argReplacements map[string]string, maxLabelLength int,
+	node *parser.Node, argReplacements []ArgReplacement, maxLabelLength int,
 ) (layer Layer) {
 	// Replace argument variables in the original label.
-	label := replaceArgVars(child.Original, argReplacements)
+	label := replaceArgVars(node.Original, argReplacements)
 
 	// Replace double quotes with single quotes.
 	label = strings.ReplaceAll(label, "\"", "'")
@@ -24,9 +44,7 @@ func newLayer(
 
 	// Truncate the label if it exceeds the maximum length.
 	if len(label) > maxLabelLength {
-		label = truncate.Truncate(
-			label, maxLabelLength, "...", truncate.PositionEnd,
-		)
+		label = truncate.Truncate(label, maxLabelLength, "...", truncate.PositionEnd)
 	}
 
 	// Set the label of the layer object.
@@ -50,18 +68,18 @@ func dockerfileToSimplifiedDockerfile(
 	stageIndex := -1
 	layerIndex := -1
 
-	argReplacements := make(map[string]string)
+	argReplacements := make([]ArgReplacement, 0)
 
-	for _, child := range result.AST.Children {
-		switch strings.ToUpper(child.Value) {
-		case "FROM":
+	for _, node := range result.AST.Children {
+		switch strings.ToUpper(node.Value) {
+		case instructionFrom:
 			// Create a new stage
 			stageIndex++
 			stage := Stage{}
 
-			// If there is an "AS" alias, set is at the name
-			if child.Next.Next != nil {
-				stage.Name = child.Next.Next.Next.Value
+			// If there is an "AS" alias, set it as the name
+			if node.Next.Next != nil {
+				stage.Name = node.Next.Next.Next.Value
 				stages[stage.Name] = struct{}{}
 			}
 
@@ -69,11 +87,11 @@ func dockerfileToSimplifiedDockerfile(
 
 			// Add a new layer
 			layerIndex = 0
-			layer := newLayer(child, argReplacements, maxLabelLength)
+			layer := newLayer(node, argReplacements, maxLabelLength)
 
 			// Set the waitFor ID
 			layer.WaitFors = []WaitFor{{
-				Name: replaceArgVars(child.Next.Value, argReplacements),
+				Name: replaceArgVars(node.Next.Value, argReplacements),
 				Type: waitForType(waitForFrom),
 			}}
 
@@ -82,15 +100,14 @@ func dockerfileToSimplifiedDockerfile(
 				layer,
 			)
 
-		case "COPY":
+		case instructionCopy:
 			// Add a new layer
 			layerIndex++
-			layer := newLayer(child, argReplacements, maxLabelLength)
+			layer := newLayer(node, argReplacements, maxLabelLength)
 
 			// If there is a "--from" option, set the waitFor ID
-			for _, flag := range child.Flags {
-				regex := regexp.MustCompile("--from=(.+)")
-				result := regex.FindSubmatch([]byte(flag))
+			for _, flag := range node.Flags {
+				result := fromFlagRegex.FindSubmatch([]byte(flag))
 				if len(result) > 1 {
 					layer.WaitFors = []WaitFor{{
 						Name: string(result[1]),
@@ -104,15 +121,14 @@ func dockerfileToSimplifiedDockerfile(
 				layer,
 			)
 
-		case "RUN":
+		case instructionRun:
 			// Add a new layer
 			layerIndex++
-			layer := newLayer(child, argReplacements, maxLabelLength)
+			layer := newLayer(node, argReplacements, maxLabelLength)
 
 			// If there is a "--mount=(.*)from=..." option, set the waitFor ID
-			for _, flag := range child.Flags {
-				regex := regexp.MustCompile("--mount=.*from=(.+?)(?:,| |$)")
-				matches := regex.FindAllSubmatch([]byte(flag), -1)
+			for _, flag := range node.Flags {
+				matches := mountFlagRegex.FindAllSubmatch([]byte(flag), -1)
 				for _, match := range matches {
 					if len(match) > 1 {
 						layer.WaitFors = append(layer.WaitFors, WaitFor{
@@ -131,7 +147,7 @@ func dockerfileToSimplifiedDockerfile(
 		default:
 			// Add a new layer
 			layerIndex++
-			layer := newLayer(child, argReplacements, maxLabelLength)
+			layer := newLayer(node, argReplacements, maxLabelLength)
 
 			if stageIndex == -1 {
 				simplifiedDockerfile.BeforeFirstStage = append(
@@ -139,10 +155,12 @@ func dockerfileToSimplifiedDockerfile(
 					layer,
 				)
 
-				if child.Value == "ARG" {
-					key, value, valueProvided := strings.Cut(child.Next.Value, "=")
+				// NOTE: Currently, only global ARGs (defined before the first FROM instruction)
+				// are processed for variable substitution. Stage-specific ARGs are not yet fully supported.
+				if strings.ToUpper(node.Value) == instructionArg {
+					key, value, valueProvided := strings.Cut(node.Next.Value, "=")
 					if valueProvided {
-						argReplacements[key] = value
+						argReplacements = appendAndResolveArgReplacement(argReplacements, ArgReplacement{Key: key, Value: value})
 					}
 				}
 
@@ -195,11 +213,36 @@ func addExternalImages(
 	}
 }
 
-func replaceArgVars(baseImage string, replacements map[string]string) string {
-	for k, v := range replacements {
-		baseImage = strings.ReplaceAll(baseImage, "$"+k, v)
-		baseImage = strings.ReplaceAll(baseImage, "${"+k+"}", v)
+// appendAndResolveArgReplacement appends a new ARG and resolves its value using already-resolved previous ARGs.
+func appendAndResolveArgReplacement(
+	argReplacements []ArgReplacement,
+	newArgReplacement ArgReplacement,
+) []ArgReplacement {
+	// Resolve the new ARG using previous, already-resolved ARGs
+	resolvedValue := newArgReplacement.Value
+	for _, prevArg := range argReplacements {
+		resolvedValue = strings.ReplaceAll(resolvedValue, "$"+prevArg.Key, prevArg.Value)
+		resolvedValue = strings.ReplaceAll(resolvedValue, "${"+prevArg.Key+"}", prevArg.Value)
 	}
+	// Remove any remaining ARG patterns
+	resolvedValue = stripRemainingArgPatterns(resolvedValue)
+	return append(argReplacements, ArgReplacement{Key: newArgReplacement.Key, Value: resolvedValue})
+}
 
-	return baseImage
+// stripRemainingArgPatterns replaces any remaining $VAR or ${VAR} patterns in s with an empty string.
+// It's intended to be called after defined ARGs have already been substituted into s.
+func stripRemainingArgPatterns(s string) string {
+	s = dollarVarRegex.ReplaceAllString(s, "")
+	s = bracedVarRegex.ReplaceAllString(s, "")
+	return s
+}
+
+// replaceArgVars replaces ARG variables in a string using fully resolved replacements.
+func replaceArgVars(baseImage string, resolvedReplacements []ArgReplacement) string {
+	result := baseImage
+	for _, r := range resolvedReplacements {
+		result = strings.ReplaceAll(result, "$"+r.Key, r.Value)
+		result = strings.ReplaceAll(result, "${"+r.Key+"}", r.Value)
+	}
+	return result
 }

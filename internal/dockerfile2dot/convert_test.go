@@ -310,6 +310,101 @@ COPY --from=download-get-pip get-pip.py ./
 				},
 			},
 		},
+		{
+			name: "Nested ARG variable substitution",
+			args: args{
+				content: []byte(`
+ARG WORLD=world
+ARG IMAGE1=hello-${WORLD}-1
+ARG IMAGE2=hello-${WORLD}-2
+
+FROM ${IMAGE1}:latest AS stage1
+RUN echo "Stage 1"
+
+FROM ${IMAGE2}:latest AS stage2
+RUN echo "Stage 2"
+`),
+				maxLabelLength: 20,
+			},
+			want: SimplifiedDockerfile{
+				ExternalImages: []ExternalImage{
+					{Name: "hello-world-1:latest"},
+					{Name: "hello-world-2:latest"},
+				},
+				Stages: []Stage{
+					{
+						Name: "stage1",
+						Layers: []Layer{
+							{
+								Label: "FROM hello-world-...",
+								WaitFors: []WaitFor{{
+									Name: "hello-world-1:latest",
+									Type: waitForType(waitForFrom),
+								}},
+							},
+							{Label: "RUN echo 'Stage 1'"},
+						},
+					},
+					{
+						Name: "stage2",
+						Layers: []Layer{
+							{
+								Label: "FROM hello-world-...",
+								WaitFors: []WaitFor{{
+									Name: "hello-world-2:latest",
+									Type: waitForType(waitForFrom),
+								}},
+							},
+							{Label: "RUN echo 'Stage 2'"},
+						},
+					},
+				},
+				BeforeFirstStage: []Layer{
+					{Label: "ARG WORLD=world"},
+					{Label: "ARG IMAGE1=hello-..."},
+					{Label: "ARG IMAGE2=hello-..."},
+				},
+			},
+		},
+		{
+			// This test verifies that an ARG referenced before its definition resolves to an empty string.
+			// This aligns with the Docker specification's behavior for ARG variable substitution,
+			// where only previously defined ARGs are considered for replacement.
+			name: "ARG referencing later ARG (should not resolve)",
+			args: args{
+				content: []byte(`
+ARG IMAGE1=$IMAGE2
+ARG IMAGE2=scratch
+FROM $IMAGE1
+FROM $IMAGE2
+`),
+				maxLabelLength: 20,
+			},
+			want: SimplifiedDockerfile{
+				ExternalImages: []ExternalImage{
+					{Name: ""},
+					{Name: "scratch"},
+				},
+				Stages: []Stage{
+					{
+						Layers: []Layer{{
+							Label:    "FROM",
+							WaitFors: []WaitFor{{Name: "", Type: waitForType(waitForFrom)}},
+						}},
+					},
+					{
+						Layers: []Layer{{
+							Label:    "FROM scratch",
+							WaitFors: []WaitFor{{Name: "scratch", Type: waitForType(waitForFrom)}},
+						}},
+					},
+				},
+				BeforeFirstStage: []Layer{
+					{Label: "ARG IMAGE1=$IMAGE2"},
+					{Label: "ARG IMAGE2=scratch"},
+				},
+			},
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
