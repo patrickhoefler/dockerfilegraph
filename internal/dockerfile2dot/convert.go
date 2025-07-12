@@ -191,8 +191,8 @@ func addExternalImages(
 	scratchCounter := 0
 
 	// Iterate through all stages and layers to find external image dependencies
-	for _, stage := range simplifiedDockerfile.Stages {
-		for _, layer := range stage.Layers {
+	for stageIndex, stage := range simplifiedDockerfile.Stages {
+		for layerIndex, layer := range stage.Layers {
 			for waitForIndex, waitFor := range layer.WaitFors {
 
 				// Skip if this references an internal stage (not an external image)
@@ -209,7 +209,7 @@ func addExternalImages(
 					imageID = fmt.Sprintf("scratch-%d", scratchCounter)
 					scratchCounter++
 					// Update the layer's waitFor reference to use the unique ID for graph connections
-					layer.WaitFors[waitForIndex].ID = imageID
+					simplifiedDockerfile.Stages[stageIndex].Layers[layerIndex].WaitFors[waitForIndex].ID = imageID
 				}
 
 				// Avoid duplicate external image entries (based on unique ID)
