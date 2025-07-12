@@ -2,6 +2,7 @@ package dockerfile2dot
 
 import (
 	"bytes"
+	"fmt"
 	"regexp"
 	"strings"
 
@@ -56,6 +57,7 @@ func newLayer(
 func dockerfileToSimplifiedDockerfile(
 	content []byte,
 	maxLabelLength int,
+	separateScratch bool,
 ) (simplifiedDockerfile SimplifiedDockerfile, err error) {
 	result, err := parser.Parse(bytes.NewReader(content))
 	if err != nil {
@@ -91,7 +93,7 @@ func dockerfileToSimplifiedDockerfile(
 
 			// Set the waitFor ID
 			layer.WaitFors = []WaitFor{{
-				Name: replaceArgVars(node.Next.Value, argReplacements),
+				ID:   replaceArgVars(node.Next.Value, argReplacements),
 				Type: waitForType(waitForFrom),
 			}}
 
@@ -110,7 +112,7 @@ func dockerfileToSimplifiedDockerfile(
 				result := fromFlagRegex.FindSubmatch([]byte(flag))
 				if len(result) > 1 {
 					layer.WaitFors = []WaitFor{{
-						Name: string(result[1]),
+						ID:   string(result[1]),
 						Type: waitForType(waitForCopy),
 					}}
 				}
@@ -132,7 +134,7 @@ func dockerfileToSimplifiedDockerfile(
 				for _, match := range matches {
 					if len(match) > 1 {
 						layer.WaitFors = append(layer.WaitFors, WaitFor{
-							Name: string(match[1]),
+							ID:   string(match[1]),
 							Type: waitForType(waitForMount),
 						})
 					}
@@ -174,27 +176,46 @@ func dockerfileToSimplifiedDockerfile(
 		}
 	}
 
-	addExternalImages(&simplifiedDockerfile, stages)
+	addExternalImages(&simplifiedDockerfile, stages, separateScratch)
 
 	return
 }
 
+// addExternalImages processes all layers and identifies external images.
 func addExternalImages(
-	simplifiedDockerfile *SimplifiedDockerfile, stages map[string]struct{},
+	simplifiedDockerfile *SimplifiedDockerfile,
+	stages map[string]struct{},
+	separateScratch bool,
 ) {
+	// Counter to generate unique IDs for separate scratch instances
+	scratchCounter := 0
+
+	// Iterate through all stages and layers to find external image dependencies
 	for _, stage := range simplifiedDockerfile.Stages {
 		for _, layer := range stage.Layers {
-			for _, waitFor := range layer.WaitFors {
+			for waitForIndex, waitFor := range layer.WaitFors {
 
-				// Check if the layer waits for a stage
-				if _, ok := stages[waitFor.Name]; ok {
+				// Skip if this references an internal stage (not an external image)
+				if _, ok := stages[waitFor.ID]; ok {
 					continue
 				}
 
-				// Check if we already added the external image
+				// Start with the original image reference as both ID and name
+				imageID := waitFor.ID
+				originalName := waitFor.ID
+
+				// Handle scratch image separation: generate unique IDs while preserving display name
+				if originalName == "scratch" && separateScratch {
+					imageID = fmt.Sprintf("scratch-%d", scratchCounter)
+					scratchCounter++
+					// Update the layer's waitFor reference to use the unique ID for graph connections
+					layer.WaitFors[waitForIndex].ID = imageID
+				}
+
+				// Avoid duplicate external image entries (based on unique ID)
 				externalImageAlreadyAdded := false
 				for _, externalImage := range simplifiedDockerfile.ExternalImages {
-					if externalImage.Name == waitFor.Name {
+					if externalImage.ID == imageID {
 						externalImageAlreadyAdded = true
 						break
 					}
@@ -203,10 +224,13 @@ func addExternalImages(
 					continue
 				}
 
-				// Add the external image
+				// Add the external image with proper ID/Name separation
 				simplifiedDockerfile.ExternalImages = append(
 					simplifiedDockerfile.ExternalImages,
-					ExternalImage{Name: waitFor.Name},
+					ExternalImage{
+						ID:   imageID,      // Unique identifier for graph connections
+						Name: originalName, // Display name for graph labels
+					},
 				)
 			}
 		}

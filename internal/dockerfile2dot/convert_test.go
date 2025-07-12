@@ -9,8 +9,9 @@ import (
 
 func Test_dockerfileToSimplifiedDockerfile(t *testing.T) {
 	type args struct {
-		content        []byte
-		maxLabelLength int
+		content         []byte
+		maxLabelLength  int
+		separateScratch bool
 	}
 	tests := []struct {
 		name string
@@ -20,19 +21,20 @@ func Test_dockerfileToSimplifiedDockerfile(t *testing.T) {
 		{
 			name: "Most minimal Dockerfile",
 			args: args{
-				content:        []byte("FROM scratch"),
-				maxLabelLength: 20,
+				content:         []byte("FROM scratch"),
+				maxLabelLength:  20,
+				separateScratch: false,
 			},
 			want: SimplifiedDockerfile{
 				ExternalImages: []ExternalImage{
-					{Name: "scratch"},
+					{ID: "scratch", Name: "scratch"},
 				},
 				Stages: []Stage{
 					{
 						Layers: []Layer{
 							{
 								Label:    "FROM scratch",
-								WaitFors: []WaitFor{{Name: "scratch", Type: waitForType(waitForFrom)}},
+								WaitFors: []WaitFor{{ID: "scratch", Type: waitForType(waitForFrom)}},
 							},
 						},
 					},
@@ -49,13 +51,14 @@ FROM scratch
 COPY --from=base . .
 RUN --mount=type=cache,from=buildcache,source=/go/pkg/mod/cache/,target=/go/pkg/mod/cache/ go build
 `),
-				maxLabelLength: 20,
+				maxLabelLength:  20,
+				separateScratch: false,
 			},
 			want: SimplifiedDockerfile{
 				ExternalImages: []ExternalImage{
-					{Name: "ubuntu"},
-					{Name: "scratch"},
-					{Name: "buildcache"},
+					{ID: "ubuntu", Name: "ubuntu"},
+					{ID: "scratch", Name: "scratch"},
+					{ID: "buildcache", Name: "buildcache"},
 				},
 				Stages: []Stage{
 					{
@@ -63,7 +66,7 @@ RUN --mount=type=cache,from=buildcache,source=/go/pkg/mod/cache/,target=/go/pkg/
 						Layers: []Layer{
 							{
 								Label:    "FROM ubuntu as base",
-								WaitFors: []WaitFor{{Name: "ubuntu", Type: waitForType(waitForFrom)}},
+								WaitFors: []WaitFor{{ID: "ubuntu", Type: waitForType(waitForFrom)}},
 							},
 						},
 					},
@@ -71,15 +74,15 @@ RUN --mount=type=cache,from=buildcache,source=/go/pkg/mod/cache/,target=/go/pkg/
 						Layers: []Layer{
 							{
 								Label:    "FROM scratch",
-								WaitFors: []WaitFor{{Name: "scratch", Type: waitForType(waitForFrom)}},
+								WaitFors: []WaitFor{{ID: "scratch", Type: waitForType(waitForFrom)}},
 							},
 							{
 								Label:    "COPY --from=base . .",
-								WaitFors: []WaitFor{{Name: "base", Type: waitForType(waitForCopy)}},
+								WaitFors: []WaitFor{{ID: "base", Type: waitForType(waitForCopy)}},
 							},
 							{
 								Label:    "RUN --mount=type=...",
-								WaitFors: []WaitFor{{Name: "buildcache", Type: waitForType(waitForMount)}},
+								WaitFors: []WaitFor{{ID: "buildcache", Type: waitForType(waitForMount)}},
 							},
 						},
 					},
@@ -96,13 +99,14 @@ RUN \
   --mount=type=cache,from=buildcache,source=/go/pkg/mod/cache/,target=/go/pkg/mod/cache/ \
   --mount=from=artifacts,source=/artifacts/embeddata,target=/artifacts/embeddata go build
 `),
-				maxLabelLength: 20,
+				maxLabelLength:  20,
+				separateScratch: false,
 			},
 			want: SimplifiedDockerfile{
 				ExternalImages: []ExternalImage{
-					{Name: "ubuntu"},
-					{Name: "buildcache"},
-					{Name: "artifacts"},
+					{ID: "ubuntu", Name: "ubuntu"},
+					{ID: "buildcache", Name: "buildcache"},
+					{ID: "artifacts", Name: "artifacts"},
 				},
 				Stages: []Stage{
 					{
@@ -110,13 +114,13 @@ RUN \
 						Layers: []Layer{
 							{
 								Label:    "FROM ubuntu as base",
-								WaitFors: []WaitFor{{Name: "ubuntu", Type: waitForType(waitForFrom)}},
+								WaitFors: []WaitFor{{ID: "ubuntu", Type: waitForType(waitForFrom)}},
 							},
 							{
 								Label: "RUN --mount=type=...",
 								WaitFors: []WaitFor{
-									{Name: "buildcache", Type: waitForType(waitForMount)},
-									{Name: "artifacts", Type: waitForType(waitForMount)},
+									{ID: "buildcache", Type: waitForType(waitForMount)},
+									{ID: "artifacts", Type: waitForType(waitForMount)},
 								},
 							},
 						},
@@ -136,19 +140,19 @@ RUN --mount=from=build,source=/build/,target=/build/ go build
 			},
 			want: SimplifiedDockerfile{
 				ExternalImages: []ExternalImage{
-					{Name: "scratch"},
-					{Name: "build"},
+					{ID: "scratch", Name: "scratch"},
+					{ID: "build", Name: "build"},
 				},
 				Stages: []Stage{
 					{
 						Layers: []Layer{
 							{
 								Label:    "FROM scratch",
-								WaitFors: []WaitFor{{Name: "scratch", Type: waitForType(waitForFrom)}},
+								WaitFors: []WaitFor{{ID: "scratch", Type: waitForType(waitForFrom)}},
 							},
 							{
 								Label:    "RUN --mount=from=...",
-								WaitFors: []WaitFor{{Name: "build", Type: waitForType(waitForMount)}},
+								WaitFors: []WaitFor{{ID: "build", Type: waitForType(waitForMount)}},
 							},
 						},
 					},
@@ -177,10 +181,10 @@ RUN --mount=type=cache,source=/go/pkg/mod/cache/,target=/go/pkg/mod/cache/,from=
 			},
 			want: SimplifiedDockerfile{
 				ExternalImages: []ExternalImage{
-					{Name: "ubuntu:22.04"},
-					{Name: "php:8.0-fpm-alpine3.15"},
-					{Name: "scratch"},
-					{Name: "buildcache"},
+					{ID: "ubuntu:22.04", Name: "ubuntu:22.04"},
+					{ID: "php:8.0-fpm-alpine3.15", Name: "php:8.0-fpm-alpine3.15"},
+					{ID: "scratch", Name: "scratch"},
+					{ID: "buildcache", Name: "buildcache"},
 				},
 				Stages: []Stage{
 					{
@@ -188,7 +192,7 @@ RUN --mount=type=cache,source=/go/pkg/mod/cache/,target=/go/pkg/mod/cache/,from=
 						Layers: []Layer{
 							{
 								Label:    "FROM ubuntu:22.04...",
-								WaitFors: []WaitFor{{Name: "ubuntu:22.04", Type: waitForType(waitForFrom)}},
+								WaitFors: []WaitFor{{ID: "ubuntu:22.04", Type: waitForType(waitForFrom)}},
 							},
 							{
 								Label: "USER app",
@@ -201,7 +205,7 @@ RUN --mount=type=cache,source=/go/pkg/mod/cache/,target=/go/pkg/mod/cache/,from=
 							{
 								Label: "FROM php:8.0-fpm-...",
 								WaitFors: []WaitFor{{
-									Name: "php:8.0-fpm-alpine3.15",
+									ID:   "php:8.0-fpm-alpine3.15",
 									Type: waitForType(waitForFrom),
 								}},
 							},
@@ -211,15 +215,15 @@ RUN --mount=type=cache,source=/go/pkg/mod/cache/,target=/go/pkg/mod/cache/,from=
 						Layers: []Layer{
 							{
 								Label:    "FROM scratch",
-								WaitFors: []WaitFor{{Name: "scratch", Type: waitForType(waitForFrom)}},
+								WaitFors: []WaitFor{{ID: "scratch", Type: waitForType(waitForFrom)}},
 							},
 							{
 								Label:    "COPY --from=base . .",
-								WaitFors: []WaitFor{{Name: "base", Type: waitForType(waitForCopy)}},
+								WaitFors: []WaitFor{{ID: "base", Type: waitForType(waitForCopy)}},
 							},
 							{
 								Label:    "RUN --mount=type=...",
-								WaitFors: []WaitFor{{Name: "buildcache", Type: waitForType(waitForMount)}},
+								WaitFors: []WaitFor{{ID: "buildcache", Type: waitForType(waitForMount)}},
 							},
 						},
 					},
@@ -251,8 +255,8 @@ COPY --from=download-get-pip get-pip.py ./
 			},
 			want: SimplifiedDockerfile{
 				ExternalImages: []ExternalImage{
-					{Name: "scratch"},
-					{Name: "alpine"},
+					{ID: "scratch", Name: "scratch"},
+					{ID: "alpine", Name: "alpine"},
 				},
 				Stages: []Stage{
 					{
@@ -261,7 +265,7 @@ COPY --from=download-get-pip get-pip.py ./
 							{
 								Label: "FROM scratch AS d...",
 								WaitFors: []WaitFor{{
-									Name: "scratch",
+									ID:   "scratch",
 									Type: waitForType(waitForFrom),
 								}},
 							},
@@ -274,7 +278,7 @@ COPY --from=download-get-pip get-pip.py ./
 							{
 								Label: "FROM scratch AS d...",
 								WaitFors: []WaitFor{{
-									Name: "scratch",
+									ID:   "scratch",
 									Type: waitForType(waitForFrom),
 								}},
 							},
@@ -287,21 +291,21 @@ COPY --from=download-get-pip get-pip.py ./
 							{
 								Label: "FROM alpine AS final",
 								WaitFors: []WaitFor{{
-									Name: "alpine",
+									ID:   "alpine",
 									Type: waitForType(waitForFrom),
 								}},
 							},
 							{
 								Label: "COPY --from=downl...",
 								WaitFors: []WaitFor{{
-									Name: "download-node-setup",
+									ID:   "download-node-setup",
 									Type: waitForType(waitForCopy),
 								}},
 							},
 							{
 								Label: "COPY --from=downl...",
 								WaitFors: []WaitFor{{
-									Name: "download-get-pip",
+									ID:   "download-get-pip",
 									Type: waitForType(waitForCopy),
 								}},
 							},
@@ -328,8 +332,8 @@ RUN echo "Stage 2"
 			},
 			want: SimplifiedDockerfile{
 				ExternalImages: []ExternalImage{
-					{Name: "hello-world-1:latest"},
-					{Name: "hello-world-2:latest"},
+					{ID: "hello-world-1:latest", Name: "hello-world-1:latest"},
+					{ID: "hello-world-2:latest", Name: "hello-world-2:latest"},
 				},
 				Stages: []Stage{
 					{
@@ -338,7 +342,7 @@ RUN echo "Stage 2"
 							{
 								Label: "FROM hello-world-...",
 								WaitFors: []WaitFor{{
-									Name: "hello-world-1:latest",
+									ID:   "hello-world-1:latest",
 									Type: waitForType(waitForFrom),
 								}},
 							},
@@ -351,7 +355,7 @@ RUN echo "Stage 2"
 							{
 								Label: "FROM hello-world-...",
 								WaitFors: []WaitFor{{
-									Name: "hello-world-2:latest",
+									ID:   "hello-world-2:latest",
 									Type: waitForType(waitForFrom),
 								}},
 							},
@@ -382,20 +386,20 @@ FROM $IMAGE2
 			},
 			want: SimplifiedDockerfile{
 				ExternalImages: []ExternalImage{
-					{Name: ""},
-					{Name: "scratch"},
+					{ID: "", Name: ""},
+					{ID: "scratch", Name: "scratch"},
 				},
 				Stages: []Stage{
 					{
 						Layers: []Layer{{
 							Label:    "FROM",
-							WaitFors: []WaitFor{{Name: "", Type: waitForType(waitForFrom)}},
+							WaitFors: []WaitFor{{ID: "", Type: waitForType(waitForFrom)}},
 						}},
 					},
 					{
 						Layers: []Layer{{
 							Label:    "FROM scratch",
-							WaitFors: []WaitFor{{Name: "scratch", Type: waitForType(waitForFrom)}},
+							WaitFors: []WaitFor{{ID: "scratch", Type: waitForType(waitForFrom)}},
 						}},
 					},
 				},
@@ -405,12 +409,124 @@ FROM $IMAGE2
 				},
 			},
 		},
+		{
+			name: "Separate scratch images",
+			args: args{
+				content: []byte(`
+FROM scratch AS app1
+COPY app1.txt /app1.txt
+
+FROM scratch AS app2
+COPY app2.txt /app2.txt
+`),
+				maxLabelLength:  20,
+				separateScratch: true,
+			},
+			want: SimplifiedDockerfile{
+				ExternalImages: []ExternalImage{
+					{ID: "scratch-0", Name: "scratch"},
+					{ID: "scratch-1", Name: "scratch"},
+				},
+				Stages: []Stage{
+					{
+						Name: "app1",
+						Layers: []Layer{
+							{
+								Label:    "FROM scratch AS app1",
+								WaitFors: []WaitFor{{ID: "scratch-0", Type: waitForType(waitForFrom)}},
+							},
+							{Label: "COPY app1.txt /ap..."},
+						},
+					},
+					{
+						Name: "app2",
+						Layers: []Layer{
+							{
+								Label:    "FROM scratch AS app2",
+								WaitFors: []WaitFor{{ID: "scratch-1", Type: waitForType(waitForFrom)}},
+							},
+							{Label: "COPY app2.txt /ap..."},
+						},
+					},
+				},
+			},
+		},
+		{
+			name: "Single scratch image with separate flag",
+			args: args{
+				content: []byte(`FROM scratch AS app
+COPY app.txt /app.txt`),
+				maxLabelLength:  20,
+				separateScratch: true,
+			},
+			want: SimplifiedDockerfile{
+				ExternalImages: []ExternalImage{
+					{ID: "scratch-0", Name: "scratch"},
+				},
+				Stages: []Stage{
+					{
+						Name: "app",
+						Layers: []Layer{
+							{
+								Label:    "FROM scratch AS app",
+								WaitFors: []WaitFor{{ID: "scratch-0", Type: waitForType(waitForFrom)}},
+							},
+							{Label: "COPY app.txt /app..."},
+						},
+					},
+				},
+			},
+		},
+		{
+			name: "No scratch images with separate flag enabled",
+			args: args{
+				content: []byte(`FROM ubuntu AS base
+COPY app.txt /app.txt
+
+FROM alpine AS final
+COPY --from=base /app.txt /final.txt`),
+				maxLabelLength:  20,
+				separateScratch: true,
+			},
+			want: SimplifiedDockerfile{
+				ExternalImages: []ExternalImage{
+					{ID: "ubuntu", Name: "ubuntu"},
+					{ID: "alpine", Name: "alpine"},
+				},
+				Stages: []Stage{
+					{
+						Name: "base",
+						Layers: []Layer{
+							{
+								Label:    "FROM ubuntu AS base",
+								WaitFors: []WaitFor{{ID: "ubuntu", Type: waitForType(waitForFrom)}},
+							},
+							{Label: "COPY app.txt /app..."},
+						},
+					},
+					{
+						Name: "final",
+						Layers: []Layer{
+							{
+								Label:    "FROM alpine AS final",
+								WaitFors: []WaitFor{{ID: "alpine", Type: waitForType(waitForFrom)}},
+							},
+							{
+								Label:    "COPY --from=base ...",
+								WaitFors: []WaitFor{{ID: "base", Type: waitForType(waitForCopy)}},
+							},
+						},
+					},
+				},
+			},
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			got, err := dockerfileToSimplifiedDockerfile(
 				tt.args.content,
 				tt.args.maxLabelLength,
+				tt.args.separateScratch,
 			)
 			if tt.name == "Wait for multiple mounts" {
 				fmt.Printf("%q", got.Stages[0].Layers[1])

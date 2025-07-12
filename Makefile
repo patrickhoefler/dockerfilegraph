@@ -20,6 +20,8 @@ build-docker-image-ubuntu: build-linux
 build-linux: clean
 	CGO_ENABLED=0 GOOS=linux go build $(FLAGS)
 
+check: lint test
+
 clean:
 	go clean
 

@@ -38,6 +38,7 @@ Flags:
   -n, --nodesep float           minimum space between two adjacent nodes in the same rank (default 1)
   -o, --output                  output file format, one of: canon, dot, pdf, png, raw, svg (default pdf)
   -r, --ranksep float           minimum separation between ranks (default 0.5)
+      --separate-scratch        create separate nodes for each scratch image instead of collapsing them
   -u, --unflatten uint          stagger length of leaf edges between [1,u] (default 0)
       --version                 display the version of dockerfilegraph
 `
@@ -487,6 +488,28 @@ It creates a visual graph representation of the build process.
 		style="dashed,rounded",
 		width=2];
 	external_image_3 -> stage_2;
+}
+`,
+		},
+		{
+			name:    "separate scratch flag",
+			cliArgs: []string{"--separate-scratch", "-o", "raw"},
+			dockerfileContent: "FROM scratch AS app1\nCOPY app1.txt /app1.txt\n\n" +
+				"FROM scratch AS app2\nCOPY app2.txt /app2.txt\n",
+			wantOut:     "Successfully created Dockerfile.raw\n",
+			wantOutFile: "Dockerfile.raw",
+			wantOutFileContent: `digraph G {
+	compound=true;
+	nodesep=1.00;
+	rankdir=LR;
+	ranksep=0.50;
+	external_image_0->stage_0;
+	external_image_1->stage_1;
+	external_image_0 [ color=grey20, fontcolor=grey20, label="scratch", shape=box, style="dashed,rounded", width=2 ];
+	external_image_1 [ color=grey20, fontcolor=grey20, label="scratch", shape=box, style="dashed,rounded", width=2 ];
+	stage_0 [ label="app1", shape=box, style=rounded, width=2 ];
+	stage_1 [ fillcolor=grey90, label="app2", shape=box, style="filled,rounded", width=2 ];
+
 }
 `,
 		},
