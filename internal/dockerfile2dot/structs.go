@@ -15,33 +15,35 @@ type SimplifiedDockerfile struct {
 // Stage represents a single build stage within the multi-stage Dockerfile or
 // an external image.
 type Stage struct {
-	Name   string  // the part after the AS in the FROM line
-	Layers []Layer // the layers of the stage
+	Name   string  // The part after the AS in the FROM line
+	Layers []Layer // The layers of the stage
 }
 
-// Layer stores the changes compared to the image it’s based on within a
+// Layer stores the changes compared to the image it's based on within a
 // multi-stage Dockerfile.
 type Layer struct {
-	Label    string    // the command and truncated args
-	WaitFors []WaitFor // stages or external images for which this layer needs to wait
+	Label    string    // The command and truncated args
+	WaitFors []WaitFor // Stages or external images for which this layer needs to wait
 }
 
 // ExternalImage holds the name of an external image.
 type ExternalImage struct {
-	Name string
+	ID   string // Unique identifier for this external image instance
+	Name string // The original name of the external image
 }
 
+// waitForType represents the type of dependency between stages or images.
 type waitForType int
 
 const (
-	waitForCopy waitForType = iota
-	waitForFrom
-	waitForMount
+	waitForCopy  waitForType = iota // COPY dependency from another stage
+	waitForFrom                     // FROM dependency on another stage or image
+	waitForMount                    // MOUNT dependency for build cache
 )
 
 // WaitFor holds the name of the stage or external image for which the builder
-// has to wait, and the type, i.e. the reason why it has to wait for it
+// has to wait, and the type, i.e. the reason why it has to wait for it.
 type WaitFor struct {
-	Name string      // the name of the stage or external image for which the builder has to wait
-	Type waitForType // the reason why it has to wait
+	ID   string      // The unique identifier of the stage or external image for which the builder has to wait
+	Type waitForType // The reason why it has to wait
 }

@@ -169,7 +169,7 @@ func addEdgesForStage(
 			}
 
 			sourceNodeID, additionalEdgeAttrs := getWaitForNodeID(
-				simplifiedDockerfile, waitFor.Name, layers,
+				simplifiedDockerfile, waitFor.ID, layers,
 			)
 			for k, v := range additionalEdgeAttrs {
 				edgeAttrs[k] = v
@@ -287,9 +287,9 @@ func getWaitForNodeID(
 		}
 	}
 
-	// Check if it's an external image name
+	// Check if it's an external image ID
 	for externalImageIndex, externalImage := range simplifiedDockerfile.ExternalImages {
-		if nameOrID == externalImage.Name {
+		if nameOrID == externalImage.ID {
 			nodeID = fmt.Sprintf("external_image_%d", externalImageIndex)
 			return
 		}

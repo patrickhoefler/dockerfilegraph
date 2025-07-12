@@ -154,6 +154,7 @@ Flags:
   -n, --nodesep float           minimum space between two adjacent nodes in the same rank (default 1)
   -o, --output                  output file format, one of: canon, dot, pdf, png, raw, svg (default pdf)
   -r, --ranksep float           minimum separation between ranks (default 0.5)
+      --separate-scratch        create separate nodes for each scratch image instead of collapsing them
   -u, --unflatten uint          stagger length of leaf edges between [1,u] (default 0)
       --version                 display the version of dockerfilegraph
 ```

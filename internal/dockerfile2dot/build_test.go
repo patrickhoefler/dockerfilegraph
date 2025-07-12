@@ -31,8 +31,8 @@ func TestBuildDotFile(t *testing.T) {
 						},
 					},
 					ExternalImages: []ExternalImage{
-						{Name: "build"},
-						{Name: "release"},
+						{ID: "build", Name: "build"},
+						{ID: "release", Name: "release"},
 					},
 					Stages: []Stage{
 						{
@@ -40,7 +40,7 @@ func TestBuildDotFile(t *testing.T) {
 								{
 									Label: "FROM...",
 									WaitFors: []WaitFor{{
-										Name: "build",
+										ID:   "build",
 										Type: waitForType(waitForFrom),
 									}},
 								},
@@ -66,8 +66,8 @@ func TestBuildDotFile(t *testing.T) {
 						},
 					},
 					ExternalImages: []ExternalImage{
-						{Name: "build"},
-						{Name: "release"},
+						{ID: "build", Name: "build"},
+						{ID: "release", Name: "release"},
 					},
 					Stages: []Stage{
 						{
@@ -75,7 +75,7 @@ func TestBuildDotFile(t *testing.T) {
 								{
 									Label: "FROM...",
 									WaitFors: []WaitFor{{
-										Name: "build",
+										ID:   "build",
 										Type: waitForType(waitForFrom),
 									}},
 								},
@@ -90,6 +90,53 @@ func TestBuildDotFile(t *testing.T) {
 				ranksep:        "0.5",
 			},
 			wantContains: "release",
+		},
+		{
+			name: "separate scratch images show correct labels",
+			args: args{
+				simplifiedDockerfile: SimplifiedDockerfile{
+					ExternalImages: []ExternalImage{
+						{ID: "scratch-0", Name: "scratch"},
+						{ID: "scratch-1", Name: "scratch"},
+					},
+					Stages: []Stage{
+						{
+							Name: "app1",
+							Layers: []Layer{
+								{
+									Label: "FROM scratch AS app1",
+									WaitFors: []WaitFor{{
+										ID:   "scratch-0",
+										Type: waitForType(waitForFrom),
+									}},
+								},
+							},
+						},
+						{
+							Name: "app2",
+							Layers: []Layer{
+								{
+									Label: "FROM scratch AS app2",
+									WaitFors: []WaitFor{{
+										ID:   "scratch-1",
+										Type: waitForType(waitForFrom),
+									}},
+								},
+							},
+						},
+					},
+				},
+				concentrate:    false,
+				edgestyle:      "default",
+				layers:         false,
+				legend:         false,
+				maxLabelLength: 20,
+				nodesep:        "0.5",
+				ranksep:        "0.5",
+			},
+			wantContains: `external_image_0 [ color=grey20, fontcolor=grey20, label="scratch", shape=box, ` +
+				`style="dashed,rounded", width=2 ];
+	external_image_1 [ color=grey20, fontcolor=grey20, label="scratch"`,
 		},
 	}
 	for _, tt := range tests {
