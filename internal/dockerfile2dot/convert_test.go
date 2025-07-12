@@ -1,7 +1,6 @@
 package dockerfile2dot
 
 import (
-	"fmt"
 	"testing"
 
 	"github.com/google/go-cmp/cmp"
@@ -528,9 +527,6 @@ COPY --from=base /app.txt /final.txt`),
 				tt.args.maxLabelLength,
 				tt.args.separateScratch,
 			)
-			if tt.name == "Wait for multiple mounts" {
-				fmt.Printf("%q", got.Stages[0].Layers[1])
-			}
 			if err != nil {
 				t.Errorf("dockerfileToSimplifiedDockerfile() error = %v", err)
 				return
