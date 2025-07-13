@@ -54,8 +54,8 @@ func TestLoadAndParseDockerfile(t *testing.T) {
 			_, err := LoadAndParseDockerfile(
 				tt.args.inputFS,
 				tt.args.filename,
-				20,    // Default maxLabelLength
-				false, // Default separateScratch
+				20,          // Default maxLabelLength
+				"collapsed", // Default scratchMode
 			)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("LoadAndParseDockerfile() error = %v, wantErr %v", err, tt.wantErr)

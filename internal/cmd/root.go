@@ -15,19 +15,19 @@ import (
 )
 
 var (
-	concentrateFlag     bool
-	dpiFlag             uint
-	edgestyleFlag       enum
-	filenameFlag        string
-	layersFlag          bool
-	legendFlag          bool
-	maxLabelLengthFlag  uint
-	nodesepFlag         float64
-	outputFlag          enum
-	ranksepFlag         float64
-	separateScratchFlag bool
-	unflattenFlag       uint
-	versionFlag         bool
+	concentrateFlag    bool
+	dpiFlag            uint
+	edgestyleFlag      enum
+	filenameFlag       string
+	layersFlag         bool
+	legendFlag         bool
+	maxLabelLengthFlag uint
+	nodesepFlag        float64
+	outputFlag         enum
+	ranksepFlag        float64
+	scratchFlag        enum
+	unflattenFlag      uint
+	versionFlag        bool
 )
 
 // dfgWriter is a writer that prints to stdout. When testing, we
@@ -63,12 +63,15 @@ It creates a visual graph representation of the build process.`,
 				return
 			}
 
+			// Determine scratch mode from flag
+			scratchMode := scratchFlag.String()
+
 			// Load and parse the Dockerfile.
 			dockerfile, err := dockerfile2dot.LoadAndParseDockerfile(
 				inputFS,
 				filenameFlag,
 				int(maxLabelLengthFlag),
-				separateScratchFlag,
+				scratchMode,
 			)
 			if err != nil {
 				return
@@ -229,11 +232,11 @@ It creates a visual graph representation of the build process.`,
 		"minimum separation between ranks",
 	)
 
-	rootCmd.Flags().BoolVar(
-		&separateScratchFlag,
-		"separate-scratch",
-		false,
-		"create separate nodes for each scratch image instead of collapsing them",
+	scratchFlag = newEnum("collapsed", "separated", "hidden")
+	rootCmd.Flags().Var(
+		&scratchFlag,
+		"scratch",
+		"how to handle scratch images, one of: "+strings.Join(scratchFlag.AllowedValues(), ", "),
 	)
 
 	rootCmd.Flags().UintVarP(
