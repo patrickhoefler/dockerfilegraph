@@ -33,7 +33,7 @@ Supports multiple output formats (PDF, SVG, PNG), a legend, and layout customiza
 
 ![Example output including a legend](./examples/images/Dockerfile-legend.svg)
 
-### With Layer Visualization (`--layers`)
+### With Layer Visualization and Hidden Scratch Images (`--layers --scratch hidden`)
 
 ![Example output including layers](./examples/images/Dockerfile-layers.svg)
 
