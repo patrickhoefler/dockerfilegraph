@@ -32,7 +32,7 @@ example-images:
 	go run . -f examples/dockerfiles/Dockerfile --legend -o svg \
 		&& mv Dockerfile.svg examples/images/Dockerfile-legend.svg
 
-	go run . -f examples/dockerfiles/Dockerfile --layers -o svg \
+	go run . -f examples/dockerfiles/Dockerfile --layers --scratch hidden -o svg \
 		&& mv Dockerfile.svg examples/images/Dockerfile-layers.svg
 
 	go run . -f examples/dockerfiles/Dockerfile.large -c -n 0.3 -o svg -u 4 \
