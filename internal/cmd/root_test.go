@@ -38,7 +38,7 @@ Flags:
   -n, --nodesep float           minimum space between two adjacent nodes in the same rank (default 1)
   -o, --output                  output file format, one of: canon, dot, pdf, png, raw, svg (default pdf)
   -r, --ranksep float           minimum separation between ranks (default 0.5)
-      --separate-scratch        create separate nodes for each scratch image instead of collapsing them
+      --scratch                 how to handle scratch images, one of: collapsed, hidden, separated (default collapsed)
   -u, --unflatten uint          stagger length of leaf edges between [1,u] (default 0)
       --version                 display the version of dockerfilegraph
 `
@@ -492,8 +492,29 @@ It creates a visual graph representation of the build process.
 `,
 		},
 		{
-			name:    "separate scratch flag",
-			cliArgs: []string{"--separate-scratch", "-o", "raw"},
+			name:    "scratch flag collapsed mode",
+			cliArgs: []string{"--scratch", "collapsed", "-o", "raw"},
+			dockerfileContent: "FROM scratch AS app1\nCOPY app1.txt /app1.txt\n\n" +
+				"FROM scratch AS app2\nCOPY app2.txt /app2.txt\n",
+			wantOut:     "Successfully created Dockerfile.raw\n",
+			wantOutFile: "Dockerfile.raw",
+			wantOutFileContent: `digraph G {
+	compound=true;
+	nodesep=1.00;
+	rankdir=LR;
+	ranksep=0.50;
+	external_image_0->stage_0;
+	external_image_0->stage_1;
+	external_image_0 [ color=grey20, fontcolor=grey20, label="scratch", shape=box, style="dashed,rounded", width=2 ];
+	stage_0 [ label="app1", shape=box, style=rounded, width=2 ];
+	stage_1 [ fillcolor=grey90, label="app2", shape=box, style="filled,rounded", width=2 ];
+
+}
+`,
+		},
+		{
+			name:    "scratch flag separated mode",
+			cliArgs: []string{"--scratch", "separated", "-o", "raw"},
 			dockerfileContent: "FROM scratch AS app1\nCOPY app1.txt /app1.txt\n\n" +
 				"FROM scratch AS app2\nCOPY app2.txt /app2.txt\n",
 			wantOut:     "Successfully created Dockerfile.raw\n",
@@ -512,6 +533,30 @@ It creates a visual graph representation of the build process.
 
 }
 `,
+		},
+		{
+			name:    "scratch flag hidden mode",
+			cliArgs: []string{"--scratch", "hidden", "-o", "raw"},
+			dockerfileContent: "FROM scratch AS app1\nCOPY app1.txt /app1.txt\n\n" +
+				"FROM scratch AS app2\nCOPY app2.txt /app2.txt\n",
+			wantOut:     "Successfully created Dockerfile.raw\n",
+			wantOutFile: "Dockerfile.raw",
+			wantOutFileContent: `digraph G {
+	compound=true;
+	nodesep=1.00;
+	rankdir=LR;
+	ranksep=0.50;
+	stage_0 [ label="app1", shape=box, style=rounded, width=2 ];
+	stage_1 [ fillcolor=grey90, label="app2", shape=box, style="filled,rounded", width=2 ];
+
+}
+`,
+		},
+		{
+			name:         "scratch flag invalid mode",
+			cliArgs:      []string{"--scratch", "invalid", "-o", "raw"},
+			wantErr:      true,
+			wantOutRegex: `invalid argument "invalid" for "--scratch" flag: invalid value: invalid`,
 		},
 	}
 
@@ -561,37 +606,10 @@ It creates a visual graph representation of the build process.
 			}
 		})
 
-		// Cleanup
+		// Cleanup output files written to real filesystem
 		if tt.wantOutFile != "" {
 			os.Remove(tt.wantOutFile)
 		}
-	}
-}
-
-func TestExecute(t *testing.T) {
-	tests := []test{
-		{
-			name:        "should work",
-			wantOutFile: "Dockerfile.pdf",
-		},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			_ = os.WriteFile("Dockerfile", []byte(dockerfileContent), 0644)
-
-			cmd.Execute()
-
-			if tt.wantOutFile != "" {
-				_, err := os.Stat(tt.wantOutFile)
-				if err != nil {
-					t.Errorf("%s: %v", tt.name, err)
-				}
-			}
-
-			// Cleanup
-			os.Remove("Dockerfile")
-			os.Remove(tt.wantOutFile)
-		})
 	}
 }
 

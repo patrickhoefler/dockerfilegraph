@@ -16,7 +16,7 @@ func LoadAndParseDockerfile(
 	inputFS afero.Fs,
 	filename string,
 	maxLabelLength int,
-	separateScratch bool,
+	scratchMode string,
 ) (SimplifiedDockerfile, error) {
 	content, err := afero.ReadFile(inputFS, filename)
 	if err != nil {
@@ -29,5 +29,5 @@ func LoadAndParseDockerfile(
 		}
 		panic(err)
 	}
-	return dockerfileToSimplifiedDockerfile(content, maxLabelLength, separateScratch)
+	return dockerfileToSimplifiedDockerfile(content, maxLabelLength, scratchMode)
 }
