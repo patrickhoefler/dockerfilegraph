@@ -3,10 +3,10 @@ FROM ubuntu:questing-20251007@sha256:9b61739164b58f2263067bd3ab31c7746ded4cade1f
 
 LABEL org.opencontainers.image.source="https://github.com/patrickhoefler/dockerfilegraph"
 
-# renovate: datasource=repology depName=ubuntu_24_10/fonts-dejavu versioning=loose
+# renovate: datasource=repology depName=ubuntu_25_10/fonts-dejavu versioning=loose
 ENV FONTS_DEJAVU_VERSION="2.37-8"
 
-# renovate: datasource=repology depName=ubuntu_24_10/graphviz versioning=loose
+# renovate: datasource=repology depName=ubuntu_25_10/graphviz versioning=loose
 ENV GRAPHVIZ_VERSION="2.42.4-3build2"
 
 RUN \
