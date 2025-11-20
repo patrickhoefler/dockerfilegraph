@@ -15,8 +15,8 @@ github.com/inconshreveable/mousetrap v1.1.0 h1:wN+x4NVGpMsO7ErUn/mUI3vEoE6Jt13X2
 github.com/inconshreveable/mousetrap v1.1.0/go.mod h1:vpF70FUmC8bwa3OWnCshd2FqLfsEA9PFc4w1p2J65bw=
 github.com/kisielk/errcheck v1.5.0/go.mod h1:pFxgyoBC7bSaBwPgfKdkLd5X25qrDl4LWUI2bnpBCr8=
 github.com/kisielk/gotool v1.0.0/go.mod h1:XhKaO+MFFWcvkIS/tQcRk01m1F5IRFswLeQ+oQHNcck=
-github.com/moby/buildkit v0.26.1 h1:Cf/AB/8/5N+GBQnVPBW+hR2tDWoImuZ28ciqaF+mzgs=
-github.com/moby/buildkit v0.26.1/go.mod h1:ylDa7IqzVJgLdi/wO7H1qLREFQpmhFbw2fbn4yoTw40=
+github.com/moby/buildkit v0.26.2 h1:EIh5j0gzRsCZmQzvgNNWzSDbuKqwUIiBH7ssqLv8RU8=
+github.com/moby/buildkit v0.26.2/go.mod h1:ylDa7IqzVJgLdi/wO7H1qLREFQpmhFbw2fbn4yoTw40=
 github.com/pkg/errors v0.9.1 h1:FEBLx1zS214owpjy7qsBeixbURkuhQAwrK5UwLGTwt4=
 github.com/pkg/errors v0.9.1/go.mod h1:bwawxfHBFNV+L2hUp1rHADufV3IMtnDRdf1r5NINEl0=
 github.com/planetscale/vtprotobuf v0.6.1-0.20240319094008-0393e58bdf10 h1:GFCKgmp0tecUJ0sJuv4pzYCqS9+RGSn52M3FUwPs+uo=
