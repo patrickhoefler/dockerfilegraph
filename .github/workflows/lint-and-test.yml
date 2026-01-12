@@ -127,7 +127,7 @@ jobs:
 
       # Vulnerability check for latest image
       - name: Run Trivy vulnerability scanner on latest image
-        uses: aquasecurity/trivy-action@0.33.1
+        uses: aquasecurity/trivy-action@b6643a29fecd7f34b3597bc6acb0a98b03d33ff8 # 0.33.1
         with:
           image-ref: ghcr.io/patrickhoefler/dockerfilegraph:latest
           format: table
@@ -138,7 +138,7 @@ jobs:
 
       # Vulnerability check for Ubuntu-based image
       - name: Run Trivy vulnerability scanner on Ubuntu image
-        uses: aquasecurity/trivy-action@0.33.1
+        uses: aquasecurity/trivy-action@b6643a29fecd7f34b3597bc6acb0a98b03d33ff8 # 0.33.1
         with:
           image-ref: ghcr.io/patrickhoefler/dockerfilegraph:ubuntu
           format: table
