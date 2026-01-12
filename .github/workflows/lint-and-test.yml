@@ -130,22 +130,30 @@ jobs:
         uses: aquasecurity/trivy-action@b6643a29fecd7f34b3597bc6acb0a98b03d33ff8 # 0.33.1
         with:
           image-ref: ghcr.io/patrickhoefler/dockerfilegraph:latest
-          format: table
-          exit-code: '1'
-          ignore-unfixed: true
-          vuln-type: os,library
-          severity: CRITICAL,HIGH
+          format: 'sarif'
+          output: 'trivy-latest-image.sarif'
+          exit-code: '0' # Don't block the PR here
+
+      - name: Upload latest image results to GitHub Security
+        uses: github/codeql-action/upload-sarif@cdefb33c0f6224e58673d9004f47f7cb3e328b89 # v4.31.10
+        with:
+          sarif_file: 'trivy-latest-image.sarif'
+          category: 'trivy-latest-image'
 
       # Vulnerability check for Ubuntu-based image
       - name: Run Trivy vulnerability scanner on Ubuntu image
         uses: aquasecurity/trivy-action@b6643a29fecd7f34b3597bc6acb0a98b03d33ff8 # 0.33.1
         with:
           image-ref: ghcr.io/patrickhoefler/dockerfilegraph:ubuntu
-          format: table
-          exit-code: '1'
-          ignore-unfixed: true
-          vuln-type: os,library
-          severity: CRITICAL,HIGH
+          format: 'sarif'
+          output: 'trivy-ubuntu-image.sarif'
+          exit-code: '0' # Don't block the PR here
+
+      - name: Upload Ubuntu image results to GitHub Security
+        uses: github/codeql-action/upload-sarif@cdefb33c0f6224e58673d9004f47f7cb3e328b89 # v4.31.10
+        with:
+          sarif_file: 'trivy-ubuntu-image.sarif'
+          category: 'trivy-ubuntu-image'
 
       # Smoke tests
       - name: Get the version
