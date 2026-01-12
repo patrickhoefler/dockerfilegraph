@@ -100,6 +100,9 @@ jobs:
         run: ./dockerfilegraph --filename examples/dockerfiles/Dockerfile --legend --output png --dpi 200
 
   build-images:
+    permissions:
+      contents: read         # for actions/checkout to fetch code
+      security-events: write # for uploading SARIF reports
     runs-on: ubuntu-latest
     needs: [lint, test]
     steps:
