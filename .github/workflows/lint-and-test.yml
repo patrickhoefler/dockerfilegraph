@@ -125,23 +125,27 @@ jobs:
           version: '~> v2'
           args: release --snapshot
 
-      # Vulnerability check
-      - name: Run Trivy vulnerability scanner
+      # Vulnerability check for latest image
+      - name: Run Trivy vulnerability scanner on latest image
         uses: aquasecurity/trivy-action@0.33.1
         with:
           image-ref: ghcr.io/patrickhoefler/dockerfilegraph:latest
-          format: table,sarif
-          output: trivy-report.sarif
+          format: table
           exit-code: '1'
           ignore-unfixed: true
           vuln-type: os,library
           severity: CRITICAL,HIGH
 
-      - name: Upload Trivy SARIF report
-        uses: github/codeql-action/upload-sarif@cdefb33c0f6224e58673d9004f47f7cb3e328b89 # v4.31.10
-        if: always()
+      # Vulnerability check for Ubuntu-based image
+      - name: Run Trivy vulnerability scanner on Ubuntu image
+        uses: aquasecurity/trivy-action@0.33.1
         with:
-          sarif_file: trivy-report.sarif
+          image-ref: ghcr.io/patrickhoefler/dockerfilegraph:ubuntu
+          format: table
+          exit-code: '1'
+          ignore-unfixed: true
+          vuln-type: os,library
+          severity: CRITICAL,HIGH
 
       # Smoke tests
       - name: Get the version
