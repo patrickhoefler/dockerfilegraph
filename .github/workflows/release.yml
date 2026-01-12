@@ -5,9 +5,13 @@ on:
     tags:
       - 'v*.*.*'
 
+permissions:
+  contents: write # for creating releases
+  packages: write # for publishing to GitHub Container Registry
+
 jobs:
   lint-and-test:
-    uses: ./.github/workflows/lint_and_test.yml
+    uses: ./.github/workflows/lint-and-test.yml
 
   goreleaser:
     runs-on: ubuntu-latest
