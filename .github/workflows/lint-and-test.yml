@@ -130,7 +130,7 @@ jobs:
         uses: aquasecurity/trivy-action@0.33.1
         with:
           image-ref: ghcr.io/patrickhoefler/dockerfilegraph:latest
-          format: sarif # for GitHub Security tab
+          format: table,sarif
           output: trivy-report.sarif
           exit-code: '1'
           ignore-unfixed: true
@@ -138,7 +138,7 @@ jobs:
           severity: CRITICAL,HIGH
 
       - name: Upload Trivy SARIF report
-        uses: github/codeql-action/upload-sarif@v4.31.10
+        uses: github/codeql-action/upload-sarif@cdefb33c0f6224e58673d9004f47f7cb3e328b89 # v4.31.10
         if: always()
         with:
           sarif_file: trivy-report.sarif
