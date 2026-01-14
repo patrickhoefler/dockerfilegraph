@@ -11,11 +11,8 @@ FLAGS = -ldflags "$(LDFLAGS)"
 build: clean
 	go build $(FLAGS)
 
-build-docker-image-alpine: build-linux
-	docker build -t dockerfilegraph:alpine -f Dockerfile .
-
-build-docker-image-ubuntu: build-linux
-	docker build -t dockerfilegraph:ubuntu -f Dockerfile.ubuntu .
+build-docker-image: build-linux
+	docker build -t dockerfilegraph -f Dockerfile .
 
 build-linux: clean
 	CGO_ENABLED=0 GOOS=linux go build $(FLAGS)

@@ -22,6 +22,5 @@ dockerfilegraph
 
 # dockerfilegraph
 Dockerfile.*
-!/Dockerfile.ubuntu
 !Dockerfile.golden.dot
 !examples/dockerfiles/Dockerfile.large
