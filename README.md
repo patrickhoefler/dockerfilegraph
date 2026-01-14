@@ -53,21 +53,11 @@ Run `dockerfilegraph` in your project directory to generate a `Dockerfile.pdf` w
 
 #### Docker
 
-- **Alpine-based** (Graphviz 12.2) - **Default**:
-
-  ```shell
-  docker run --rm --user "$(id -u):$(id -g)" \
-    -v "$(pwd)":/workspace -w /workspace \
-    ghcr.io/patrickhoefler/dockerfilegraph
-  ```
-
-- **Ubuntu-based** (Graphviz 2.42):
-
-  ```shell
-  docker run --rm --user "$(id -u):$(id -g)" \
-    -v "$(pwd)":/workspace -w /workspace \
-    ghcr.io/patrickhoefler/dockerfilegraph:ubuntu
-  ```
+```shell
+docker run --rm --user "$(id -u):$(id -g)" \
+  -v "$(pwd)":/workspace -w /workspace \
+  ghcr.io/patrickhoefler/dockerfilegraph
+```
 
 #### Homebrew
 
@@ -96,32 +86,18 @@ dockerfilegraph
   ./dockerfilegraph
   ```
 
-- **Container Build (Alpine)**
+- **Container Build**
 
   *Requirements: `make`, [Go](https://go.dev/) and Docker*
 
   ```shell
-  make build-docker-image-alpine
+  make build-docker-image
   docker run \
     --rm \
     --user "$(id -u):$(id -g)" \
     --workdir /workspace \
     --volume "$(pwd)":/workspace \
-    dockerfilegraph:alpine
-  ```
-
-- **Container Build (Ubuntu)**
-
-  *Requirements: `make`, [Go](https://go.dev/) and Docker*
-
-  ```shell
-  make build-docker-image-ubuntu
-  docker run \
-    --rm \
-    --user "$(id -u):$(id -g)" \
-    --workdir /workspace \
-    --volume "$(pwd)":/workspace \
-    dockerfilegraph:ubuntu
+    dockerfilegraph
   ```
 
 ## Configuration Options
