@@ -58,8 +58,8 @@ jobs:
         with:
           go-version-file: 'go.mod'
 
-      - name: Install Task
-        uses: go-task/setup-task@v1
+      - name: Install mise and all workspace tools
+        uses: jdx/mise-action@v3
 
       - name: Build
         run: task build
