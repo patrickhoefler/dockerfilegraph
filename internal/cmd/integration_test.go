@@ -17,11 +17,11 @@ func TestIntegrationCLIGeneratesOutputFile(t *testing.T) {
 	projectRoot := filepath.Clean(filepath.Join(filepath.Dir(thisFile), "../.."))
 
 	// Build the Linux binary before building the Docker image
-	makeCmd := exec.Command("make", "build-linux")
-	makeCmd.Dir = projectRoot
-	makeOut, err := makeCmd.CombinedOutput()
+	taskCmd := exec.Command("task", "build-linux")
+	taskCmd.Dir = projectRoot
+	taskOut, err := taskCmd.CombinedOutput()
 	if err != nil {
-		t.Fatalf("make build-linux failed: %v\nOutput:\n%s", err, string(makeOut))
+		t.Fatalf("task build-linux failed: %v\nOutput:\n%s", err, string(taskOut))
 	}
 	binPath := filepath.Join(projectRoot, "dockerfilegraph")
 	defer func() {

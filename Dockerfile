@@ -19,7 +19,7 @@ RUN apk add --update --no-cache \
 # Run as non-root user
 USER app
 
-# This only works after running `make build-linux`
+# This only works after running `task build-linux`
 # or when using goreleaser
 COPY dockerfilegraph /
 

@@ -79,19 +79,19 @@ dockerfilegraph
 
 - **Native Build**
 
-  *Requirements: `make`, [Go](https://go.dev/) and [Graphviz](https://graphviz.org/)*
+  *Requirements: [Go](https://go.dev/), [task](https://taskfile.dev/) and [Graphviz](https://graphviz.org/)*
 
   ```shell
-  make build
+  task build
   ./dockerfilegraph
   ```
 
 - **Container Build**
 
-  *Requirements: `make`, [Go](https://go.dev/) and Docker*
+  *Requirements: [Go](https://go.dev/), [task](https://taskfile.dev/) and Docker*
 
   ```shell
-  make build-docker-image
+  task build-docker-image
   docker run \
     --rm \
     --user "$(id -u):$(id -g)" \
@@ -134,6 +134,25 @@ Flags:
   -u, --unflatten uint          stagger length of leaf edges between [1,u] (default 0)
       --version                 display the version of dockerfilegraph
 ```
+
+## Development
+
+This project uses [mise](https://mise.jdx.dev/) for tool version management and [task](https://taskfile.dev/) for running common development tasks.
+
+**Quick Start:**
+
+```shell
+# Install project tools
+mise install
+
+# Run linters and tests
+task check
+
+# Build the binary
+task build
+```
+
+Run `task --list` to see all available tasks.
 
 ## Contributing
 
