@@ -1,0 +1,70 @@
+version: '3'
+
+vars:
+  GITVERSION:
+    sh: git describe --tags --always
+  GITCOMMIT:
+    sh: git log -1 --pretty=format:"%H"
+  BUILDDATE:
+    sh: date -u '+%Y-%m-%dT%H:%M:%SZ'
+  LDFLAGS: >-
+    -s -w
+    -X github.com/patrickhoefler/dockerfilegraph/internal/cmd.gitVersion={{.GITVERSION}}
+    -X github.com/patrickhoefler/dockerfilegraph/internal/cmd.gitCommit={{.GITCOMMIT}}
+    -X github.com/patrickhoefler/dockerfilegraph/internal/cmd.buildDate={{.BUILDDATE}}
+
+tasks:
+  build:
+    desc: Build the dockerfilegraph binary
+    deps: [clean]
+    cmds:
+      - go build -ldflags "{{.LDFLAGS}}"
+
+  build-docker-image:
+    desc: Build the Docker image
+    deps: [build-linux]
+    cmds:
+      - docker build -t dockerfilegraph -f Dockerfile .
+
+  build-linux:
+    desc: Build the binary for Linux
+    deps: [clean]
+    cmds:
+      - CGO_ENABLED=0 GOOS=linux go build -ldflags "{{.LDFLAGS}}"
+
+  check:
+    desc: Run linters and tests
+    cmds:
+      - task: lint
+      - task: test
+
+  clean:
+    desc: Clean build artifacts
+    cmds:
+      - go clean
+
+  example-images:
+    desc: Generate example images for documentation
+    cmds:
+      - |
+        # Change to the root directory of the project.
+        cd $(git rev-parse --show-toplevel)
+
+        go run . -f examples/dockerfiles/Dockerfile --legend -o svg \
+          && mv Dockerfile.svg examples/images/Dockerfile-legend.svg
+
+        go run . -f examples/dockerfiles/Dockerfile --layers --scratch hidden -o svg \
+          && mv Dockerfile.svg examples/images/Dockerfile-layers.svg
+
+        go run . -f examples/dockerfiles/Dockerfile.large -c -n 0.3 -o svg -u 4 \
+          && mv Dockerfile.svg examples/images/Dockerfile-large.svg
+
+  lint:
+    desc: Run golangci-lint
+    cmds:
+      - golangci-lint run
+
+  test:
+    desc: Run tests
+    cmds:
+      - go test ./...

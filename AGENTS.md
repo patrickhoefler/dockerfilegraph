@@ -1,4 +1,4 @@
-# GitHub Copilot Custom Instructions
+# Agent Instructions
 
 ## Testing Guidelines
 
@@ -21,4 +21,12 @@
 - Use proper error handling
 - Write comprehensive tests for new functionality
 - Maintain backward compatibility unless explicitly breaking changes are needed
-- Always use `make check` for efficient linting and testing - it runs golangci-lint, tests with coverage, and enforces code quality standards in one command
+- Always use `task check` for efficient linting and testing - it runs golangci-lint, tests, and enforces code quality standards in one command
+
+## Development Tools
+
+- **mise**: Used for tool version management (ensures consistent task version across environments)
+- **task**: Task runner for common development tasks
+  - Run `task check` before committing changes
+  - Use `task build` to create the binary
+  - See `task --list` for all available commands
