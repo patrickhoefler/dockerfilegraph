@@ -13,3 +13,11 @@ concurrency:
 jobs:
   lint-and-test:
     uses: ./.github/workflows/lint-and-test.yml
+
+  # Final gate job that waits for all other jobs to complete successfully
+  # Configure this job as a required status check in branch protection rules
+  all-checks-passed:
+    runs-on: ubuntu-latest
+    needs: [lint-and-test]
+    steps:
+      - run: echo "All checks passed!"
