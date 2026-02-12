@@ -66,12 +66,12 @@ brew install patrickhoefler/tap/dockerfilegraph
 dockerfilegraph
 ```
 
-#### [toolctl](https://github.com/toolctl/toolctl)
+#### [mise](https://mise.jdx.dev/)
 
 *Requirements: [Graphviz](https://graphviz.org/) installed locally*
 
 ```shell
-toolctl install dockerfilegraph
+mise use -g github:patrickhoefler/dockerfilegraph
 dockerfilegraph
 ```
 
