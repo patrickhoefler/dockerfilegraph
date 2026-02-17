@@ -2,5 +2,5 @@
 idiomatic_version_file_enable_tools = ["go"]
 
 [tools]
-golangci-lint = "2.9.0"
+golangci-lint = "2.10.1"
 task = "3.48.0"
