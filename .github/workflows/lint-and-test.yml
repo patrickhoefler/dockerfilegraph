@@ -27,7 +27,7 @@ jobs:
           go-version-file: 'go.mod'
 
       - name: Install mise and all workspace tools
-        uses: jdx/mise-action@e79ddf65a11cec7b0e882bedced08d6e976efb2d # v3
+        uses: jdx/mise-action@e79ddf65a11cec7b0e882bedced08d6e976efb2d # v3.6.2
 
       - name: Run the linters
         run: task lint
@@ -59,7 +59,7 @@ jobs:
           go-version-file: 'go.mod'
 
       - name: Install mise and all workspace tools
-        uses: jdx/mise-action@e79ddf65a11cec7b0e882bedced08d6e976efb2d # v3
+        uses: jdx/mise-action@e79ddf65a11cec7b0e882bedced08d6e976efb2d # v3.6.2
 
       - name: Build
         run: task build
