@@ -17,7 +17,13 @@ jobs:
   # Final gate job that waits for all other jobs to complete successfully
   # Configure this job as a required status check in branch protection rules
   all-checks-passed:
+    if: always()
     runs-on: ubuntu-latest
     needs: [lint-and-test]
     steps:
-      - run: echo "All checks passed!"
+      - run: |
+          if [ "${{ needs.lint-and-test.result }}" != "success" ]; then
+            echo "lint-and-test failed with status: ${{ needs.lint-and-test.result }}"
+            exit 1
+          fi
+          echo "All checks passed!"
