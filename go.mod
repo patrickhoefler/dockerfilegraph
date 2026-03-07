@@ -2,6 +2,8 @@ module github.com/patrickhoefler/dockerfilegraph
 
 go 1.26
 
+toolchain go1.26.1
+
 require (
 	github.com/aquilax/truncate v1.0.1
 	github.com/awalterschulze/gographviz v2.0.3+incompatible
