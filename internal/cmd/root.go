@@ -288,6 +288,9 @@ func runUnflatten(dotFile *os.File, w io.Writer, maxStagger uint) (err error) {
 		return
 	}
 
+	// Remove the destination first: os.Rename cannot replace an existing
+	// file on Windows, so we must clear it before renaming into place.
+	os.Remove(dotFile.Name())
 	err = os.Rename(unflattenPath, dotFile.Name())
 	if err != nil {
 		os.Remove(unflattenPath)
