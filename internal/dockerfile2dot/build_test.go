@@ -141,7 +141,7 @@ func TestBuildDotFile(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := BuildDotFile(
+			got, err := BuildDotFile(
 				tt.args.simplifiedDockerfile,
 				tt.args.concentrate,
 				tt.args.edgestyle,
@@ -150,7 +150,11 @@ func TestBuildDotFile(t *testing.T) {
 				tt.args.maxLabelLength,
 				tt.args.nodesep,
 				tt.args.ranksep,
-			); !strings.Contains(got, tt.wantContains) {
+			)
+			if err != nil {
+				t.Fatalf("BuildDotFile() error = %v", err)
+			}
+			if !strings.Contains(got, tt.wantContains) {
 				t.Errorf(
 					"BuildDotFile() = %v, did not contain %v", got, tt.wantContains,
 				)
