@@ -17,8 +17,8 @@ func BuildDotFile(
 	layers bool,
 	legend bool,
 	maxLabelLength int,
-	nodesep string,
-	ranksep string,
+	nodesep float64,
+	ranksep float64,
 ) (string, error) {
 	// Create a new graph
 	graph := gographviz.NewEscape()
@@ -33,9 +33,9 @@ func BuildDotFile(
 	set(graph.SetName("G"))
 	set(graph.SetDir(true))
 	set(graph.AddAttr("G", "compound", "true")) // allow edges between clusters
-	set(graph.AddAttr("G", "nodesep", nodesep))
+	set(graph.AddAttr("G", "nodesep", fmt.Sprintf("%.2f", nodesep)))
 	set(graph.AddAttr("G", "rankdir", "LR"))
-	set(graph.AddAttr("G", "ranksep", ranksep))
+	set(graph.AddAttr("G", "ranksep", fmt.Sprintf("%.2f", ranksep)))
 	if concentrate {
 		set(graph.AddAttr("G", "concentrate", "true"))
 	}

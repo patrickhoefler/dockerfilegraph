@@ -10,7 +10,8 @@ func Test_dockerfileToSimplifiedDockerfile(t *testing.T) {
 	type args struct {
 		content        []byte
 		maxLabelLength int
-		scratchMode    string
+		scratchMode    ScratchMode
+		separateImages []string
 	}
 	tests := []struct {
 		name string
@@ -22,7 +23,7 @@ func Test_dockerfileToSimplifiedDockerfile(t *testing.T) {
 			args: args{
 				content:        []byte("FROM scratch"),
 				maxLabelLength: 20,
-				scratchMode:    "collapsed",
+				scratchMode:    ScratchCollapsed,
 			},
 			want: SimplifiedDockerfile{
 				ExternalImages: []ExternalImage{
@@ -51,7 +52,7 @@ COPY --from=base . .
 RUN --mount=type=cache,from=buildcache,source=/go/pkg/mod/cache/,target=/go/pkg/mod/cache/ go build
 `),
 				maxLabelLength: 20,
-				scratchMode:    "collapsed",
+				scratchMode:    ScratchCollapsed,
 			},
 			want: SimplifiedDockerfile{
 				ExternalImages: []ExternalImage{
@@ -99,7 +100,7 @@ RUN \
   --mount=from=artifacts,source=/artifacts/embeddata,target=/artifacts/embeddata go build
 `),
 				maxLabelLength: 20,
-				scratchMode:    "collapsed",
+				scratchMode:    ScratchCollapsed,
 			},
 			want: SimplifiedDockerfile{
 				ExternalImages: []ExternalImage{
@@ -419,7 +420,7 @@ FROM scratch AS app2
 COPY app2.txt /app2.txt
 `),
 				maxLabelLength: 20,
-				scratchMode:    "separated",
+				scratchMode:    ScratchSeparated,
 			},
 			want: SimplifiedDockerfile{
 				ExternalImages: []ExternalImage{
@@ -456,7 +457,7 @@ COPY app2.txt /app2.txt
 				content: []byte(`FROM scratch AS app
 COPY app.txt /app.txt`),
 				maxLabelLength: 20,
-				scratchMode:    "separated",
+				scratchMode:    ScratchSeparated,
 			},
 			want: SimplifiedDockerfile{
 				ExternalImages: []ExternalImage{
@@ -485,7 +486,7 @@ COPY app.txt /app.txt
 FROM alpine AS final
 COPY --from=base /app.txt /final.txt`),
 				maxLabelLength: 20,
-				scratchMode:    "separated",
+				scratchMode:    ScratchSeparated,
 			},
 			want: SimplifiedDockerfile{
 				ExternalImages: []ExternalImage{
@@ -528,7 +529,7 @@ COPY app1.txt /app1.txt
 FROM scratch AS app2
 COPY app2.txt /app2.txt`),
 				maxLabelLength: 20,
-				scratchMode:    "collapsed",
+				scratchMode:    ScratchCollapsed,
 			},
 			want: SimplifiedDockerfile{
 				ExternalImages: []ExternalImage{
@@ -567,7 +568,7 @@ COPY app1.txt /app1.txt
 FROM scratch AS app2
 COPY app2.txt /app2.txt`),
 				maxLabelLength: 20,
-				scratchMode:    "hidden",
+				scratchMode:    ScratchHidden,
 			},
 			want: SimplifiedDockerfile{
 				ExternalImages: nil,
@@ -595,6 +596,171 @@ COPY app2.txt /app2.txt`),
 				},
 			},
 		},
+		{
+			name: "Separate flag - single image used in multiple stages",
+			args: args{
+				content: []byte(`FROM ubuntu AS base
+RUN echo base
+
+FROM ubuntu AS other
+RUN echo other
+
+FROM alpine AS final
+COPY --from=base . .`),
+				maxLabelLength: 20,
+				separateImages: []string{"ubuntu"},
+			},
+			want: SimplifiedDockerfile{
+				ExternalImages: []ExternalImage{
+					{ID: "ubuntu-0", Name: "ubuntu"},
+					{ID: "ubuntu-1", Name: "ubuntu"},
+					{ID: "alpine", Name: "alpine"},
+				},
+				Stages: []Stage{
+					{
+						Name: "base",
+						Layers: []Layer{
+							{
+								Label:    "FROM ubuntu AS base",
+								WaitFors: []WaitFor{{ID: "ubuntu-0", Type: waitForType(waitForFrom)}},
+							},
+							{Label: "RUN echo base"},
+						},
+					},
+					{
+						Name: "other",
+						Layers: []Layer{
+							{
+								Label:    "FROM ubuntu AS other",
+								WaitFors: []WaitFor{{ID: "ubuntu-1", Type: waitForType(waitForFrom)}},
+							},
+							{Label: "RUN echo other"},
+						},
+					},
+					{
+						Name: "final",
+						Layers: []Layer{
+							{
+								Label:    "FROM alpine AS final",
+								WaitFors: []WaitFor{{ID: "alpine", Type: waitForType(waitForFrom)}},
+							},
+							{
+								Label:    "COPY --from=base . .",
+								WaitFors: []WaitFor{{ID: "base", Type: waitForType(waitForCopy)}},
+							},
+						},
+					},
+				},
+			},
+		},
+		{
+			name: "Separate flag - image not in Dockerfile is a no-op",
+			args: args{
+				content: []byte(`FROM ubuntu AS base
+RUN echo base
+
+FROM ubuntu AS other
+RUN echo other`),
+				maxLabelLength: 20,
+				separateImages: []string{"nonexistent"},
+			},
+			want: SimplifiedDockerfile{
+				ExternalImages: []ExternalImage{
+					{ID: "ubuntu", Name: "ubuntu"},
+				},
+				Stages: []Stage{
+					{
+						Name: "base",
+						Layers: []Layer{
+							{
+								Label:    "FROM ubuntu AS base",
+								WaitFors: []WaitFor{{ID: "ubuntu", Type: waitForType(waitForFrom)}},
+							},
+							{Label: "RUN echo base"},
+						},
+					},
+					{
+						Name: "other",
+						Layers: []Layer{
+							{
+								Label:    "FROM ubuntu AS other",
+								WaitFors: []WaitFor{{ID: "ubuntu", Type: waitForType(waitForFrom)}},
+							},
+							{Label: "RUN echo other"},
+						},
+					},
+				},
+			},
+		},
+		{
+			name: "Separate flag combined with scratch separated",
+			args: args{
+				content: []byte(`FROM scratch AS app1
+COPY app1.txt /app1.txt
+
+FROM ubuntu AS base
+RUN echo base
+
+FROM scratch AS app2
+COPY app2.txt /app2.txt
+
+FROM ubuntu AS other
+RUN echo other`),
+				maxLabelLength: 20,
+				scratchMode:    ScratchSeparated,
+				separateImages: []string{"ubuntu"},
+			},
+			want: SimplifiedDockerfile{
+				ExternalImages: []ExternalImage{
+					{ID: "scratch-0", Name: "scratch"},
+					{ID: "ubuntu-0", Name: "ubuntu"},
+					{ID: "scratch-1", Name: "scratch"},
+					{ID: "ubuntu-1", Name: "ubuntu"},
+				},
+				Stages: []Stage{
+					{
+						Name: "app1",
+						Layers: []Layer{
+							{
+								Label:    "FROM scratch AS app1",
+								WaitFors: []WaitFor{{ID: "scratch-0", Type: waitForType(waitForFrom)}},
+							},
+							{Label: "COPY app1.txt /ap..."},
+						},
+					},
+					{
+						Name: "base",
+						Layers: []Layer{
+							{
+								Label:    "FROM ubuntu AS base",
+								WaitFors: []WaitFor{{ID: "ubuntu-0", Type: waitForType(waitForFrom)}},
+							},
+							{Label: "RUN echo base"},
+						},
+					},
+					{
+						Name: "app2",
+						Layers: []Layer{
+							{
+								Label:    "FROM scratch AS app2",
+								WaitFors: []WaitFor{{ID: "scratch-1", Type: waitForType(waitForFrom)}},
+							},
+							{Label: "COPY app2.txt /ap..."},
+						},
+					},
+					{
+						Name: "other",
+						Layers: []Layer{
+							{
+								Label:    "FROM ubuntu AS other",
+								WaitFors: []WaitFor{{ID: "ubuntu-1", Type: waitForType(waitForFrom)}},
+							},
+							{Label: "RUN echo other"},
+						},
+					},
+				},
+			},
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -602,6 +768,7 @@ COPY app2.txt /app2.txt`),
 				tt.args.content,
 				tt.args.maxLabelLength,
 				tt.args.scratchMode,
+				tt.args.separateImages,
 			)
 			if err != nil {
 				t.Errorf("dockerfileToSimplifiedDockerfile() error = %v", err)

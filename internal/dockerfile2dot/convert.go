@@ -57,7 +57,8 @@ func newLayer(
 func dockerfileToSimplifiedDockerfile(
 	content []byte,
 	maxLabelLength int,
-	scratchMode string,
+	scratchMode ScratchMode,
+	separateImages []string,
 ) (simplifiedDockerfile SimplifiedDockerfile, err error) {
 	result, err := parser.Parse(bytes.NewReader(content))
 	if err != nil {
@@ -68,7 +69,6 @@ func dockerfileToSimplifiedDockerfile(
 	stages := make(map[string]struct{})
 
 	stageIndex := -1
-	layerIndex := -1
 
 	argReplacements := make([]ArgReplacement, 0)
 
@@ -81,15 +81,12 @@ func dockerfileToSimplifiedDockerfile(
 			simplifiedDockerfile.Stages = append(simplifiedDockerfile.Stages, stage)
 
 			// Add a new layer
-			layerIndex = 0
 			simplifiedDockerfile.Stages[stageIndex].Layers = append(
 				simplifiedDockerfile.Stages[stageIndex].Layers,
 				layer,
 			)
 
 		case instructionCopy:
-			// Add a new layer
-			layerIndex++
 			layer := processCopyInstruction(node, argReplacements, maxLabelLength, scratchMode)
 			simplifiedDockerfile.Stages[stageIndex].Layers = append(
 				simplifiedDockerfile.Stages[stageIndex].Layers,
@@ -97,8 +94,6 @@ func dockerfileToSimplifiedDockerfile(
 			)
 
 		case instructionRun:
-			// Add a new layer
-			layerIndex++
 			layer := processRunInstruction(node, argReplacements, maxLabelLength, scratchMode)
 			simplifiedDockerfile.Stages[stageIndex].Layers = append(
 				simplifiedDockerfile.Stages[stageIndex].Layers,
@@ -106,9 +101,6 @@ func dockerfileToSimplifiedDockerfile(
 			)
 
 		default:
-			// Add a new layer
-			layerIndex++
-
 			if stageIndex == -1 {
 				layer := processBeforeFirstStage(node, &argReplacements, maxLabelLength)
 				simplifiedDockerfile.BeforeFirstStage = append(
@@ -126,14 +118,14 @@ func dockerfileToSimplifiedDockerfile(
 		}
 	}
 
-	addExternalImages(&simplifiedDockerfile, stages, scratchMode)
+	addExternalImages(&simplifiedDockerfile, stages, scratchMode, separateImages)
 
 	return
 }
 
 // shouldSkipScratchWaitFor returns true if scratch WaitFors should be skipped in hidden mode
-func shouldSkipScratchWaitFor(scratchMode, waitForID string) bool {
-	return scratchMode == "hidden" && waitForID == "scratch"
+func shouldSkipScratchWaitFor(scratchMode ScratchMode, waitForID string) bool {
+	return scratchMode == ScratchHidden && waitForID == "scratch"
 }
 
 // processFromInstruction handles FROM instruction parsing
@@ -141,7 +133,7 @@ func processFromInstruction(
 	node *parser.Node,
 	argReplacements []ArgReplacement,
 	maxLabelLength int,
-	scratchMode string,
+	scratchMode ScratchMode,
 	stages map[string]struct{},
 ) (Stage, Layer) {
 	stage := Stage{}
@@ -171,7 +163,7 @@ func processCopyInstruction(
 	node *parser.Node,
 	argReplacements []ArgReplacement,
 	maxLabelLength int,
-	scratchMode string,
+	scratchMode ScratchMode,
 ) Layer {
 	layer := newLayer(node, argReplacements, maxLabelLength)
 
@@ -197,7 +189,7 @@ func processRunInstruction(
 	node *parser.Node,
 	argReplacements []ArgReplacement,
 	maxLabelLength int,
-	scratchMode string,
+	scratchMode ScratchMode,
 ) Layer {
 	layer := newLayer(node, argReplacements, maxLabelLength)
 
@@ -244,15 +236,24 @@ func processBeforeFirstStage(
 func addExternalImages(
 	simplifiedDockerfile *SimplifiedDockerfile,
 	stages map[string]struct{},
-	scratchMode string,
+	scratchMode ScratchMode,
+	separateImages []string,
 ) {
-	// Counter to generate unique IDs for separate scratch instances
-	scratchCounter := 0
+	// Build a set of images that should be separated
+	separateSet := make(map[string]struct{}, len(separateImages))
+	for _, img := range separateImages {
+		separateSet[img] = struct{}{}
+	}
+
+	// Per-image counters for generating unique IDs when separating
+	separateCounters := make(map[string]int)
+
+	// Track already-seen image IDs to avoid duplicates
+	seen := make(map[string]struct{})
 
 	// Iterate through all stages and layers to find external image dependencies
 	for stageIndex, stage := range simplifiedDockerfile.Stages {
 		for layerIndex, layer := range stage.Layers {
-			// Process WaitFors for external image collection
 			for waitForIndex, waitFor := range layer.WaitFors {
 				// Skip if this references an internal stage (not an external image)
 				if _, ok := stages[waitFor.ID]; ok {
@@ -265,43 +266,33 @@ func addExternalImages(
 				// Handle scratch image modes
 				if originalName == "scratch" {
 					switch scratchMode {
-					case "separated":
-						// Generate unique IDs while preserving display name
-						imageID = fmt.Sprintf("scratch-%d", scratchCounter)
-						scratchCounter++
-						// Update the layer's waitFor reference to use the unique ID for graph connections
+					case ScratchSeparated:
+						imageID = fmt.Sprintf("scratch-%d", separateCounters["scratch"])
+						separateCounters["scratch"]++
 						simplifiedDockerfile.Stages[stageIndex].Layers[layerIndex].WaitFors[waitForIndex].ID = imageID
-					case "hidden":
-						// Skip adding to external images entirely
+					case ScratchHidden:
 						continue
-					case "collapsed":
-						// Default behavior - use original ID (no changes needed)
-					default:
-						// Default to collapsed for unknown modes
+					case ScratchCollapsed:
+						// Default behavior - use original ID
 					}
+				} else if _, shouldSeparate := separateSet[originalName]; shouldSeparate {
+					// Separate this external image: give each usage a unique ID
+					imageID = fmt.Sprintf("%s-%d", originalName, separateCounters[originalName])
+					separateCounters[originalName]++
+					simplifiedDockerfile.Stages[stageIndex].Layers[layerIndex].WaitFors[waitForIndex].ID = imageID
 				}
 
 				// Add to external images if not already present
-				addExternalImageIfNotExists(&simplifiedDockerfile.ExternalImages, imageID, originalName)
+				if _, exists := seen[imageID]; !exists {
+					seen[imageID] = struct{}{}
+					simplifiedDockerfile.ExternalImages = append(
+						simplifiedDockerfile.ExternalImages,
+						ExternalImage{ID: imageID, Name: originalName},
+					)
+				}
 			}
 		}
 	}
-}
-
-// addExternalImageIfNotExists adds an external image if it doesn't already exist
-func addExternalImageIfNotExists(externalImages *[]ExternalImage, imageID, originalName string) {
-	// Avoid duplicate external image entries (based on unique ID)
-	for _, externalImage := range *externalImages {
-		if externalImage.ID == imageID {
-			return // Already exists
-		}
-	}
-
-	// Add the external image with proper ID/Name separation
-	*externalImages = append(*externalImages, ExternalImage{
-		ID:   imageID,      // Unique identifier for graph connections
-		Name: originalName, // Display name for graph labels
-	})
 }
 
 // appendAndResolveArgReplacement appends a new ARG and resolves its value using already-resolved previous ARGs.

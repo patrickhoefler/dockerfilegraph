@@ -39,6 +39,7 @@ Flags:
   -o, --output                  output file format, one of: canon, dot, pdf, png, raw, svg (default pdf)
   -r, --ranksep float           minimum separation between ranks (default 0.5)
       --scratch                 how to handle scratch images, one of: collapsed, hidden, separated (default collapsed)
+      --separate strings        external images to display as separate nodes per usage (e.g. --separate ubuntu,alpine)
   -u, --unflatten uint          stagger length of leaf edges between [1,u] (default 0)
       --version                 display the version of dockerfilegraph
 `
@@ -557,6 +558,65 @@ It creates a visual graph representation of the build process.
 			cliArgs:      []string{"--scratch", "invalid", "-o", "raw"},
 			wantErr:      true,
 			wantOutRegex: `invalid argument "invalid" for "--scratch" flag: invalid value: invalid`,
+		},
+		{
+			name:    "separate flag single image",
+			cliArgs: []string{"--separate", "ubuntu:latest", "-o", "raw"},
+			dockerfileContent: "FROM ubuntu:latest AS base\nRUN echo base\n\n" +
+				"FROM ubuntu:latest AS other\nRUN echo other\n\n" +
+				"FROM alpine AS final\nCOPY --from=base . .\nCOPY --from=other . .\n",
+			wantOut:     "Successfully created Dockerfile.raw\n",
+			wantOutFile: "Dockerfile.raw",
+			wantOutFileContent: `digraph G {
+	compound=true;
+	nodesep=1.00;
+	rankdir=LR;
+	ranksep=0.50;
+	external_image_0->stage_0;
+	external_image_1->stage_1;
+	external_image_2->stage_2;
+	stage_0->stage_2[ arrowhead=empty, style=dashed ];
+	stage_1->stage_2[ arrowhead=empty, style=dashed ];
+	external_image_0 [ color=grey20, fontcolor=grey20, label="ubuntu:latest", shape=box, style="dashed,rounded", width=2 ];
+	external_image_1 [ color=grey20, fontcolor=grey20, label="ubuntu:latest", shape=box, style="dashed,rounded", width=2 ];
+	external_image_2 [ color=grey20, fontcolor=grey20, label="alpine", shape=box, style="dashed,rounded", width=2 ];
+	stage_0 [ label="base", shape=box, style=rounded, width=2 ];
+	stage_1 [ label="other", shape=box, style=rounded, width=2 ];
+	stage_2 [ fillcolor=grey90, label="final", shape=box, style="filled,rounded", width=2 ];
+
+}
+`,
+		},
+		{
+			name:    "separate flag multiple images",
+			cliArgs: []string{"--separate", "ubuntu:latest,alpine", "-o", "raw"},
+			dockerfileContent: "FROM ubuntu:latest AS base\nRUN echo base\n\n" +
+				"FROM alpine AS mid\nRUN echo mid\n\n" +
+				"FROM ubuntu:latest AS other\nRUN echo other\n\n" +
+				"FROM alpine AS final\nCOPY --from=base . .\n",
+			wantOut:     "Successfully created Dockerfile.raw\n",
+			wantOutFile: "Dockerfile.raw",
+			wantOutFileContent: `digraph G {
+	compound=true;
+	nodesep=1.00;
+	rankdir=LR;
+	ranksep=0.50;
+	external_image_0->stage_0;
+	external_image_1->stage_1;
+	external_image_2->stage_2;
+	external_image_3->stage_3;
+	stage_0->stage_3[ arrowhead=empty, style=dashed ];
+	external_image_0 [ color=grey20, fontcolor=grey20, label="ubuntu:latest", shape=box, style="dashed,rounded", width=2 ];
+	external_image_1 [ color=grey20, fontcolor=grey20, label="alpine", shape=box, style="dashed,rounded", width=2 ];
+	external_image_2 [ color=grey20, fontcolor=grey20, label="ubuntu:latest", shape=box, style="dashed,rounded", width=2 ];
+	external_image_3 [ color=grey20, fontcolor=grey20, label="alpine", shape=box, style="dashed,rounded", width=2 ];
+	stage_0 [ label="base", shape=box, style=rounded, width=2 ];
+	stage_1 [ label="mid", shape=box, style=rounded, width=2 ];
+	stage_2 [ label="other", shape=box, style=rounded, width=2 ];
+	stage_3 [ fillcolor=grey90, label="final", shape=box, style="filled,rounded", width=2 ];
+
+}
+`,
 		},
 	}
 
