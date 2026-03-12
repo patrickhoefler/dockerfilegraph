@@ -112,6 +112,12 @@ It creates a visual graph representation of the build process.`,
 				if err != nil {
 					return
 				}
+				var b []byte
+				b, err = os.ReadFile(dotFile.Name())
+				if err != nil {
+					return
+				}
+				dotFileContent = string(b)
 			}
 
 			filename := "Dockerfile." + f.output.String()
