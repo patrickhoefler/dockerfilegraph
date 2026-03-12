@@ -268,29 +268,29 @@ func runUnflatten(dotFile *os.File, w io.Writer, maxStagger uint) (err error) {
 	if err != nil {
 		return
 	}
+	unflattenPath := unflattenFile.Name()
+	err = unflattenFile.Close()
+	if err != nil {
+		os.Remove(unflattenPath)
+		return
+	}
 
 	unflattenCmd := exec.Command(
 		"unflatten",
 		"-l", strconv.FormatUint(uint64(maxStagger), 10),
-		"-o", unflattenFile.Name(), dotFile.Name(),
+		"-o", unflattenPath, dotFile.Name(),
 	)
 	unflattenCmd.Stdout = w
 	unflattenCmd.Stderr = w
 	err = unflattenCmd.Run()
 	if err != nil {
-		os.Remove(unflattenFile.Name())
+		os.Remove(unflattenPath)
 		return
 	}
 
-	err = unflattenFile.Close()
+	err = os.Rename(unflattenPath, dotFile.Name())
 	if err != nil {
-		os.Remove(unflattenFile.Name())
-		return
-	}
-
-	err = os.Rename(unflattenFile.Name(), dotFile.Name())
-	if err != nil {
-		os.Remove(unflattenFile.Name())
+		os.Remove(unflattenPath)
 		return
 	}
 
