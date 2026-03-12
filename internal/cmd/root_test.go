@@ -174,7 +174,7 @@ It creates a visual graph representation of the build process.
 	stage_0_layer_1->stage_2_layer_1[ arrowhead=empty, ltail=cluster_stage_0, style=dashed ];
 	stage_1_layer_1->stage_2_layer_2[ arrowhead=empty, ltail=cluster_stage_1, style=dashed ];
 	subgraph cluster_stage_0 {
-	label=ubuntu;
+	label="ubuntu";
 	margin=16;
 	stage_0_layer_0 [ fillcolor=white, label="FROM ubuntu:lates...", penwidth=0.5, shape=box, style="filled,rounded", width=2 ];
 	stage_0_layer_1 [ fillcolor=white, label="RUN apt-get updat...", penwidth=0.5, shape=box, style="filled,rounded", width=2 ];
@@ -191,7 +191,7 @@ It creates a visual graph representation of the build process.
 ;
 	subgraph cluster_stage_2 {
 	fillcolor=grey90;
-	label=release;
+	label="release";
 	margin=16;
 	style=filled;
 	stage_2_layer_0 [ fillcolor=white, label="FROM scratch AS r...", penwidth=0.5, shape=box, style="filled,rounded", width=2 ];

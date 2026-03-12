@@ -178,7 +178,7 @@ func addStageWithLayers(
 	cluster := fmt.Sprintf("cluster_stage_%d", stageIndex)
 
 	clusterAttrs := map[string]string{
-		"label":  getStageLabel(stageIndex, stage, 0),
+		"label":  "\"" + getStageLabel(stageIndex, stage, 0) + "\"",
 		"margin": "16",
 	}
 
