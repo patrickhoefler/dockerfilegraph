@@ -137,14 +137,11 @@ It creates a visual graph representation of the build process.`,
 			out, err := exec.Command(dotCmd, dotArgs...).CombinedOutput()
 			if err != nil {
 				fmt.Fprintf(w,
-					`Oh no, something went wrong while generating the graph!
-
-				This is the Graphviz file that was generated:
-
-				%s
-				The following error was reported by Graphviz:
-
-				%s`,
+					"Oh no, something went wrong while generating the graph!\n\n"+
+						"This is the Graphviz file that was generated:\n\n"+
+						"%s\n"+
+						"The following error was reported by Graphviz:\n\n"+
+						"%s",
 					dotFileContent, string(out),
 				)
 				return
