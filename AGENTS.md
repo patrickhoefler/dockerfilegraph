@@ -21,12 +21,11 @@
 - Use proper error handling
 - Write comprehensive tests for new functionality
 - Maintain backward compatibility unless explicitly breaking changes are needed
-- Always use `task check` for efficient linting and testing - it runs golangci-lint, tests, and enforces code quality standards in one command
+- Always use `mise run check` for efficient linting and testing - it runs golangci-lint, tests, and enforces code quality standards in one command
 
 ## Development Tools
 
-- **mise**: Used for tool version management (ensures consistent task version across environments)
-- **task**: Task runner for common development tasks
-  - Run `task check` before committing changes
-  - Use `task build` to create the binary
-  - See `task --list` for all available commands
+- **mise**: Used for tool version management and running common development tasks
+  - Run `mise run check` before committing changes
+  - Use `mise run build` to create the binary
+  - See `mise tasks` for all available commands

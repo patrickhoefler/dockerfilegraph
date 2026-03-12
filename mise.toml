@@ -3,4 +3,65 @@ idiomatic_version_file_enable_tools = ["go"]
 
 [tools]
 golangci-lint = "2.11.3"
-task = "3.48.0"
+
+[tasks.build]
+description = "Build the dockerfilegraph binary"
+depends = ["clean"]
+run = """
+GITVERSION=$(git describe --tags --always)
+GITCOMMIT=$(git log -1 --pretty=format:"%H")
+BUILDDATE=$(date -u '+%Y-%m-%dT%H:%M:%SZ')
+go build -ldflags "-s -w \
+  -X github.com/patrickhoefler/dockerfilegraph/internal/cmd.gitVersion=$GITVERSION \
+  -X github.com/patrickhoefler/dockerfilegraph/internal/cmd.gitCommit=$GITCOMMIT \
+  -X github.com/patrickhoefler/dockerfilegraph/internal/cmd.buildDate=$BUILDDATE"
+"""
+
+[tasks.build-docker-image]
+description = "Build the Docker image"
+depends = ["build-linux"]
+run = "docker build -t dockerfilegraph -f Dockerfile ."
+
+[tasks.build-linux]
+description = "Build the binary for Linux"
+depends = ["clean"]
+run = """
+GITVERSION=$(git describe --tags --always)
+GITCOMMIT=$(git log -1 --pretty=format:"%H")
+BUILDDATE=$(date -u '+%Y-%m-%dT%H:%M:%SZ')
+CGO_ENABLED=0 GOOS=linux go build -ldflags "-s -w \
+  -X github.com/patrickhoefler/dockerfilegraph/internal/cmd.gitVersion=$GITVERSION \
+  -X github.com/patrickhoefler/dockerfilegraph/internal/cmd.gitCommit=$GITCOMMIT \
+  -X github.com/patrickhoefler/dockerfilegraph/internal/cmd.buildDate=$BUILDDATE"
+"""
+
+[tasks.check]
+description = "Run linters and tests"
+depends = ["lint", "test"]
+
+[tasks.clean]
+description = "Clean build artifacts"
+run = "go clean"
+
+[tasks.example-images]
+description = "Generate example images for documentation"
+run = """
+cd $(git rev-parse --show-toplevel)
+
+go run . -f examples/dockerfiles/Dockerfile --legend -o svg \
+  && mv Dockerfile.svg examples/images/Dockerfile-legend.svg
+
+go run . -f examples/dockerfiles/Dockerfile --layers --scratch hidden -o svg \
+  && mv Dockerfile.svg examples/images/Dockerfile-layers.svg
+
+go run . -f examples/dockerfiles/Dockerfile.large -c -n 0.3 -o svg -u 4 \
+  && mv Dockerfile.svg examples/images/Dockerfile-large.svg
+"""
+
+[tasks.lint]
+description = "Run golangci-lint"
+run = "golangci-lint run"
+
+[tasks.test]
+description = "Run tests"
+run = "go test ./..."

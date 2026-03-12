@@ -30,13 +30,13 @@ jobs:
         uses: jdx/mise-action@5228313ee0372e111a38da051671ca30fc5a96db # v3.6.3
 
       - name: Run the linters
-        run: task lint
+        run: mise run lint
 
       - name: Install graphviz
         run: sudo apt install --no-install-recommends -y graphviz
 
       - name: Run the tests
-        run: task test
+        run: mise run test
 
   build-native:
     strategy:
@@ -62,7 +62,7 @@ jobs:
         uses: jdx/mise-action@5228313ee0372e111a38da051671ca30fc5a96db # v3.6.3
 
       - name: Build
-        run: task build
+        run: mise run build
 
       - name: '[macOS] Install graphviz'
         if: runner.os == 'macOS'
