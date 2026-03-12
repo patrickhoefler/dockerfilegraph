@@ -19,25 +19,68 @@ func BuildDotFile(
 	maxLabelLength int,
 	nodesep string,
 	ranksep string,
-) string {
+) (string, error) {
 	// Create a new graph
 	graph := gographviz.NewEscape()
-	_ = graph.SetName("G")
-	_ = graph.SetDir(true)
-	_ = graph.AddAttr("G", "compound", "true") // allow edges between clusters
-	_ = graph.AddAttr("G", "nodesep", nodesep)
-	_ = graph.AddAttr("G", "rankdir", "LR")
-	_ = graph.AddAttr("G", "ranksep", ranksep)
+
+	var graphErr error
+	set := func(err error) {
+		if graphErr == nil {
+			graphErr = err
+		}
+	}
+
+	set(graph.SetName("G"))
+	set(graph.SetDir(true))
+	set(graph.AddAttr("G", "compound", "true")) // allow edges between clusters
+	set(graph.AddAttr("G", "nodesep", nodesep))
+	set(graph.AddAttr("G", "rankdir", "LR"))
+	set(graph.AddAttr("G", "ranksep", ranksep))
 	if concentrate {
-		_ = graph.AddAttr("G", "concentrate", "true")
+		set(graph.AddAttr("G", "concentrate", "true"))
+	}
+
+	if graphErr != nil {
+		return "", graphErr
 	}
 
 	// Add the legend if requested
 	if legend {
-		addLegend(graph, edgestyle)
+		if err := addLegend(graph, edgestyle); err != nil {
+			return "", err
+		}
 	}
 
-	// Add the external images
+	if err := addExternalImagesToGraph(graph, simplifiedDockerfile, maxLabelLength); err != nil {
+		return "", err
+	}
+
+	if err := addStages(graph, simplifiedDockerfile, maxLabelLength, layers, edgestyle); err != nil {
+		return "", err
+	}
+
+	// Add the ARGS that appear before the first stage, if layers are requested
+	if layers {
+		if err := addBeforeFirstStage(graph, simplifiedDockerfile); err != nil {
+			return "", err
+		}
+	}
+
+	return graph.String(), nil
+}
+
+func addExternalImagesToGraph(
+	graph *gographviz.Escape,
+	simplifiedDockerfile SimplifiedDockerfile,
+	maxLabelLength int,
+) error {
+	var graphErr error
+	set := func(err error) {
+		if graphErr == nil {
+			graphErr = err
+		}
+	}
+
 	for externalImageIndex, externalImage := range simplifiedDockerfile.ExternalImages {
 		label := externalImage.Name
 		if len(label) > maxLabelLength {
@@ -48,7 +91,7 @@ func BuildDotFile(
 			label = truncate.Truncate(label, maxLabelLength, "...", truncatePosition)
 		}
 
-		_ = graph.AddNode(
+		set(graph.AddNode(
 			"G",
 			fmt.Sprintf("external_image_%d", externalImageIndex),
 			map[string]string{
@@ -59,7 +102,24 @@ func BuildDotFile(
 				"color":     "grey20",
 				"fontcolor": "grey20",
 			},
-		)
+		))
+	}
+
+	return graphErr
+}
+
+func addStages(
+	graph *gographviz.Escape,
+	simplifiedDockerfile SimplifiedDockerfile,
+	maxLabelLength int,
+	layers bool,
+	edgestyle string,
+) error {
+	var graphErr error
+	set := func(err error) {
+		if graphErr == nil {
+			graphErr = err
+		}
 	}
 
 	for stageIndex, stage := range simplifiedDockerfile.Stages {
@@ -72,40 +132,8 @@ func BuildDotFile(
 
 		// Add layers if requested
 		if layers {
-			cluster := fmt.Sprintf("cluster_stage_%d", stageIndex)
-
-			clusterAttrs := map[string]string{
-				"label":  getStageLabel(stageIndex, stage, 0),
-				"margin": "16",
-			}
-
-			if stageIndex == len(simplifiedDockerfile.Stages)-1 {
-				clusterAttrs["style"] = "filled"
-				clusterAttrs["fillcolor"] = "grey90"
-			}
-
-			_ = graph.AddSubGraph("G", cluster, clusterAttrs)
-
-			for layerIndex, layer := range stage.Layers {
-				attrs["label"] = "\"" + layer.Label + "\""
-				attrs["penwidth"] = "0.5"
-				attrs["style"] = "\"filled,rounded\""
-				attrs["fillcolor"] = "white"
-				_ = graph.AddNode(
-					cluster,
-					fmt.Sprintf("stage_%d_layer_%d", stageIndex, layerIndex),
-					attrs,
-				)
-
-				// Add edges between layers to guarantee the correct order
-				if layerIndex > 0 {
-					_ = graph.AddEdge(
-						fmt.Sprintf("stage_%d_layer_%d", stageIndex, layerIndex-1),
-						fmt.Sprintf("stage_%d_layer_%d", stageIndex, layerIndex),
-						true,
-						nil,
-					)
-				}
+			if err := addStageWithLayers(graph, simplifiedDockerfile, stageIndex, stage, attrs); err != nil {
+				return err
 			}
 		} else {
 			// Add the build stages.
@@ -115,45 +143,117 @@ func BuildDotFile(
 				attrs["fillcolor"] = "grey90"
 			}
 
-			_ = graph.AddNode("G", fmt.Sprintf("stage_%d", stageIndex), attrs)
+			set(graph.AddNode("G", fmt.Sprintf("stage_%d", stageIndex), attrs))
 		}
 
-		// Add the egdes for this build stage
-		addEdgesForStage(
+		if graphErr != nil {
+			return graphErr
+		}
+
+		// Add the edges for this build stage
+		if err := addEdgesForStage(
 			stageIndex, stage, graph, simplifiedDockerfile, layers, edgestyle,
-		)
-	}
-
-	// Add the ARGS that appear before the first stage, if layers are requested
-	if layers {
-		if len(simplifiedDockerfile.BeforeFirstStage) > 0 {
-			_ = graph.AddSubGraph(
-				"G",
-				"cluster_before_first_stage",
-				map[string]string{"label": "Before First Stage"},
-			)
-			for argIndex, arg := range simplifiedDockerfile.BeforeFirstStage {
-				_ = graph.AddNode(
-					"cluster_before_first_stage",
-					fmt.Sprintf("before_first_stage_%d", argIndex),
-					map[string]string{
-						"label": arg.Label,
-						"shape": "box",
-						"style": "rounded",
-						"width": "2",
-					},
-				)
-			}
+		); err != nil {
+			return err
 		}
 	}
 
-	return graph.String()
+	return graphErr
+}
+
+func addStageWithLayers(
+	graph *gographviz.Escape,
+	simplifiedDockerfile SimplifiedDockerfile,
+	stageIndex int,
+	stage Stage,
+	attrs map[string]string,
+) error {
+	var graphErr error
+	set := func(err error) {
+		if graphErr == nil {
+			graphErr = err
+		}
+	}
+
+	cluster := fmt.Sprintf("cluster_stage_%d", stageIndex)
+
+	clusterAttrs := map[string]string{
+		"label":  "\"" + getStageLabel(stageIndex, stage, 0) + "\"",
+		"margin": "16",
+	}
+
+	if stageIndex == len(simplifiedDockerfile.Stages)-1 {
+		clusterAttrs["style"] = "filled"
+		clusterAttrs["fillcolor"] = "grey90"
+	}
+
+	set(graph.AddSubGraph("G", cluster, clusterAttrs))
+
+	for layerIndex, layer := range stage.Layers {
+		attrs["label"] = "\"" + layer.Label + "\""
+		attrs["penwidth"] = "0.5"
+		attrs["style"] = "\"filled,rounded\""
+		attrs["fillcolor"] = "white"
+		set(graph.AddNode(
+			cluster,
+			fmt.Sprintf("stage_%d_layer_%d", stageIndex, layerIndex),
+			attrs,
+		))
+
+		// Add edges between layers to guarantee the correct order
+		if layerIndex > 0 {
+			set(graph.AddEdge(
+				fmt.Sprintf("stage_%d_layer_%d", stageIndex, layerIndex-1),
+				fmt.Sprintf("stage_%d_layer_%d", stageIndex, layerIndex),
+				true,
+				nil,
+			))
+		}
+	}
+
+	return graphErr
+}
+
+func addBeforeFirstStage(
+	graph *gographviz.Escape,
+	simplifiedDockerfile SimplifiedDockerfile,
+) error {
+	if len(simplifiedDockerfile.BeforeFirstStage) == 0 {
+		return nil
+	}
+
+	var graphErr error
+	set := func(err error) {
+		if graphErr == nil {
+			graphErr = err
+		}
+	}
+
+	set(graph.AddSubGraph(
+		"G",
+		"cluster_before_first_stage",
+		map[string]string{"label": "\"Before First Stage\""},
+	))
+	for argIndex, arg := range simplifiedDockerfile.BeforeFirstStage {
+		set(graph.AddNode(
+			"cluster_before_first_stage",
+			fmt.Sprintf("before_first_stage_%d", argIndex),
+			map[string]string{
+				"label": "\"" + arg.Label + "\"",
+				"shape": "box",
+				"style": "rounded",
+				"width": "2",
+			},
+		))
+	}
+
+	return graphErr
 }
 
 func addEdgesForStage(
 	stageIndex int, stage Stage, graph *gographviz.Escape,
 	simplifiedDockerfile SimplifiedDockerfile, layers bool, edgestyle string,
-) {
+) error {
 	for layerIndex, layer := range stage.Layers {
 		for _, waitFor := range layer.WaitFors {
 			edgeAttrs := map[string]string{}
@@ -169,9 +269,12 @@ func addEdgesForStage(
 				}
 			}
 
-			sourceNodeID, additionalEdgeAttrs := getWaitForNodeID(
+			sourceNodeID, additionalEdgeAttrs, err := getWaitForNodeID(
 				simplifiedDockerfile, waitFor.ID, layers,
 			)
+			if err != nil {
+				return err
+			}
 			maps.Copy(edgeAttrs, additionalEdgeAttrs)
 
 			targetNodeID := fmt.Sprintf("stage_%d", stageIndex)
@@ -179,15 +282,25 @@ func addEdgesForStage(
 				targetNodeID = targetNodeID + fmt.Sprintf("_layer_%d", layerIndex)
 			}
 
-			_ = graph.AddEdge(sourceNodeID, targetNodeID, true, edgeAttrs)
+			if err := graph.AddEdge(sourceNodeID, targetNodeID, true, edgeAttrs); err != nil {
+				return err
+			}
 		}
 	}
+	return nil
 }
 
-func addLegend(graph *gographviz.Escape, edgestyle string) {
-	_ = graph.AddSubGraph("G", "cluster_legend", nil)
+func addLegend(graph *gographviz.Escape, edgestyle string) error {
+	var graphErr error
+	set := func(err error) {
+		if graphErr == nil {
+			graphErr = err
+		}
+	}
 
-	_ = graph.AddNode("cluster_legend", "key",
+	set(graph.AddSubGraph("G", "cluster_legend", nil))
+
+	set(graph.AddNode("cluster_legend", "key",
 		map[string]string{
 			"shape":    "plaintext",
 			"fontname": "monospace",
@@ -198,8 +311,8 @@ func addLegend(graph *gographviz.Escape, edgestyle string) {
 	<tr><td align="right" port="i2">RUN --mount=(.*)from=...&nbsp;</td></tr>
 </table>>`,
 		},
-	)
-	_ = graph.AddNode("cluster_legend", "key2",
+	))
+	set(graph.AddNode("cluster_legend", "key2",
 		map[string]string{
 			"shape":    "plaintext",
 			"fontname": "monospace",
@@ -210,27 +323,29 @@ func addLegend(graph *gographviz.Escape, edgestyle string) {
 	<tr><td port="i2">&nbsp;</td></tr>
 </table>>`,
 		},
-	)
+	))
 
-	_ = graph.AddPortEdge("key", "i0:e", "key2", "i0:w", true, nil)
+	set(graph.AddPortEdge("key", "i0:e", "key2", "i0:w", true, nil))
 
 	copyEdgeAttrs := map[string]string{"arrowhead": "empty"}
 	if edgestyle == "default" {
 		copyEdgeAttrs["style"] = "dashed"
 	}
-	_ = graph.AddPortEdge(
+	set(graph.AddPortEdge(
 		"key", "i1:e", "key2", "i1:w", true,
 		copyEdgeAttrs,
-	)
+	))
 
 	mountEdgeAttrs := map[string]string{"arrowhead": "ediamond"}
 	if edgestyle == "default" {
 		mountEdgeAttrs["style"] = "dotted"
 	}
-	_ = graph.AddPortEdge(
+	set(graph.AddPortEdge(
 		"key", "i2:e", "key2", "i2:w", true,
 		mountEdgeAttrs,
-	)
+	))
+
+	return graphErr
 }
 
 func getStageLabel(stageIndex int, stage Stage, maxLabelLength int) string {
@@ -251,48 +366,56 @@ func getStageLabel(stageIndex int, stage Stage, maxLabelLength int) string {
 // name or the external image name.
 func getWaitForNodeID(
 	simplifiedDockerfile SimplifiedDockerfile, nameOrID string, layers bool,
-) (nodeID string, attrs map[string]string) {
-	attrs = map[string]string{}
+) (string, map[string]string, error) {
+	attrs := map[string]string{}
 
 	// If it can be converted to an integer, it's a stage ID
 	if stageIndex, convertErr := strconv.Atoi(nameOrID); convertErr == nil {
+		if stageIndex < 0 || stageIndex >= len(simplifiedDockerfile.Stages) {
+			return "", nil, fmt.Errorf(
+				"stage index %d out of range (have %d stages)",
+				stageIndex, len(simplifiedDockerfile.Stages),
+			)
+		}
 		if layers {
+			if len(simplifiedDockerfile.Stages[stageIndex].Layers) == 0 {
+				return "", nil, fmt.Errorf("stage %d has no layers", stageIndex)
+			}
 			// Return the last layer of the stage
-			nodeID = fmt.Sprintf(
+			return fmt.Sprintf(
 				"stage_%d_layer_%d",
 				stageIndex, len(simplifiedDockerfile.Stages[stageIndex].Layers)-1,
-			)
-			attrs["ltail"] = fmt.Sprintf("cluster_stage_%d", stageIndex)
-		} else {
-			nodeID = fmt.Sprintf("stage_%d", stageIndex)
+			), map[string]string{"ltail": fmt.Sprintf("cluster_stage_%d", stageIndex)}, nil
 		}
-		return
+		return fmt.Sprintf("stage_%d", stageIndex), attrs, nil
 	}
 
 	// Check if it's a stage name
 	for stageIndex, stage := range simplifiedDockerfile.Stages {
 		if nameOrID == stage.Name {
 			if layers {
+				if len(simplifiedDockerfile.Stages[stageIndex].Layers) == 0 {
+					return "", nil, fmt.Errorf("stage %q has no layers", nameOrID)
+				}
 				// Return the last layer of the stage
-				nodeID = fmt.Sprintf(
+				return fmt.Sprintf(
 					"stage_%d_layer_%d",
 					stageIndex, len(simplifiedDockerfile.Stages[stageIndex].Layers)-1,
-				)
-				attrs["ltail"] = fmt.Sprintf("cluster_stage_%d", stageIndex)
-			} else {
-				nodeID = fmt.Sprintf("stage_%d", stageIndex)
+				), map[string]string{"ltail": fmt.Sprintf("cluster_stage_%d", stageIndex)}, nil
 			}
-			return
+			return fmt.Sprintf("stage_%d", stageIndex), attrs, nil
 		}
 	}
 
 	// Check if it's an external image ID
 	for externalImageIndex, externalImage := range simplifiedDockerfile.ExternalImages {
 		if nameOrID == externalImage.ID {
-			nodeID = fmt.Sprintf("external_image_%d", externalImageIndex)
-			return
+			return fmt.Sprintf("external_image_%d", externalImageIndex), attrs, nil
 		}
 	}
 
-	panic("Could not find node ID for " + nameOrID)
+	return "", nil, fmt.Errorf(
+		"could not resolve node ID for %q (expected stage index, stage name, or external image ID)",
+		nameOrID,
+	)
 }

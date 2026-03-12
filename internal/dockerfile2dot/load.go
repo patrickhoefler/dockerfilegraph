@@ -4,6 +4,7 @@ package dockerfile2dot
 
 import (
 	"errors"
+	"fmt"
 	"io/fs"
 	"path/filepath"
 
@@ -21,13 +22,13 @@ func LoadAndParseDockerfile(
 	content, err := afero.ReadFile(inputFS, filename)
 	if err != nil {
 		if errors.Is(err, fs.ErrNotExist) {
-			absFilePath, err := filepath.Abs(filename)
-			if err != nil {
-				panic(err)
+			absFilePath, absErr := filepath.Abs(filename)
+			if absErr != nil {
+				return SimplifiedDockerfile{}, fmt.Errorf("could not get absolute path for %q: %w", filename, absErr)
 			}
 			return SimplifiedDockerfile{}, errors.New("could not find a Dockerfile at " + absFilePath)
 		}
-		panic(err)
+		return SimplifiedDockerfile{}, err
 	}
 	return dockerfileToSimplifiedDockerfile(content, maxLabelLength, scratchMode)
 }

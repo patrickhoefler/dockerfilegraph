@@ -86,7 +86,7 @@ It creates a visual graph representation of the build process.`,
 			}
 			defer os.Remove(dotFile.Name())
 
-			dotFileContent := dockerfile2dot.BuildDotFile(
+			dotFileContent, err := dockerfile2dot.BuildDotFile(
 				dockerfile,
 				f.concentrate,
 				f.edgestyle.String(),
@@ -96,6 +96,9 @@ It creates a visual graph representation of the build process.`,
 				fmt.Sprintf("%.2f", f.nodesep),
 				fmt.Sprintf("%.2f", f.ranksep),
 			)
+			if err != nil {
+				return
+			}
 
 			_, err = dotFile.Write([]byte(dotFileContent))
 			if err != nil {
