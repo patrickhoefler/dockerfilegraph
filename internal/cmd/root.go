@@ -14,21 +14,22 @@ import (
 	"github.com/spf13/cobra"
 )
 
-var (
-	concentrateFlag    bool
-	dpiFlag            uint
-	edgestyleFlag      enum
-	filenameFlag       string
-	layersFlag         bool
-	legendFlag         bool
-	maxLabelLengthFlag uint
-	nodesepFlag        float64
-	outputFlag         enum
-	ranksepFlag        float64
-	scratchFlag        enum
-	unflattenFlag      uint
-	versionFlag        bool
-)
+// cliFlags holds all flag values for a single command invocation.
+type cliFlags struct {
+	concentrate    bool
+	dpi            uint
+	edgestyle      enum
+	filename       string
+	layers         bool
+	legend         bool
+	maxLabelLength uint
+	nodesep        float64
+	output         enum
+	ranksep        float64
+	scratch        enum
+	unflatten      uint
+	version        bool
+}
 
 // dfgWriter is a writer that prints to stdout. When testing, we
 // replace this with a writer that prints to a buffer.
@@ -41,20 +42,22 @@ func (d dfgWriter) Write(p []byte) (n int, err error) {
 
 // NewRootCmd creates a new root command.
 func NewRootCmd(
-	dfgWriter io.Writer, inputFS afero.Fs, dotCmd string,
+	w io.Writer, inputFS afero.Fs, dotCmd string,
 ) *cobra.Command {
+	f := cliFlags{}
+
 	rootCmd := &cobra.Command{
 		Use:   "dockerfilegraph",
 		Short: "Visualize your multi-stage Dockerfile",
 		Long: `dockerfilegraph visualizes your multi-stage Dockerfile.
 It creates a visual graph representation of the build process.`,
 		Args: cobra.NoArgs,
-		PreRunE: func(_ *cobra.Command, _ []string) (err error) {
-			return checkFlags()
+		PreRunE: func(_ *cobra.Command, _ []string) error {
+			return checkFlags(f.maxLabelLength)
 		},
 		RunE: func(_ *cobra.Command, _ []string) (err error) {
-			if versionFlag {
-				return printVersion(dfgWriter)
+			if f.version {
+				return printVersion(w)
 			}
 
 			// Make sure that graphviz is installed.
@@ -64,13 +67,13 @@ It creates a visual graph representation of the build process.`,
 			}
 
 			// Determine scratch mode from flag
-			scratchMode := scratchFlag.String()
+			scratchMode := f.scratch.String()
 
 			// Load and parse the Dockerfile.
 			dockerfile, err := dockerfile2dot.LoadAndParseDockerfile(
 				inputFS,
-				filenameFlag,
-				int(maxLabelLengthFlag),
+				f.filename,
+				int(f.maxLabelLength),
 				scratchMode,
 			)
 			if err != nil {
@@ -85,13 +88,13 @@ It creates a visual graph representation of the build process.`,
 
 			dotFileContent := dockerfile2dot.BuildDotFile(
 				dockerfile,
-				concentrateFlag,
-				edgestyleFlag.String(),
-				layersFlag,
-				legendFlag,
-				int(maxLabelLengthFlag),
-				fmt.Sprintf("%.2f", nodesepFlag),
-				fmt.Sprintf("%.2f", ranksepFlag),
+				f.concentrate,
+				f.edgestyle.String(),
+				f.layers,
+				f.legend,
+				int(f.maxLabelLength),
+				fmt.Sprintf("%.2f", f.nodesep),
+				fmt.Sprintf("%.2f", f.ranksep),
 			)
 
 			_, err = dotFile.Write([]byte(dotFileContent))
@@ -104,50 +107,50 @@ It creates a visual graph representation of the build process.`,
 				return
 			}
 
-			if unflattenFlag > 0 {
-				err = unflatten(dotFile, dfgWriter)
+			if f.unflatten > 0 {
+				err = runUnflatten(dotFile, w, f.unflatten)
 				if err != nil {
 					return
 				}
 			}
 
-			filename := "Dockerfile." + outputFlag.String()
+			filename := "Dockerfile." + f.output.String()
 
-			if outputFlag.String() == "raw" {
+			if f.output.String() == "raw" {
 				err = os.Rename(dotFile.Name(), filename)
 				if err != nil {
 					return
 				}
-				fmt.Fprintf(dfgWriter, "Successfully created %s\n", filename)
+				fmt.Fprintf(w, "Successfully created %s\n", filename)
 				return
 			}
 
 			dotArgs := []string{
-				"-T" + outputFlag.String(),
+				"-T" + f.output.String(),
 				"-o" + filename,
 			}
-			if outputFlag.String() == "png" {
-				dotArgs = append(dotArgs, "-Gdpi="+fmt.Sprint(dpiFlag))
+			if f.output.String() == "png" {
+				dotArgs = append(dotArgs, "-Gdpi="+fmt.Sprint(f.dpi))
 			}
 			dotArgs = append(dotArgs, dotFile.Name())
 
 			out, err := exec.Command(dotCmd, dotArgs...).CombinedOutput()
 			if err != nil {
-				fmt.Fprintf(dfgWriter,
+				fmt.Fprintf(w,
 					`Oh no, something went wrong while generating the graph!
 
-					This is the Graphviz file that was generated:
+				This is the Graphviz file that was generated:
 
-					%s
-					The following error was reported by Graphviz:
+				%s
+				The following error was reported by Graphviz:
 
-					%s`,
+				%s`,
 					dotFileContent, string(out),
 				)
 				return
 			}
 
-			fmt.Fprintf(dfgWriter, "Successfully created %s\n", filename)
+			fmt.Fprintf(w, "Successfully created %s\n", filename)
 
 			return
 		},
@@ -155,7 +158,7 @@ It creates a visual graph representation of the build process.`,
 
 	// Flags
 	rootCmd.Flags().BoolVarP(
-		&concentrateFlag,
+		&f.concentrate,
 		"concentrate",
 		"c",
 		false,
@@ -163,23 +166,23 @@ It creates a visual graph representation of the build process.`,
 	)
 
 	rootCmd.Flags().UintVarP(
-		&dpiFlag,
+		&f.dpi,
 		"dpi",
 		"d",
 		96, // the default dpi setting of Graphviz
 		"dots per inch of the PNG export",
 	)
 
-	edgestyleFlag = newEnum("default", "solid")
+	f.edgestyle = newEnum("default", "solid")
 	rootCmd.Flags().VarP(
-		&edgestyleFlag,
+		&f.edgestyle,
 		"edgestyle",
 		"e",
-		"style of the graph edges, one of: "+strings.Join(edgestyleFlag.AllowedValues(), ", "),
+		"style of the graph edges, one of: "+strings.Join(f.edgestyle.AllowedValues(), ", "),
 	)
 
 	rootCmd.Flags().StringVarP(
-		&filenameFlag,
+		&f.filename,
 		"filename",
 		"f",
 		"Dockerfile",
@@ -187,21 +190,21 @@ It creates a visual graph representation of the build process.`,
 	)
 
 	rootCmd.Flags().BoolVar(
-		&layersFlag,
+		&f.layers,
 		"layers",
 		false,
 		"display all layers (default false)",
 	)
 
 	rootCmd.Flags().BoolVar(
-		&legendFlag,
+		&f.legend,
 		"legend",
 		false,
 		"add a legend (default false)",
 	)
 
 	rootCmd.Flags().UintVarP(
-		&maxLabelLengthFlag,
+		&f.maxLabelLength,
 		"max-label-length",
 		"m",
 		20,
@@ -209,38 +212,38 @@ It creates a visual graph representation of the build process.`,
 	)
 
 	rootCmd.Flags().Float64VarP(
-		&nodesepFlag,
+		&f.nodesep,
 		"nodesep",
 		"n",
 		1,
 		"minimum space between two adjacent nodes in the same rank",
 	)
 
-	outputFlag = newEnum("pdf", "canon", "dot", "png", "raw", "svg")
+	f.output = newEnum("pdf", "canon", "dot", "png", "raw", "svg")
 	rootCmd.Flags().VarP(
-		&outputFlag,
+		&f.output,
 		"output",
 		"o",
-		"output file format, one of: "+strings.Join(outputFlag.AllowedValues(), ", "),
+		"output file format, one of: "+strings.Join(f.output.AllowedValues(), ", "),
 	)
 
 	rootCmd.Flags().Float64VarP(
-		&ranksepFlag,
+		&f.ranksep,
 		"ranksep",
 		"r",
 		0.5,
 		"minimum separation between ranks",
 	)
 
-	scratchFlag = newEnum("collapsed", "separated", "hidden")
+	f.scratch = newEnum("collapsed", "separated", "hidden")
 	rootCmd.Flags().Var(
-		&scratchFlag,
+		&f.scratch,
 		"scratch",
-		"how to handle scratch images, one of: "+strings.Join(scratchFlag.AllowedValues(), ", "),
+		"how to handle scratch images, one of: "+strings.Join(f.scratch.AllowedValues(), ", "),
 	)
 
 	rootCmd.Flags().UintVarP(
-		&unflattenFlag,
+		&f.unflatten,
 		"unflatten",
 		"u",
 		0, // turned off
@@ -248,7 +251,7 @@ It creates a visual graph representation of the build process.`,
 	)
 
 	rootCmd.Flags().BoolVar(
-		&versionFlag,
+		&f.version,
 		"version",
 		false,
 		"display the version of dockerfilegraph",
@@ -257,7 +260,7 @@ It creates a visual graph representation of the build process.`,
 	return rootCmd
 }
 
-func unflatten(dotFile *os.File, dfgWriter io.Writer) (err error) {
+func runUnflatten(dotFile *os.File, w io.Writer, maxStagger uint) (err error) {
 	var unflattenFile *os.File
 	unflattenFile, err = os.CreateTemp("", "dockerfile.*.dot")
 	if err != nil {
@@ -267,11 +270,11 @@ func unflatten(dotFile *os.File, dfgWriter io.Writer) (err error) {
 
 	unflattenCmd := exec.Command(
 		"unflatten",
-		"-l", strconv.FormatUint(uint64(unflattenFlag), 10),
+		"-l", strconv.FormatUint(uint64(maxStagger), 10),
 		"-o", unflattenFile.Name(), dotFile.Name(),
 	)
-	unflattenCmd.Stdout = dfgWriter
-	unflattenCmd.Stderr = dfgWriter
+	unflattenCmd.Stdout = w
+	unflattenCmd.Stderr = w
 	err = unflattenCmd.Run()
 	if err != nil {
 		return
@@ -301,10 +304,9 @@ func Execute() {
 	}
 }
 
-func checkFlags() (err error) {
-	if maxLabelLengthFlag < 4 {
-		err = fmt.Errorf("--max-label-length must be at least 4")
-		return
+func checkFlags(maxLabelLength uint) error {
+	if maxLabelLength < 4 {
+		return fmt.Errorf("--max-label-length must be at least 4")
 	}
-	return
+	return nil
 }
