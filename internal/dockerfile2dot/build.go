@@ -222,14 +222,14 @@ func addBeforeFirstStage(
 	set(graph.AddSubGraph(
 		"G",
 		"cluster_before_first_stage",
-		map[string]string{"label": "Before First Stage"},
+		map[string]string{"label": "\"Before First Stage\""},
 	))
 	for argIndex, arg := range simplifiedDockerfile.BeforeFirstStage {
 		set(graph.AddNode(
 			"cluster_before_first_stage",
 			fmt.Sprintf("before_first_stage_%d", argIndex),
 			map[string]string{
-				"label": arg.Label,
+				"label": "\"" + arg.Label + "\"",
 				"shape": "box",
 				"style": "rounded",
 				"width": "2",
