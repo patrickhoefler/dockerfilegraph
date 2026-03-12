@@ -9,6 +9,7 @@ description = "Build the dockerfilegraph binary"
 depends = ["clean"]
 run = """
 #!/usr/bin/env bash
+set -euo pipefail
 GITVERSION=$(git describe --tags --always)
 GITCOMMIT=$(git log -1 --pretty=format:"%H")
 BUILDDATE=$(date -u '+%Y-%m-%dT%H:%M:%SZ')
@@ -28,6 +29,7 @@ description = "Build the binary for Linux"
 depends = ["clean"]
 run = """
 #!/usr/bin/env bash
+set -euo pipefail
 GITVERSION=$(git describe --tags --always)
 GITCOMMIT=$(git log -1 --pretty=format:"%H")
 BUILDDATE=$(date -u '+%Y-%m-%dT%H:%M:%SZ')
@@ -49,7 +51,8 @@ run = "go clean"
 description = "Generate example images for documentation"
 run = """
 #!/usr/bin/env bash
-cd $(git rev-parse --show-toplevel)
+set -euo pipefail
+cd -- "$(git rev-parse --show-toplevel)"
 
 go run . -f examples/dockerfiles/Dockerfile --legend -o svg \
   && mv Dockerfile.svg examples/images/Dockerfile-legend.svg
@@ -60,6 +63,10 @@ go run . -f examples/dockerfiles/Dockerfile --layers --scratch hidden -o svg \
 go run . -f examples/dockerfiles/Dockerfile.large -c -n 0.3 -o svg -u 4 \
   && mv Dockerfile.svg examples/images/Dockerfile-large.svg
 """
+
+[tasks.fix]
+description = "Apply automated code fixes (go fix)"
+run = "go fix ./..."
 
 [tasks.lint]
 description = "Run golangci-lint"

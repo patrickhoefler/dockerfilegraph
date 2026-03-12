@@ -2,6 +2,7 @@ package dockerfile2dot
 
 import (
 	"fmt"
+	"maps"
 	"strconv"
 
 	"github.com/aquilax/truncate"
@@ -171,9 +172,7 @@ func addEdgesForStage(
 			sourceNodeID, additionalEdgeAttrs := getWaitForNodeID(
 				simplifiedDockerfile, waitFor.ID, layers,
 			)
-			for k, v := range additionalEdgeAttrs {
-				edgeAttrs[k] = v
-			}
+			maps.Copy(edgeAttrs, additionalEdgeAttrs)
 
 			targetNodeID := fmt.Sprintf("stage_%d", stageIndex)
 			if layers {
