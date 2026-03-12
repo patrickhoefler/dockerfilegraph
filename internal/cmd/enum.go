@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"errors"
+	"slices"
 	"sort"
 )
 
@@ -29,11 +30,9 @@ func (e *enum) String() string { return e.value }
 // Set assigns the provided string to the enum receiver.
 // It returns an error if the string is not an allowed value.
 func (e *enum) Set(s string) error {
-	for _, val := range e.allowedValues {
-		if val == s {
-			e.value = s
-			return nil
-		}
+	if slices.Contains(e.allowedValues, s) {
+		e.value = s
+		return nil
 	}
 
 	return errors.New("invalid value: " + s)

@@ -21,11 +21,13 @@
 - Use proper error handling
 - Write comprehensive tests for new functionality
 - Maintain backward compatibility unless explicitly breaking changes are needed
-- Always use `mise run check` for efficient linting and testing - it runs golangci-lint, tests, and enforces code quality standards in one command
+- Always use `mise run check` for efficient linting and testing - it runs golangci-lint and tests in one command
+- Run `mise run fix` before committing to apply automated code fixes (e.g. `go fix`)
 
 ## Development Tools
 
 - **mise**: Used for tool version management and running common development tasks
+  - Run `mise run fix` before committing to apply automated fixes
   - Run `mise run check` before committing changes
   - Use `mise run build` to create the binary
   - See `mise tasks` for all available commands
