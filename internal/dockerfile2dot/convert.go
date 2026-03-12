@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"fmt"
 	"regexp"
+	"strconv"
 	"strings"
 
 	"github.com/aquilax/truncate"
@@ -239,9 +240,13 @@ func addExternalImages(
 	scratchMode ScratchMode,
 	separateImages []string,
 ) {
-	// Build a set of images that should be separated
+	// Build a set of images that should be separated, normalizing whitespace
 	separateSet := make(map[string]struct{}, len(separateImages))
 	for _, img := range separateImages {
+		img = strings.TrimSpace(img)
+		if img == "" {
+			continue
+		}
 		separateSet[img] = struct{}{}
 	}
 
@@ -251,34 +256,19 @@ func addExternalImages(
 	// Track already-seen image IDs to avoid duplicates
 	seen := make(map[string]struct{})
 
+	numStages := len(simplifiedDockerfile.Stages)
+
 	// Iterate through all stages and layers to find external image dependencies
 	for stageIndex, stage := range simplifiedDockerfile.Stages {
 		for layerIndex, layer := range stage.Layers {
 			for waitForIndex, waitFor := range layer.WaitFors {
-				// Skip if this references an internal stage (not an external image)
-				if _, ok := stages[waitFor.ID]; ok {
+				imageID, skip := resolveExternalImageID(
+					waitFor.ID, stages, numStages, scratchMode, separateSet, separateCounters,
+				)
+				if skip {
 					continue
 				}
-
-				imageID := waitFor.ID
-				originalName := waitFor.ID
-
-				// Handle scratch image modes
-				if originalName == "scratch" {
-					switch scratchMode {
-					case ScratchSeparated:
-						imageID = fmt.Sprintf("scratch-%d", separateCounters["scratch"])
-						separateCounters["scratch"]++
-						simplifiedDockerfile.Stages[stageIndex].Layers[layerIndex].WaitFors[waitForIndex].ID = imageID
-					case ScratchHidden:
-						continue
-					case ScratchCollapsed:
-						// Default behavior - use original ID
-					}
-				} else if _, shouldSeparate := separateSet[originalName]; shouldSeparate {
-					// Separate this external image: give each usage a unique ID
-					imageID = fmt.Sprintf("%s-%d", originalName, separateCounters[originalName])
-					separateCounters[originalName]++
+				if imageID != waitFor.ID {
 					simplifiedDockerfile.Stages[stageIndex].Layers[layerIndex].WaitFors[waitForIndex].ID = imageID
 				}
 
@@ -287,12 +277,56 @@ func addExternalImages(
 					seen[imageID] = struct{}{}
 					simplifiedDockerfile.ExternalImages = append(
 						simplifiedDockerfile.ExternalImages,
-						ExternalImage{ID: imageID, Name: originalName},
+						ExternalImage{ID: imageID, Name: waitFor.ID},
 					)
 				}
 			}
 		}
 	}
+}
+
+// resolveExternalImageID determines the graph node ID for a WaitFor dependency.
+// It returns (imageID, skip=true) when the dependency should be omitted entirely
+// (internal stage reference or scratch in hidden mode).
+func resolveExternalImageID(
+	rawID string,
+	stages map[string]struct{},
+	numStages int,
+	scratchMode ScratchMode,
+	separateSet map[string]struct{},
+	separateCounters map[string]int,
+) (imageID string, skip bool) {
+	// Skip internal stage references by name
+	if _, ok := stages[rawID]; ok {
+		return "", true
+	}
+
+	// Skip internal stage references by numeric index
+	if idx, err := strconv.Atoi(rawID); err == nil && idx >= 0 && idx < numStages {
+		return "", true
+	}
+
+	// Handle scratch modes
+	if rawID == "scratch" {
+		switch scratchMode {
+		case ScratchHidden:
+			return "", true
+		case ScratchSeparated:
+			id := fmt.Sprintf("scratch-%d", separateCounters["scratch"])
+			separateCounters["scratch"]++
+			return id, false
+		}
+		return rawID, false
+	}
+
+	// Separate other explicitly listed images
+	if _, shouldSeparate := separateSet[rawID]; shouldSeparate {
+		id := fmt.Sprintf("%s-%d", rawID, separateCounters[rawID])
+		separateCounters[rawID]++
+		return id, false
+	}
+
+	return rawID, false
 }
 
 // appendAndResolveArgReplacement appends a new ARG and resolves its value using already-resolved previous ARGs.

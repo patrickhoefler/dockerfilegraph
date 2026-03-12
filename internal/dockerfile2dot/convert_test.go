@@ -608,6 +608,7 @@ RUN echo other
 FROM alpine AS final
 COPY --from=base . .`),
 				maxLabelLength: 20,
+				scratchMode:    ScratchCollapsed,
 				separateImages: []string{"ubuntu"},
 			},
 			want: SimplifiedDockerfile{
@@ -662,6 +663,7 @@ RUN echo base
 FROM ubuntu AS other
 RUN echo other`),
 				maxLabelLength: 20,
+				scratchMode:    ScratchCollapsed,
 				separateImages: []string{"nonexistent"},
 			},
 			want: SimplifiedDockerfile{
@@ -687,6 +689,89 @@ RUN echo other`),
 								WaitFors: []WaitFor{{ID: "ubuntu", Type: waitForType(waitForFrom)}},
 							},
 							{Label: "RUN echo other"},
+						},
+					},
+				},
+			},
+		},
+		{
+			name: "Separate flag - whitespace in image names is normalized",
+			args: args{
+				content: []byte(`FROM ubuntu AS base
+RUN echo base
+
+FROM ubuntu AS other
+RUN echo other`),
+				maxLabelLength: 20,
+				scratchMode:    ScratchCollapsed,
+				separateImages: []string{"ubuntu", " ubuntu", "ubuntu "},
+			},
+			want: SimplifiedDockerfile{
+				ExternalImages: []ExternalImage{
+					{ID: "ubuntu-0", Name: "ubuntu"},
+					{ID: "ubuntu-1", Name: "ubuntu"},
+				},
+				Stages: []Stage{
+					{
+						Name: "base",
+						Layers: []Layer{
+							{
+								Label:    "FROM ubuntu AS base",
+								WaitFors: []WaitFor{{ID: "ubuntu-0", Type: waitForType(waitForFrom)}},
+							},
+							{Label: "RUN echo base"},
+						},
+					},
+					{
+						Name: "other",
+						Layers: []Layer{
+							{
+								Label:    "FROM ubuntu AS other",
+								WaitFors: []WaitFor{{ID: "ubuntu-1", Type: waitForType(waitForFrom)}},
+							},
+							{Label: "RUN echo other"},
+						},
+					},
+				},
+			},
+		},
+		{
+			name: "Numeric stage reference is not treated as an external image",
+			args: args{
+				content: []byte(`FROM ubuntu AS base
+RUN echo base
+
+FROM alpine
+COPY --from=0 /app /app`),
+				maxLabelLength: 20,
+				scratchMode:    ScratchCollapsed,
+			},
+			want: SimplifiedDockerfile{
+				ExternalImages: []ExternalImage{
+					{ID: "ubuntu", Name: "ubuntu"},
+					{ID: "alpine", Name: "alpine"},
+				},
+				Stages: []Stage{
+					{
+						Name: "base",
+						Layers: []Layer{
+							{
+								Label:    "FROM ubuntu AS base",
+								WaitFors: []WaitFor{{ID: "ubuntu", Type: waitForType(waitForFrom)}},
+							},
+							{Label: "RUN echo base"},
+						},
+					},
+					{
+						Layers: []Layer{
+							{
+								Label:    "FROM alpine",
+								WaitFors: []WaitFor{{ID: "alpine", Type: waitForType(waitForFrom)}},
+							},
+							{
+								Label:    "COPY --from=0 /ap...",
+								WaitFors: []WaitFor{{ID: "0", Type: waitForType(waitForCopy)}},
+							},
 						},
 					},
 				},
