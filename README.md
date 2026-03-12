@@ -107,6 +107,7 @@ dockerfilegraph
 - `--output svg|png|pdf` - Choose your output format
 - `--legend` - Add a legend explaining the notation
 - `--layers` - Show all Docker layers
+- `--separate ubuntu,alpine` - Display selected external images as separate nodes per usage, reducing edge clutter
 
 **All Available Options:**
 
@@ -131,6 +132,7 @@ Flags:
   -o, --output                  output file format, one of: canon, dot, pdf, png, raw, svg (default pdf)
   -r, --ranksep float           minimum separation between ranks (default 0.5)
       --scratch                 how to handle scratch images, one of: collapsed, hidden, separated (default collapsed)
+      --separate strings        external images to display as separate nodes per usage (e.g. --separate ubuntu,alpine)
   -u, --unflatten uint          stagger length of leaf edges between [1,u] (default 0)
       --version                 display the version of dockerfilegraph
 ```

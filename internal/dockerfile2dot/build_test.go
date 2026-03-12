@@ -58,7 +58,7 @@ func TestBuildDotFileErrors(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			_, err := BuildDotFile(
-				tt.simplifiedDockerfile, false, "default", tt.layers, false, 20, "0.5", "0.5",
+				tt.simplifiedDockerfile, false, "default", tt.layers, false, 20, 0.5, 0.5,
 			)
 			if err == nil {
 				t.Error("BuildDotFile() expected an error, got nil")
@@ -75,8 +75,8 @@ func TestBuildDotFile(t *testing.T) {
 		layers               bool
 		legend               bool
 		maxLabelLength       int
-		nodesep              string
-		ranksep              string
+		nodesep              float64
+		ranksep              float64
 	}
 	tests := []struct {
 		name         string
@@ -113,8 +113,8 @@ func TestBuildDotFile(t *testing.T) {
 				edgestyle:      "default",
 				legend:         true,
 				maxLabelLength: 20,
-				nodesep:        "0.5",
-				ranksep:        "0.5",
+				nodesep:        0.5,
+				ranksep:        0.5,
 			},
 			wantContains: "release",
 		},
@@ -148,8 +148,8 @@ func TestBuildDotFile(t *testing.T) {
 				edgestyle:      "default",
 				layers:         true,
 				maxLabelLength: 20,
-				nodesep:        "0.5",
-				ranksep:        "0.5",
+				nodesep:        0.5,
+				ranksep:        0.5,
 			},
 			wantContains: "release",
 		},
@@ -193,8 +193,8 @@ func TestBuildDotFile(t *testing.T) {
 				layers:         false,
 				legend:         false,
 				maxLabelLength: 20,
-				nodesep:        "0.5",
-				ranksep:        "0.5",
+				nodesep:        0.5,
+				ranksep:        0.5,
 			},
 			wantContains: `external_image_0 [ color=grey20, fontcolor=grey20, label="scratch", shape=box, ` +
 				`style="dashed,rounded", width=2 ];

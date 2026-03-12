@@ -27,6 +27,7 @@ type cliFlags struct {
 	output         enum
 	ranksep        float64
 	scratch        enum
+	separate       []string
 	unflatten      uint
 	version        bool
 }
@@ -67,7 +68,7 @@ It creates a visual graph representation of the build process.`,
 			}
 
 			// Determine scratch mode from flag
-			scratchMode := f.scratch.String()
+			scratchMode := scratchModeFromString(f.scratch.String())
 
 			// Load and parse the Dockerfile.
 			dockerfile, err := dockerfile2dot.LoadAndParseDockerfile(
@@ -75,6 +76,7 @@ It creates a visual graph representation of the build process.`,
 				f.filename,
 				int(f.maxLabelLength),
 				scratchMode,
+				f.separate,
 			)
 			if err != nil {
 				return
@@ -93,8 +95,8 @@ It creates a visual graph representation of the build process.`,
 				f.layers,
 				f.legend,
 				int(f.maxLabelLength),
-				fmt.Sprintf("%.2f", f.nodesep),
-				fmt.Sprintf("%.2f", f.ranksep),
+				f.nodesep,
+				f.ranksep,
 			)
 			if err != nil {
 				return
@@ -248,6 +250,13 @@ It creates a visual graph representation of the build process.`,
 		"how to handle scratch images, one of: "+strings.Join(f.scratch.AllowedValues(), ", "),
 	)
 
+	rootCmd.Flags().StringSliceVar(
+		&f.separate,
+		"separate",
+		nil,
+		"external images to display as separate nodes per usage (e.g. --separate ubuntu,alpine)",
+	)
+
 	rootCmd.Flags().UintVarP(
 		&f.unflatten,
 		"unflatten",
@@ -328,4 +337,16 @@ func checkFlags(maxLabelLength uint) error {
 		return fmt.Errorf("--max-label-length must be at least 4")
 	}
 	return nil
+}
+
+// scratchModeFromString converts a validated enum string to a ScratchMode constant.
+func scratchModeFromString(s string) dockerfile2dot.ScratchMode {
+	switch s {
+	case "separated":
+		return dockerfile2dot.ScratchSeparated
+	case "hidden":
+		return dockerfile2dot.ScratchHidden
+	default:
+		return dockerfile2dot.ScratchCollapsed
+	}
 }

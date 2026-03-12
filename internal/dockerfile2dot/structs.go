@@ -32,6 +32,16 @@ type ExternalImage struct {
 	Name string // The original name of the external image
 }
 
+// ScratchMode controls how scratch base images are rendered in the graph.
+type ScratchMode int
+
+// ScratchMode values control how scratch base images appear in the graph.
+const (
+	ScratchCollapsed ScratchMode = iota // All scratch references share a single node
+	ScratchSeparated                    // Each scratch reference gets its own node
+	ScratchHidden                       // Scratch references are omitted from the graph
+)
+
 // waitForType represents the type of dependency between stages or images.
 type waitForType int
 
