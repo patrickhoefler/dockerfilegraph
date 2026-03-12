@@ -8,6 +8,7 @@ golangci-lint = "2.11.3"
 description = "Build the dockerfilegraph binary"
 depends = ["clean"]
 run = """
+#!/usr/bin/env bash
 GITVERSION=$(git describe --tags --always)
 GITCOMMIT=$(git log -1 --pretty=format:"%H")
 BUILDDATE=$(date -u '+%Y-%m-%dT%H:%M:%SZ')
@@ -26,6 +27,7 @@ run = "docker build -t dockerfilegraph -f Dockerfile ."
 description = "Build the binary for Linux"
 depends = ["clean"]
 run = """
+#!/usr/bin/env bash
 GITVERSION=$(git describe --tags --always)
 GITCOMMIT=$(git log -1 --pretty=format:"%H")
 BUILDDATE=$(date -u '+%Y-%m-%dT%H:%M:%SZ')
@@ -46,6 +48,7 @@ run = "go clean"
 [tasks.example-images]
 description = "Generate example images for documentation"
 run = """
+#!/usr/bin/env bash
 cd $(git rev-parse --show-toplevel)
 
 go run . -f examples/dockerfiles/Dockerfile --legend -o svg \
