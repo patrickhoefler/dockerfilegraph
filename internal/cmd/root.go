@@ -264,12 +264,10 @@ It creates a visual graph representation of the build process.`,
 }
 
 func runUnflatten(dotFile *os.File, w io.Writer, maxStagger uint) (err error) {
-	var unflattenFile *os.File
-	unflattenFile, err = os.CreateTemp("", "dockerfile.*.dot")
+	unflattenFile, err := os.CreateTemp("", "dockerfile.*.dot")
 	if err != nil {
 		return
 	}
-	defer os.Remove(unflattenFile.Name())
 
 	unflattenCmd := exec.Command(
 		"unflatten",
@@ -280,16 +278,19 @@ func runUnflatten(dotFile *os.File, w io.Writer, maxStagger uint) (err error) {
 	unflattenCmd.Stderr = w
 	err = unflattenCmd.Run()
 	if err != nil {
+		os.Remove(unflattenFile.Name())
 		return
 	}
 
 	err = unflattenFile.Close()
 	if err != nil {
+		os.Remove(unflattenFile.Name())
 		return
 	}
 
 	err = os.Rename(unflattenFile.Name(), dotFile.Name())
 	if err != nil {
+		os.Remove(unflattenFile.Name())
 		return
 	}
 
