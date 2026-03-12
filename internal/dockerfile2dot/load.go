@@ -24,7 +24,7 @@ func LoadAndParseDockerfile(
 		if errors.Is(err, fs.ErrNotExist) {
 			absFilePath, absErr := filepath.Abs(filename)
 			if absErr != nil {
-				return SimplifiedDockerfile{}, fmt.Errorf("could not get absolute path: %w", absErr)
+				return SimplifiedDockerfile{}, fmt.Errorf("could not get absolute path for %q: %w", filename, absErr)
 			}
 			return SimplifiedDockerfile{}, errors.New("could not find a Dockerfile at " + absFilePath)
 		}

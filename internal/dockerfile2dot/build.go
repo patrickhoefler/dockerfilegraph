@@ -40,6 +40,10 @@ func BuildDotFile(
 		set(graph.AddAttr("G", "concentrate", "true"))
 	}
 
+	if graphErr != nil {
+		return "", graphErr
+	}
+
 	// Add the legend if requested
 	if legend {
 		if err := addLegend(graph, edgestyle); err != nil {
@@ -60,10 +64,6 @@ func BuildDotFile(
 		if err := addBeforeFirstStage(graph, simplifiedDockerfile); err != nil {
 			return "", err
 		}
-	}
-
-	if graphErr != nil {
-		return "", graphErr
 	}
 
 	return graph.String(), nil
@@ -144,6 +144,10 @@ func addStages(
 			}
 
 			set(graph.AddNode("G", fmt.Sprintf("stage_%d", stageIndex), attrs))
+		}
+
+		if graphErr != nil {
+			return graphErr
 		}
 
 		// Add the edges for this build stage
