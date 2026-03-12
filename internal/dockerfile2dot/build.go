@@ -361,7 +361,16 @@ func getWaitForNodeID(
 
 	// If it can be converted to an integer, it's a stage ID
 	if stageIndex, convertErr := strconv.Atoi(nameOrID); convertErr == nil {
+		if stageIndex < 0 || stageIndex >= len(simplifiedDockerfile.Stages) {
+			return "", nil, fmt.Errorf(
+				"stage index %d out of range (have %d stages)",
+				stageIndex, len(simplifiedDockerfile.Stages),
+			)
+		}
 		if layers {
+			if len(simplifiedDockerfile.Stages[stageIndex].Layers) == 0 {
+				return "", nil, fmt.Errorf("stage %d has no layers", stageIndex)
+			}
 			// Return the last layer of the stage
 			return fmt.Sprintf(
 				"stage_%d_layer_%d",
@@ -375,6 +384,9 @@ func getWaitForNodeID(
 	for stageIndex, stage := range simplifiedDockerfile.Stages {
 		if nameOrID == stage.Name {
 			if layers {
+				if len(simplifiedDockerfile.Stages[stageIndex].Layers) == 0 {
+					return "", nil, fmt.Errorf("stage %q has no layers", nameOrID)
+				}
 				// Return the last layer of the stage
 				return fmt.Sprintf(
 					"stage_%d_layer_%d",

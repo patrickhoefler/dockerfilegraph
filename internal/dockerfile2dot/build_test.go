@@ -5,6 +5,68 @@ import (
 	"testing"
 )
 
+func TestBuildDotFileErrors(t *testing.T) {
+	tests := []struct {
+		name                 string
+		simplifiedDockerfile SimplifiedDockerfile
+		layers               bool
+	}{
+		{
+			name: "unresolvable WaitFor ID returns error",
+			simplifiedDockerfile: SimplifiedDockerfile{
+				Stages: []Stage{{
+					Layers: []Layer{{
+						Label: "FROM scratch",
+						WaitFors: []WaitFor{{
+							ID:   "nonexistent",
+							Type: waitForType(waitForFrom),
+						}},
+					}},
+				}},
+			},
+		},
+		{
+			name: "out-of-range numeric stage reference returns error",
+			simplifiedDockerfile: SimplifiedDockerfile{
+				Stages: []Stage{{
+					Layers: []Layer{{
+						Label: "FROM ...",
+						WaitFors: []WaitFor{{
+							ID:   "99",
+							Type: waitForType(waitForFrom),
+						}},
+					}},
+				}},
+			},
+		},
+		{
+			name: "out-of-range numeric stage reference with layers returns error",
+			simplifiedDockerfile: SimplifiedDockerfile{
+				Stages: []Stage{{
+					Layers: []Layer{{
+						Label: "FROM ...",
+						WaitFors: []WaitFor{{
+							ID:   "99",
+							Type: waitForType(waitForFrom),
+						}},
+					}},
+				}},
+			},
+			layers: true,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			_, err := BuildDotFile(
+				tt.simplifiedDockerfile, false, "default", tt.layers, false, 20, "0.5", "0.5",
+			)
+			if err == nil {
+				t.Error("BuildDotFile() expected an error, got nil")
+			}
+		})
+	}
+}
+
 func TestBuildDotFile(t *testing.T) {
 	type args struct {
 		simplifiedDockerfile SimplifiedDockerfile
