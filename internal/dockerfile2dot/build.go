@@ -132,7 +132,7 @@ func addStages(
 
 		// Add layers if requested
 		if layers {
-			if err := addStageWithLayers(graph, set, simplifiedDockerfile, stageIndex, stage, attrs); err != nil {
+			if err := addStageWithLayers(graph, simplifiedDockerfile, stageIndex, stage, attrs); err != nil {
 				return err
 			}
 		} else {
@@ -159,12 +159,18 @@ func addStages(
 
 func addStageWithLayers(
 	graph *gographviz.Escape,
-	set func(error),
 	simplifiedDockerfile SimplifiedDockerfile,
 	stageIndex int,
 	stage Stage,
 	attrs map[string]string,
 ) error {
+	var graphErr error
+	set := func(err error) {
+		if graphErr == nil {
+			graphErr = err
+		}
+	}
+
 	cluster := fmt.Sprintf("cluster_stage_%d", stageIndex)
 
 	clusterAttrs := map[string]string{
@@ -201,7 +207,7 @@ func addStageWithLayers(
 		}
 	}
 
-	return nil
+	return graphErr
 }
 
 func addBeforeFirstStage(
@@ -404,5 +410,8 @@ func getWaitForNodeID(
 		}
 	}
 
-	return "", nil, fmt.Errorf("could not find node ID for %s", nameOrID)
+	return "", nil, fmt.Errorf(
+		"could not resolve node ID for %q (expected stage index, stage name, or external image ID)",
+		nameOrID,
+	)
 }
