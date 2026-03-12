@@ -108,7 +108,7 @@ It creates a visual graph representation of the build process.`,
 			}
 
 			if f.unflatten > 0 {
-				err = runUnflatten(dotFile, w, f.unflatten)
+				err = runUnflatten(dotFile.Name(), w, f.unflatten)
 				if err != nil {
 					return
 				}
@@ -263,7 +263,7 @@ It creates a visual graph representation of the build process.`,
 	return rootCmd
 }
 
-func runUnflatten(dotFile *os.File, w io.Writer, maxStagger uint) (err error) {
+func runUnflatten(dotPath string, w io.Writer, maxStagger uint) (err error) {
 	unflattenFile, err := os.CreateTemp("", "dockerfile.*.dot")
 	if err != nil {
 		return
@@ -278,7 +278,7 @@ func runUnflatten(dotFile *os.File, w io.Writer, maxStagger uint) (err error) {
 	unflattenCmd := exec.Command(
 		"unflatten",
 		"-l", strconv.FormatUint(uint64(maxStagger), 10),
-		"-o", unflattenPath, dotFile.Name(),
+		"-o", unflattenPath, dotPath,
 	)
 	unflattenCmd.Stdout = w
 	unflattenCmd.Stderr = w
@@ -288,14 +288,23 @@ func runUnflatten(dotFile *os.File, w io.Writer, maxStagger uint) (err error) {
 		return
 	}
 
-	// Remove the destination first: os.Rename cannot replace an existing
-	// file on Windows, so we must clear it before renaming into place.
-	os.Remove(dotFile.Name())
-	err = os.Rename(unflattenPath, dotFile.Name())
+	// Safely replace dotPath using a backup in case the final rename fails.
+	// os.Rename cannot replace an existing file on Windows, so we move the
+	// original aside first and only remove it after a successful swap.
+	backupPath := dotPath + ".bak"
+	os.Remove(backupPath) // best-effort removal of any stale backup
+	err = os.Rename(dotPath, backupPath)
 	if err != nil {
 		os.Remove(unflattenPath)
 		return
 	}
+	err = os.Rename(unflattenPath, dotPath)
+	if err != nil {
+		_ = os.Rename(backupPath, dotPath) // best-effort restore
+		os.Remove(unflattenPath)
+		return
+	}
+	os.Remove(backupPath)
 
 	return
 }
