@@ -331,6 +331,69 @@ func Test_filterToTargets(t *testing.T) {
 				},
 			},
 		},
+		{
+			// Stage "alpine" depends on internal stage "base" (same name as a common image).
+			// The external image "alpine" from an elided stage must not be incorrectly retained
+			// because "base" happens to match a stage name.
+			name: "internal stage WaitFor IDs are not treated as external image references",
+			sdf: SimplifiedDockerfile{
+				Stages: []Stage{
+					stageFrom("base", "ubuntu", waitForFrom),
+					{
+						Name: "app",
+						Layers: []Layer{{
+							Label:    "FROM base",
+							WaitFors: []WaitFor{{ID: "base", Type: waitForFrom}},
+						}},
+					},
+					stageFrom("other", "alpine", waitForFrom),
+				},
+				ExternalImages: []ExternalImage{
+					{ID: "ubuntu", Name: "ubuntu"},
+					{ID: "alpine", Name: "alpine"},
+				},
+			},
+			targets: []string{"app"},
+			want: SimplifiedDockerfile{
+				Stages: []Stage{
+					stageFrom("base", "ubuntu", waitForFrom),
+					{
+						Name: "app",
+						Layers: []Layer{{
+							Label:    "FROM base",
+							WaitFors: []WaitFor{{ID: "base", Type: waitForFrom}},
+						}},
+					},
+				},
+				ExternalImages: []ExternalImage{
+					{ID: "ubuntu", Name: "ubuntu"},
+				},
+			},
+		},
+		{
+			name: "target with leading/trailing whitespace is normalized",
+			sdf: SimplifiedDockerfile{
+				Stages: []Stage{
+					stageFrom("app", "alpine", waitForFrom),
+					stageFrom("other", "ubuntu", waitForFrom),
+				},
+				ExternalImages: []ExternalImage{
+					{ID: "alpine", Name: "alpine"},
+					{ID: "ubuntu", Name: "ubuntu"},
+				},
+			},
+			targets: []string{" app ", "  other  "},
+			want: SimplifiedDockerfile{
+				Stages: []Stage{
+					stageFrom("app", "alpine", waitForFrom),
+					stageFrom("other", "ubuntu", waitForFrom),
+				},
+				ExternalImages: []ExternalImage{
+					{ID: "alpine", Name: "alpine"},
+					{ID: "ubuntu", Name: "ubuntu"},
+				},
+			},
+		},
 	}
 
 	for _, tt := range tests {

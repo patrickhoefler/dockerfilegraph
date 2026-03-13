@@ -3,6 +3,7 @@ package dockerfile2dot
 import (
 	"fmt"
 	"strconv"
+	"strings"
 )
 
 // filterToTargets returns a new SimplifiedDockerfile containing only the
@@ -42,12 +43,17 @@ func filterToTargets(sdf SimplifiedDockerfile, targets []string) (SimplifiedDock
 }
 
 // resolveTargetIndices validates target names and returns their stage indices.
+// Whitespace is trimmed from each target; empty entries are skipped.
 func resolveTargetIndices(stages []Stage, targets []string) ([]int, error) {
 	indices := make([]int, 0, len(targets))
 	for _, target := range targets {
-		idx, found := findStageIndex(stages, target)
+		trimmed := strings.TrimSpace(target)
+		if trimmed == "" {
+			continue
+		}
+		idx, found := findStageIndex(stages, trimmed)
 		if !found {
-			return nil, fmt.Errorf("target %q not found in Dockerfile", target)
+			return nil, fmt.Errorf("target %q not found in Dockerfile", trimmed)
 		}
 		indices = append(indices, idx)
 	}
@@ -114,12 +120,16 @@ func remapLayer(layer Layer, oldToNew map[int]int) Layer {
 }
 
 // filterExternalImages retains only external images referenced by the filtered stages.
+// WaitFor IDs that resolve to internal stages are excluded.
 func filterExternalImages(allImages []ExternalImage, filteredStages []Stage) []ExternalImage {
 	referencedIDs := make(map[string]struct{})
 	for _, stage := range filteredStages {
 		for _, layer := range stage.Layers {
 			for _, wf := range layer.WaitFors {
-				referencedIDs[wf.ID] = struct{}{}
+				// Only count as an external image reference if it doesn't resolve to an internal stage.
+				if _, found := findStageIndex(filteredStages, wf.ID); !found {
+					referencedIDs[wf.ID] = struct{}{}
+				}
 			}
 		}
 	}
