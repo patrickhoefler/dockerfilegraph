@@ -64,6 +64,12 @@ type WaitFor struct {
 // name or a decimal numeric index string) and true if found. For a numeric
 // index that parses but is out of range, it returns that index and false. For
 // a non-numeric name that is not found, it returns -1 and false.
+//
+// NOTE: This function searches all stages regardless of definition order.
+// Docker only allows referencing previously-defined stages, so a stage name
+// that shadows an external image name could theoretically be misresolved.
+// In practice this is unlikely because stage aliases rarely collide with
+// base image names. A future improvement could accept a position limit.
 func findStageIndex(stages []Stage, nameOrID string) (int, bool) {
 	if idx, err := strconv.Atoi(nameOrID); err == nil {
 		if idx >= 0 && idx < len(stages) {
