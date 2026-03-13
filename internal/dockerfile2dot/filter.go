@@ -57,6 +57,9 @@ func resolveTargetIndices(stages []Stage, targets []string) ([]int, error) {
 		}
 		indices = append(indices, idx)
 	}
+	if len(indices) == 0 {
+		return nil, fmt.Errorf("no valid targets specified")
+	}
 	return indices, nil
 }
 

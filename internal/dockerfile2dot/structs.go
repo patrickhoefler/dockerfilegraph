@@ -80,7 +80,7 @@ func findStageIndex(stages []Stage, nameOrID string) (int, bool) {
 }
 
 // ScratchModeFromString converts a validated string to a ScratchMode constant.
-// The empty string and any unrecognized value returns ScratchCollapsed.
+// The empty string and any unrecognized value return ScratchCollapsed.
 func ScratchModeFromString(s string) ScratchMode {
 	switch s {
 	case "separated":

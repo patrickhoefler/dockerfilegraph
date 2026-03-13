@@ -290,6 +290,16 @@ func Test_filterToTargets(t *testing.T) {
 			wantErr: true,
 		},
 		{
+			name: "all-whitespace targets return error",
+			sdf: SimplifiedDockerfile{
+				Stages: []Stage{
+					{Name: "app", Layers: []Layer{{Label: "FROM alpine"}}},
+				},
+			},
+			targets: []string{" ", "  "},
+			wantErr: true,
+		},
+		{
 			name: "target that is the first and only stage",
 			sdf: SimplifiedDockerfile{
 				Stages: []Stage{
