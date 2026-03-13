@@ -28,6 +28,7 @@ type cliFlags struct {
 	ranksep        float64
 	scratch        enum
 	separate       []string
+	target         []string
 	unflatten      uint
 	version        bool
 }
@@ -67,16 +68,16 @@ It creates a visual graph representation of the build process.`,
 				return
 			}
 
-			// Determine scratch mode from flag
-			scratchMode := scratchModeFromString(f.scratch.String())
-
 			// Load and parse the Dockerfile.
 			dockerfile, err := dockerfile2dot.LoadAndParseDockerfile(
 				inputFS,
 				f.filename,
-				int(f.maxLabelLength),
-				scratchMode,
-				f.separate,
+				dockerfile2dot.ParseOptions{
+					MaxLabelLength: int(f.maxLabelLength),
+					ScratchMode:    dockerfile2dot.ScratchModeFromString(f.scratch.String()),
+					SeparateImages: f.separate,
+					Targets:        f.target,
+				},
 			)
 			if err != nil {
 				return
@@ -90,13 +91,15 @@ It creates a visual graph representation of the build process.`,
 
 			dotFileContent, err := dockerfile2dot.BuildDotFile(
 				dockerfile,
-				f.concentrate,
-				f.edgestyle.String(),
-				f.layers,
-				f.legend,
-				int(f.maxLabelLength),
-				f.nodesep,
-				f.ranksep,
+				dockerfile2dot.BuildOptions{
+					Concentrate:    f.concentrate,
+					EdgeStyle:      f.edgestyle.String(),
+					Layers:         f.layers,
+					Legend:         f.legend,
+					MaxLabelLength: int(f.maxLabelLength),
+					NodeSep:        f.nodesep,
+					RankSep:        f.ranksep,
+				},
 			)
 			if err != nil {
 				return
@@ -257,6 +260,13 @@ It creates a visual graph representation of the build process.`,
 		"external images to display as separate nodes per usage (e.g. --separate ubuntu,alpine)",
 	)
 
+	rootCmd.Flags().StringSliceVar(
+		&f.target,
+		"target",
+		nil,
+		"only show stages required to build the given target(s) (e.g. --target release,app)",
+	)
+
 	rootCmd.Flags().UintVarP(
 		&f.unflatten,
 		"unflatten",
@@ -337,16 +347,4 @@ func checkFlags(maxLabelLength uint) error {
 		return fmt.Errorf("--max-label-length must be at least 4")
 	}
 	return nil
-}
-
-// scratchModeFromString converts a validated enum string to a ScratchMode constant.
-func scratchModeFromString(s string) dockerfile2dot.ScratchMode {
-	switch s {
-	case "separated":
-		return dockerfile2dot.ScratchSeparated
-	case "hidden":
-		return dockerfile2dot.ScratchHidden
-	default:
-		return dockerfile2dot.ScratchCollapsed
-	}
 }

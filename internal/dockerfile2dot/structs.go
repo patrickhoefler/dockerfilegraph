@@ -1,5 +1,7 @@
 package dockerfile2dot
 
+import "strconv"
+
 // SimplifiedDockerfile contains the parts of the Dockerfile
 // that are relevant for generating the multi-stage build graph.
 type SimplifiedDockerfile struct {
@@ -56,4 +58,54 @@ const (
 type WaitFor struct {
 	ID   string      // The unique identifier of the stage or external image for which the builder has to wait
 	Type waitForType // The reason why it has to wait
+}
+
+// findStageIndex returns the index of the stage identified by nameOrID (a stage
+// name or a decimal numeric index string) and true if found. Returns -1 and
+// false if not found or if a numeric index is out of range.
+func findStageIndex(stages []Stage, nameOrID string) (int, bool) {
+	if idx, err := strconv.Atoi(nameOrID); err == nil {
+		if idx >= 0 && idx < len(stages) {
+			return idx, true
+		}
+		return idx, false
+	}
+	for i, s := range stages {
+		if s.Name == nameOrID {
+			return i, true
+		}
+	}
+	return -1, false
+}
+
+// ScratchModeFromString converts a validated string to a ScratchMode constant.
+// The empty string and any unrecognized value returns ScratchCollapsed.
+func ScratchModeFromString(s string) ScratchMode {
+	switch s {
+	case "separated":
+		return ScratchSeparated
+	case "hidden":
+		return ScratchHidden
+	default:
+		return ScratchCollapsed
+	}
+}
+
+// ParseOptions controls how a Dockerfile is parsed into a SimplifiedDockerfile.
+type ParseOptions struct {
+	MaxLabelLength int
+	ScratchMode    ScratchMode
+	SeparateImages []string
+	Targets        []string
+}
+
+// BuildOptions controls how a SimplifiedDockerfile is rendered into a DOT file.
+type BuildOptions struct {
+	Concentrate    bool
+	EdgeStyle      string
+	Layers         bool
+	Legend         bool
+	MaxLabelLength int
+	NodeSep        float64
+	RankSep        float64
 }

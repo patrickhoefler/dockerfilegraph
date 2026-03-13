@@ -12,13 +12,7 @@ import (
 // BuildDotFile builds a GraphViz .dot file from a simplified Dockerfile
 func BuildDotFile(
 	simplifiedDockerfile SimplifiedDockerfile,
-	concentrate bool,
-	edgestyle string,
-	layers bool,
-	legend bool,
-	maxLabelLength int,
-	nodesep float64,
-	ranksep float64,
+	opts BuildOptions,
 ) (string, error) {
 	// Create a new graph
 	graph := gographviz.NewEscape()
@@ -33,10 +27,10 @@ func BuildDotFile(
 	set(graph.SetName("G"))
 	set(graph.SetDir(true))
 	set(graph.AddAttr("G", "compound", "true")) // allow edges between clusters
-	set(graph.AddAttr("G", "nodesep", fmt.Sprintf("%.2f", nodesep)))
+	set(graph.AddAttr("G", "nodesep", fmt.Sprintf("%.2f", opts.NodeSep)))
 	set(graph.AddAttr("G", "rankdir", "LR"))
-	set(graph.AddAttr("G", "ranksep", fmt.Sprintf("%.2f", ranksep)))
-	if concentrate {
+	set(graph.AddAttr("G", "ranksep", fmt.Sprintf("%.2f", opts.RankSep)))
+	if opts.Concentrate {
 		set(graph.AddAttr("G", "concentrate", "true"))
 	}
 
@@ -45,22 +39,22 @@ func BuildDotFile(
 	}
 
 	// Add the legend if requested
-	if legend {
-		if err := addLegend(graph, edgestyle); err != nil {
+	if opts.Legend {
+		if err := addLegend(graph, opts.EdgeStyle); err != nil {
 			return "", err
 		}
 	}
 
-	if err := addExternalImagesToGraph(graph, simplifiedDockerfile, maxLabelLength); err != nil {
+	if err := addExternalImagesToGraph(graph, simplifiedDockerfile, opts.MaxLabelLength); err != nil {
 		return "", err
 	}
 
-	if err := addStages(graph, simplifiedDockerfile, maxLabelLength, layers, edgestyle); err != nil {
+	if err := addStages(graph, simplifiedDockerfile, opts.MaxLabelLength, opts.Layers, opts.EdgeStyle); err != nil {
 		return "", err
 	}
 
 	// Add the ARGS that appear before the first stage, if layers are requested
-	if layers {
+	if opts.Layers {
 		if err := addBeforeFirstStage(graph, simplifiedDockerfile); err != nil {
 			return "", err
 		}
@@ -369,7 +363,7 @@ func getWaitForNodeID(
 ) (string, map[string]string, error) {
 	attrs := map[string]string{}
 
-	// If it can be converted to an integer, it's a stage ID
+	// If it can be converted to an integer, it's a numeric stage reference
 	if stageIndex, convertErr := strconv.Atoi(nameOrID); convertErr == nil {
 		if stageIndex < 0 || stageIndex >= len(simplifiedDockerfile.Stages) {
 			return "", nil, fmt.Errorf(
@@ -377,34 +371,12 @@ func getWaitForNodeID(
 				stageIndex, len(simplifiedDockerfile.Stages),
 			)
 		}
-		if layers {
-			if len(simplifiedDockerfile.Stages[stageIndex].Layers) == 0 {
-				return "", nil, fmt.Errorf("stage %d has no layers", stageIndex)
-			}
-			// Return the last layer of the stage
-			return fmt.Sprintf(
-				"stage_%d_layer_%d",
-				stageIndex, len(simplifiedDockerfile.Stages[stageIndex].Layers)-1,
-			), map[string]string{"ltail": fmt.Sprintf("cluster_stage_%d", stageIndex)}, nil
-		}
-		return fmt.Sprintf("stage_%d", stageIndex), attrs, nil
+		return stageNodeID(simplifiedDockerfile, stageIndex, nameOrID, layers)
 	}
 
 	// Check if it's a stage name
-	for stageIndex, stage := range simplifiedDockerfile.Stages {
-		if nameOrID == stage.Name {
-			if layers {
-				if len(simplifiedDockerfile.Stages[stageIndex].Layers) == 0 {
-					return "", nil, fmt.Errorf("stage %q has no layers", nameOrID)
-				}
-				// Return the last layer of the stage
-				return fmt.Sprintf(
-					"stage_%d_layer_%d",
-					stageIndex, len(simplifiedDockerfile.Stages[stageIndex].Layers)-1,
-				), map[string]string{"ltail": fmt.Sprintf("cluster_stage_%d", stageIndex)}, nil
-			}
-			return fmt.Sprintf("stage_%d", stageIndex), attrs, nil
-		}
+	if stageIndex, found := findStageIndex(simplifiedDockerfile.Stages, nameOrID); found {
+		return stageNodeID(simplifiedDockerfile, stageIndex, nameOrID, layers)
 	}
 
 	// Check if it's an external image ID
@@ -418,4 +390,20 @@ func getWaitForNodeID(
 		"could not resolve node ID for %q (expected stage index, stage name, or external image ID)",
 		nameOrID,
 	)
+}
+
+// stageNodeID returns the graph node ID for a stage, handling the layers case.
+func stageNodeID(
+	sdf SimplifiedDockerfile, stageIndex int, nameOrID string, layers bool,
+) (string, map[string]string, error) {
+	if layers {
+		if len(sdf.Stages[stageIndex].Layers) == 0 {
+			return "", nil, fmt.Errorf("stage %q has no layers", nameOrID)
+		}
+		lastLayer := len(sdf.Stages[stageIndex].Layers) - 1
+		return fmt.Sprintf("stage_%d_layer_%d", stageIndex, lastLayer),
+			map[string]string{"ltail": fmt.Sprintf("cluster_stage_%d", stageIndex)},
+			nil
+	}
+	return fmt.Sprintf("stage_%d", stageIndex), map[string]string{}, nil
 }
