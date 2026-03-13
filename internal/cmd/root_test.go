@@ -40,6 +40,7 @@ Flags:
   -r, --ranksep float           minimum separation between ranks (default 0.5)
       --scratch                 how to handle scratch images, one of: collapsed, hidden, separated (default collapsed)
       --separate strings        external images to display as separate nodes per usage (e.g. --separate ubuntu,alpine)
+      --target strings          only show stages required to build the given target(s) (e.g. --target release,app)
   -u, --unflatten uint          stagger length of leaf edges between [1,u] (default 0)
       --version                 display the version of dockerfilegraph
 `
@@ -586,6 +587,51 @@ It creates a visual graph representation of the build process.
 
 }
 `,
+		},
+		{
+			name:        "target flag single target",
+			cliArgs:     []string{"--target", "ubuntu", "-o", "raw"},
+			wantOut:     "Successfully created Dockerfile.raw\n",
+			wantOutFile: "Dockerfile.raw",
+			wantOutFileContent: `digraph G {
+	compound=true;
+	nodesep=1.00;
+	rankdir=LR;
+	ranksep=0.50;
+	external_image_0->stage_0;
+	external_image_0 [ color=grey20, fontcolor=grey20, label="ubuntu:latest", shape=box, style="dashed,rounded", width=2 ];
+	stage_0 [ fillcolor=grey90, label="ubuntu", shape=box, style="filled,rounded", width=2 ];
+
+}
+`,
+		},
+		{
+			name:        "target flag two targets",
+			cliArgs:     []string{"--target", "ubuntu,build-tool-dependencies", "-o", "raw"},
+			wantOut:     "Successfully created Dockerfile.raw\n",
+			wantOutFile: "Dockerfile.raw",
+			wantOutFileContent: `digraph G {
+	compound=true;
+	nodesep=1.00;
+	rankdir=LR;
+	ranksep=0.50;
+	external_image_0->stage_0;
+	external_image_1->stage_1;
+	external_image_2->stage_1[ arrowhead=ediamond, style=dotted ];
+	external_image_0 [ color=grey20, fontcolor=grey20, label="ubuntu:latest", shape=box, style="dashed,rounded", width=2 ];
+	external_image_1 [ color=grey20, fontcolor=grey20, label="golang:1.19", shape=box, style="dashed,rounded", width=2 ];
+	external_image_2 [ color=grey20, fontcolor=grey20, label="buildcache", shape=box, style="dashed,rounded", width=2 ];
+	stage_0 [ label="ubuntu", shape=box, style=rounded, width=2 ];
+	stage_1 [ fillcolor=grey90, label="build-tool-depend...", shape=box, style="filled,rounded", width=2 ];
+
+}
+`,
+		},
+		{
+			name:         "target flag invalid target",
+			cliArgs:      []string{"--target", "nonexistent", "-o", "raw"},
+			wantErr:      true,
+			wantOutRegex: `Error: target "nonexistent" not found in Dockerfile`,
 		},
 		{
 			name:    "separate flag multiple images",

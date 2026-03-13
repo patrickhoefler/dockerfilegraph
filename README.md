@@ -108,6 +108,7 @@ dockerfilegraph
 - `--legend` - Add a legend explaining the notation
 - `--layers` - Show all Docker layers
 - `--separate ubuntu,alpine` - Display selected external images as separate nodes per usage, reducing edge clutter
+- `--target release,app` - Only show stages required to build the given target(s), eliding everything else
 
 **All Available Options:**
 
@@ -133,6 +134,7 @@ Flags:
   -r, --ranksep float           minimum separation between ranks (default 0.5)
       --scratch                 how to handle scratch images, one of: collapsed, hidden, separated (default collapsed)
       --separate strings        external images to display as separate nodes per usage (e.g. --separate ubuntu,alpine)
+      --target strings          only show stages required to build the given target(s) (e.g. --target release,app)
   -u, --unflatten uint          stagger length of leaf edges between [1,u] (default 0)
       --version                 display the version of dockerfilegraph
 ```

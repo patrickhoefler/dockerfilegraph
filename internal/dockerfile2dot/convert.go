@@ -57,9 +57,7 @@ func newLayer(
 
 func dockerfileToSimplifiedDockerfile(
 	content []byte,
-	maxLabelLength int,
-	scratchMode ScratchMode,
-	separateImages []string,
+	opts ParseOptions,
 ) (simplifiedDockerfile SimplifiedDockerfile, err error) {
 	result, err := parser.Parse(bytes.NewReader(content))
 	if err != nil {
@@ -78,7 +76,7 @@ func dockerfileToSimplifiedDockerfile(
 		case instructionFrom:
 			// Create a new stage
 			stageIndex++
-			stage, layer := processFromInstruction(node, argReplacements, maxLabelLength, scratchMode, stages)
+			stage, layer := processFromInstruction(node, argReplacements, opts.MaxLabelLength, opts.ScratchMode, stages)
 			simplifiedDockerfile.Stages = append(simplifiedDockerfile.Stages, stage)
 
 			// Add a new layer
@@ -88,14 +86,14 @@ func dockerfileToSimplifiedDockerfile(
 			)
 
 		case instructionCopy:
-			layer := processCopyInstruction(node, argReplacements, maxLabelLength, scratchMode)
+			layer := processCopyInstruction(node, argReplacements, opts.MaxLabelLength, opts.ScratchMode)
 			simplifiedDockerfile.Stages[stageIndex].Layers = append(
 				simplifiedDockerfile.Stages[stageIndex].Layers,
 				layer,
 			)
 
 		case instructionRun:
-			layer := processRunInstruction(node, argReplacements, maxLabelLength, scratchMode)
+			layer := processRunInstruction(node, argReplacements, opts.MaxLabelLength, opts.ScratchMode)
 			simplifiedDockerfile.Stages[stageIndex].Layers = append(
 				simplifiedDockerfile.Stages[stageIndex].Layers,
 				layer,
@@ -103,7 +101,7 @@ func dockerfileToSimplifiedDockerfile(
 
 		default:
 			if stageIndex == -1 {
-				layer := processBeforeFirstStage(node, &argReplacements, maxLabelLength)
+				layer := processBeforeFirstStage(node, &argReplacements, opts.MaxLabelLength)
 				simplifiedDockerfile.BeforeFirstStage = append(
 					simplifiedDockerfile.BeforeFirstStage,
 					layer,
@@ -111,7 +109,7 @@ func dockerfileToSimplifiedDockerfile(
 				break
 			}
 
-			layer := newLayer(node, argReplacements, maxLabelLength)
+			layer := newLayer(node, argReplacements, opts.MaxLabelLength)
 			simplifiedDockerfile.Stages[stageIndex].Layers = append(
 				simplifiedDockerfile.Stages[stageIndex].Layers,
 				layer,
@@ -119,7 +117,7 @@ func dockerfileToSimplifiedDockerfile(
 		}
 	}
 
-	addExternalImages(&simplifiedDockerfile, stages, scratchMode, separateImages)
+	addExternalImages(&simplifiedDockerfile, stages, opts.ScratchMode, opts.SeparateImages)
 
 	return
 }
@@ -256,14 +254,12 @@ func addExternalImages(
 	// Track already-seen image IDs to avoid duplicates
 	seen := make(map[string]struct{})
 
-	numStages := len(simplifiedDockerfile.Stages)
-
 	// Iterate through all stages and layers to find external image dependencies
 	for stageIndex, stage := range simplifiedDockerfile.Stages {
 		for layerIndex, layer := range stage.Layers {
 			for waitForIndex, waitFor := range layer.WaitFors {
 				imageID, skip := resolveExternalImageID(
-					waitFor.ID, stages, numStages, scratchMode, separateSet, separateCounters,
+					waitFor.ID, simplifiedDockerfile.Stages, stages, scratchMode, separateSet, separateCounters,
 				)
 				if skip {
 					continue
@@ -290,20 +286,22 @@ func addExternalImages(
 // (internal stage reference or scratch in hidden mode).
 func resolveExternalImageID(
 	rawID string,
-	stages map[string]struct{},
-	numStages int,
+	allStages []Stage,
+	stageNameSet map[string]struct{},
 	scratchMode ScratchMode,
 	separateSet map[string]struct{},
 	separateCounters map[string]int,
 ) (imageID string, skip bool) {
 	// Skip internal stage references by name
-	if _, ok := stages[rawID]; ok {
+	if _, ok := stageNameSet[rawID]; ok {
 		return "", true
 	}
 
-	// Skip internal stage references by numeric index
-	if idx, err := strconv.Atoi(rawID); err == nil && idx >= 0 && idx < numStages {
-		return "", true
+	// Skip internal stage references by numeric index (in-range only)
+	if _, err := strconv.Atoi(rawID); err == nil {
+		if _, found := findStageIndex(allStages, rawID); found {
+			return "", true
+		}
 	}
 
 	// Handle scratch modes

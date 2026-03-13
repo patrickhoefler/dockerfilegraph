@@ -6,6 +6,57 @@ import (
 	"github.com/google/go-cmp/cmp"
 )
 
+func TestScratchModeFromString(t *testing.T) {
+	tests := []struct {
+		input string
+		want  ScratchMode
+	}{
+		{"collapsed", ScratchCollapsed},
+		{"separated", ScratchSeparated},
+		{"hidden", ScratchHidden},
+		{"", ScratchCollapsed},
+		{"invalid", ScratchCollapsed},
+	}
+	for _, tt := range tests {
+		t.Run(tt.input, func(t *testing.T) {
+			if got := ScratchModeFromString(tt.input); got != tt.want {
+				t.Errorf("ScratchModeFromString(%q) = %v, want %v", tt.input, got, tt.want)
+			}
+		})
+	}
+}
+
+func Test_findStageIndex(t *testing.T) {
+	stages := []Stage{
+		{Name: "base"},
+		{Name: ""},
+		{Name: "final"},
+	}
+	tests := []struct {
+		nameOrID  string
+		wantIndex int
+		wantFound bool
+	}{
+		{"base", 0, true},
+		{"final", 2, true},
+		{"0", 0, true},
+		{"2", 2, true},
+		{"1", 1, true},
+		{"3", 3, false},   // out of range
+		{"-1", -1, false}, // negative
+		{"unknown", -1, false},
+	}
+	for _, tt := range tests {
+		t.Run(tt.nameOrID, func(t *testing.T) {
+			gotIndex, gotFound := findStageIndex(stages, tt.nameOrID)
+			if gotFound != tt.wantFound || gotIndex != tt.wantIndex {
+				t.Errorf("findStageIndex(%q) = (%d, %v), want (%d, %v)",
+					tt.nameOrID, gotIndex, gotFound, tt.wantIndex, tt.wantFound)
+			}
+		})
+	}
+}
+
 func Test_dockerfileToSimplifiedDockerfile(t *testing.T) {
 	type args struct {
 		content        []byte
@@ -851,9 +902,11 @@ RUN echo other`),
 		t.Run(tt.name, func(t *testing.T) {
 			got, err := dockerfileToSimplifiedDockerfile(
 				tt.args.content,
-				tt.args.maxLabelLength,
-				tt.args.scratchMode,
-				tt.args.separateImages,
+				ParseOptions{
+					MaxLabelLength: tt.args.maxLabelLength,
+					ScratchMode:    tt.args.scratchMode,
+					SeparateImages: tt.args.separateImages,
+				},
 			)
 			if err != nil {
 				t.Errorf("dockerfileToSimplifiedDockerfile() error = %v", err)

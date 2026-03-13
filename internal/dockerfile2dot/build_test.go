@@ -58,7 +58,8 @@ func TestBuildDotFileErrors(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			_, err := BuildDotFile(
-				tt.simplifiedDockerfile, false, "default", tt.layers, false, 20, 0.5, 0.5,
+				tt.simplifiedDockerfile,
+				BuildOptions{EdgeStyle: "default", MaxLabelLength: 20, NodeSep: 0.5, RankSep: 0.5, Layers: tt.layers},
 			)
 			if err == nil {
 				t.Error("BuildDotFile() expected an error, got nil")
@@ -205,13 +206,15 @@ func TestBuildDotFile(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			got, err := BuildDotFile(
 				tt.args.simplifiedDockerfile,
-				tt.args.concentrate,
-				tt.args.edgestyle,
-				tt.args.layers,
-				tt.args.legend,
-				tt.args.maxLabelLength,
-				tt.args.nodesep,
-				tt.args.ranksep,
+				BuildOptions{
+					Concentrate:    tt.args.concentrate,
+					EdgeStyle:      tt.args.edgestyle,
+					Layers:         tt.args.layers,
+					Legend:         tt.args.legend,
+					MaxLabelLength: tt.args.maxLabelLength,
+					NodeSep:        tt.args.nodesep,
+					RankSep:        tt.args.ranksep,
+				},
 			)
 			if err != nil {
 				t.Fatalf("BuildDotFile() error = %v", err)
