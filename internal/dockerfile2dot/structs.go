@@ -61,8 +61,9 @@ type WaitFor struct {
 }
 
 // findStageIndex returns the index of the stage identified by nameOrID (a stage
-// name or a decimal numeric index string) and true if found. Returns -1 and
-// false if not found or if a numeric index is out of range.
+// name or a decimal numeric index string) and true if found. For a numeric
+// index that parses but is out of range, it returns that index and false. For
+// a non-numeric name that is not found, it returns -1 and false.
 func findStageIndex(stages []Stage, nameOrID string) (int, bool) {
 	if idx, err := strconv.Atoi(nameOrID); err == nil {
 		if idx >= 0 && idx < len(stages) {
