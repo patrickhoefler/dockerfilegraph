@@ -2,7 +2,7 @@
 idiomatic_version_file_enable_tools = ["go"]
 
 [tools]
-golangci-lint = "2.11.3"
+golangci-lint = "2.11.4"
 
 [tasks.build]
 description = "Build the dockerfilegraph binary"
