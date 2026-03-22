@@ -9,8 +9,7 @@ permissions:
 jobs:
   lint-and-test:
     permissions:
-      contents: read       # for actions/checkout to fetch code
-      pull-requests: read  # for golangci/golangci-lint-action to fetch pull requests
+      contents: read
     runs-on: ubuntu-latest
     steps:
       - name: Harden Runner
