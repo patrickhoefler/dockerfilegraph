@@ -34,9 +34,11 @@ brews:
   - repository:
       owner: patrickhoefler
       name: homebrew-tap
-
+      token: "{{ .Env.HOMEBREW_TAP_GITHUB_TOKEN }}"
+    commit_author:
+      name: goreleaser-bot
+      email: goreleaser-bot@users.noreply.github.com
     homepage: https://github.com/patrickhoefler/dockerfilegraph
     description: 'Visualize your multi-stage Dockerfile'
-
     dependencies:
       - graphviz
