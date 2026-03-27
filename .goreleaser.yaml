@@ -16,23 +16,19 @@ builds:
 changelog:
   disable: true
 
-dockers_v2:
-  - images:
-      - 'ghcr.io/patrickhoefler/dockerfilegraph'
-    tags:
-      - 'latest'
-      - '{{ .Major }}'
-      - '{{ .Major }}.{{ .Minor }}'
-      - '{{ .Major }}.{{ .Minor }}.{{ .Patch }}'
+dockers:
+  - dockerfile: Dockerfile
+    image_templates:
+      - 'ghcr.io/patrickhoefler/dockerfilegraph:latest'
+      - 'ghcr.io/patrickhoefler/dockerfilegraph:{{ .Major }}'
+      - 'ghcr.io/patrickhoefler/dockerfilegraph:{{ .Major }}.{{ .Minor }}'
+      - 'ghcr.io/patrickhoefler/dockerfilegraph:{{ .Major }}.{{ .Minor }}.{{ .Patch }}'
       # for backwards compatibility
-      - 'alpine'
-      - 'latest-alpine'
-      - '{{ .Major }}-alpine'
-      - '{{ .Major }}.{{ .Minor }}-alpine'
-      - '{{ .Major }}.{{ .Minor }}.{{ .Patch }}-alpine'
-    platforms:
-      - linux/amd64
-      - linux/arm64
+      - 'ghcr.io/patrickhoefler/dockerfilegraph:alpine'
+      - 'ghcr.io/patrickhoefler/dockerfilegraph:latest-alpine'
+      - 'ghcr.io/patrickhoefler/dockerfilegraph:{{ .Major }}-alpine'
+      - 'ghcr.io/patrickhoefler/dockerfilegraph:{{ .Major }}.{{ .Minor }}-alpine'
+      - 'ghcr.io/patrickhoefler/dockerfilegraph:{{ .Major }}.{{ .Minor }}.{{ .Patch }}-alpine'
 
 homebrew_casks:
   - repository:
