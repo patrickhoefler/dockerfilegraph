@@ -19,8 +19,8 @@ RUN apk add --update --no-cache \
 # Run as non-root user
 USER app
 
-# This only works after running `task build-linux`
-# or when using goreleaser
-COPY dockerfilegraph /
+# This only works when using goreleaser (multi-arch via TARGETPLATFORM)
+ARG TARGETPLATFORM
+COPY $TARGETPLATFORM/dockerfilegraph /
 
 ENTRYPOINT ["/dockerfilegraph"]
