@@ -1,5 +1,6 @@
 # Visual Studio Code
 .vscode
+*.code-workspace
 
 # Binaries for programs and plugins
 *.exe
