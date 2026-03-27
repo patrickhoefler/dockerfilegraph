@@ -19,8 +19,9 @@ RUN apk add --update --no-cache \
 # Run as non-root user
 USER app
 
-# This only works when using goreleaser (multi-arch via TARGETPLATFORM)
-ARG TARGETPLATFORM
+# When using goreleaser, TARGETPLATFORM is set to e.g. linux/amd64.
+# For local builds, it defaults to . (binary at the project root).
+ARG TARGETPLATFORM=.
 COPY $TARGETPLATFORM/dockerfilegraph /
 
 ENTRYPOINT ["/dockerfilegraph"]
