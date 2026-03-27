@@ -62,7 +62,7 @@ docker run --rm --user "$(id -u):$(id -g)" \
 #### Homebrew
 
 ```shell
-brew install patrickhoefler/tap/dockerfilegraph
+brew install --cask patrickhoefler/tap/dockerfilegraph
 dockerfilegraph
 ```
 
