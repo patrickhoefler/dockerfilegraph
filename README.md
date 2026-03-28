@@ -92,6 +92,7 @@ dockerfilegraph
   *Requirements: [mise](https://mise.jdx.dev/) and [Docker](https://www.docker.com/)*
 
   ```shell
+  mise install
   mise run build-docker-image
   docker run \
     --rm \
