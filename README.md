@@ -51,7 +51,7 @@ Supports multiple output formats (PDF, SVG, PNG), a legend, and layout customiza
 
 Run `dockerfilegraph` in your project directory to generate a `Dockerfile.pdf` with your build graph.
 
-#### Docker
+#### [Docker](https://www.docker.com/)
 
 ```shell
 docker run --rm --user "$(id -u):$(id -g)" \
@@ -59,7 +59,7 @@ docker run --rm --user "$(id -u):$(id -g)" \
   ghcr.io/patrickhoefler/dockerfilegraph
 ```
 
-#### Homebrew
+#### [Homebrew](https://brew.sh/)
 
 ```shell
 brew install patrickhoefler/tap/dockerfilegraph
@@ -79,18 +79,20 @@ dockerfilegraph
 
 - **Native Build**
 
-  *Requirements: [Go](https://go.dev/), [mise](https://mise.jdx.dev/) and [Graphviz](https://graphviz.org/)*
+  *Requirements: [mise](https://mise.jdx.dev/) and [Graphviz](https://graphviz.org/)*
 
   ```shell
+  mise install
   mise run build
   ./dockerfilegraph
   ```
 
 - **Container Build**
 
-  *Requirements: [Go](https://go.dev/), [mise](https://mise.jdx.dev/) and Docker*
+  *Requirements: [mise](https://mise.jdx.dev/) and [Docker](https://www.docker.com/)*
 
   ```shell
+  mise install
   mise run build-docker-image
   docker run \
     --rm \
