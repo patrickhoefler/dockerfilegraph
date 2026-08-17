@@ -1,12 +1,12 @@
 module github.com/patrickhoefler/dockerfilegraph
 
-go 1.26.1
+go 1.26.3
 
 require (
 	github.com/aquilax/truncate v1.0.1
 	github.com/awalterschulze/gographviz v2.0.3+incompatible
 	github.com/google/go-cmp v0.7.0
-	github.com/moby/buildkit v0.31.1
+	github.com/moby/buildkit v0.32.2
 	github.com/spf13/afero v1.15.0
 	github.com/spf13/cobra v1.10.2
 )
@@ -17,6 +17,6 @@ require (
 	github.com/pkg/errors v0.9.1 // indirect
 	github.com/planetscale/vtprotobuf v0.6.1-0.20240319094008-0393e58bdf10 // indirect
 	github.com/spf13/pflag v1.0.10 // indirect
-	golang.org/x/text v0.37.0 // indirect
-	google.golang.org/protobuf v1.36.11 // indirect
+	golang.org/x/text v0.40.0 // indirect
+	google.golang.org/protobuf v1.36.12-0.20260120151049-f2248ac996af // indirect
 )
